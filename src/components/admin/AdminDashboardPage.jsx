@@ -1,29 +1,29 @@
 import React, { useState } from 'react';
 import {
+  LayoutDashboard,
+  Users,
+  ShieldCheck,
+  Activity,
+  Layers,
+  Database,
+  Search,
+  Bell,
+  Plus,
+  ChevronDown,
   ArrowLeft,
-  ChevronRight,
-  Terminal,
-  UserPlus,
-  KeyRound,
+  Calendar,
+  Filter,
+  Download,
+  Copy,
+  Check,
   Eye,
   EyeOff,
   Trash2,
   LogIn,
-  LogOut,
   RefreshCw,
-  Download,
-  Upload,
-  Copy,
-  Check,
-  Search,
-  ShieldCheck,
-  AlertCircle,
-  Database,
-  Layers,
   Sparkles,
-  Users,
-  Activity,
-  History,
+  ExternalLink,
+  KeyRound,
   FileCheck2,
   FolderArchive,
   Boxes,
@@ -31,7 +31,9 @@ import {
   ClipboardCheck,
   CalendarRange,
   Headphones,
-  Key
+  CheckSquare,
+  Square,
+  AlertCircle
 } from 'lucide-react';
 
 const divisionsList = [
@@ -69,11 +71,14 @@ const AdminDashboardPage = ({
   onForceDestroySession,
   authUser,
 }) => {
-  const [activeTab, setActiveTab] = useState('accounts'); // 'accounts' | 'session' | 'backup' | 'logs'
+  // Navigation View: 'dashboard' | 'students' | 'session' | 'modules' | 'backup' | 'logs'
+  const [currentNav, setCurrentNav] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDivision, setSelectedDivision] = useState('Semua Divisi');
+  const [selectedPeriod, setSelectedPeriod] = useState('Monthly');
 
-  // Form State
+  // Form State for Adding Student
+  const [isAddFormOpen, setIsAddFormOpen] = useState(false);
   const [formNim, setFormNim] = useState('');
   const [formName, setFormName] = useState('');
   const [formDivision, setFormDivision] = useState('Medinfo');
@@ -89,6 +94,9 @@ const AdminDashboardPage = ({
   const [editingNim, setEditingNim] = useState(null);
   const [newPasswordVal, setNewPasswordVal] = useState('');
 
+  // Selected Checkboxes in Table
+  const [selectedRows, setSelectedRows] = useState([]);
+
   // Copy Feedback state
   const [copiedJson, setCopiedJson] = useState(false);
   const [copiedNim, setCopiedNim] = useState(null);
@@ -99,7 +107,7 @@ const AdminDashboardPage = ({
 
   // Activity Logs
   const [logs, setLogs] = useState([
-    { id: 1, time: '14:50:12', event: 'Sistem Inisialisasi Database Kredensial', type: 'info' },
+    { id: 1, time: '14:50:12', event: 'Sistem inisialisasi database kredensial', type: 'info' },
     { id: 2, time: '14:52:40', event: 'Audit Session Guard: Auto-destroy on refresh diaktifkan', type: 'success' },
     { id: 3, time: '15:00:15', event: '5 Akun demo resmi organisasi dimuat ke memory', type: 'info' },
   ]);
@@ -137,7 +145,7 @@ const AdminDashboardPage = ({
     }
 
     if (accounts.some((acc) => acc.nim === cleanNim)) {
-      setFormError(`NIM ${cleanNim} sudah terdaftar dalam sistem.`);
+      setFormError(`NIM ${cleanNim} sudah terdaftar.`);
       return;
     }
 
@@ -162,14 +170,14 @@ const AdminDashboardPage = ({
     };
 
     onAddAccount(newAcc);
-    addLog(`Akun baru terdaftar: ${cleanName} (${cleanNim}) - ${formDivision}`, 'success');
-    setFormSuccess(`Mahasiswa ${cleanName} (${cleanNim}) berhasil didaftarkan ke sistem!`);
+    addLog(`Akun mahasiswa baru terdaftar: ${cleanName} (${cleanNim})`, 'success');
+    setFormSuccess(`Mahasiswa ${cleanName} (${cleanNim}) berhasil didaftarkan!`);
     setFormNim('');
     setFormName('');
     setFormRole('Anggota Aktif');
     setFormPassword('password123');
 
-    setTimeout(() => setFormSuccess(''), 5000);
+    setTimeout(() => setFormSuccess(''), 4000);
   };
 
   const handleSaveNewPassword = (nim) => {
@@ -211,21 +219,35 @@ const AdminDashboardPage = ({
     try {
       const parsed = JSON.parse(importJsonText);
       if (!Array.isArray(parsed)) {
-        setImportStatus({ success: false, message: 'Format data JSON harus berupa Array objek akun.' });
+        setImportStatus({ success: false, message: 'Format JSON harus berupa Array objek akun.' });
         return;
       }
       const valid = parsed.every((item) => item.nim && item.password);
       if (!valid) {
-        setImportStatus({ success: false, message: 'Setiap akun dalam JSON harus memiliki field "nim" dan "password".' });
+        setImportStatus({ success: false, message: 'Setiap akun harus memiliki field "nim" dan "password".' });
         return;
       }
       parsed.forEach((item) => onAddAccount(item));
-      addLog(`Berhasil mengimpor ${parsed.length} akun mahasiswa dari JSON`, 'success');
-      setImportStatus({ success: true, message: `Berhasil mengimpor ${parsed.length} akun mahasiswa ke database.` });
+      addLog(`Berhasil mengimpor ${parsed.length} akun mahasiswa`, 'success');
+      setImportStatus({ success: true, message: `Berhasil mengimpor ${parsed.length} akun mahasiswa.` });
       setImportJsonText('');
-      setTimeout(() => setImportStatus(null), 4000);
+      setTimeout(() => setImportStatus(null), 3000);
     } catch {
       setImportStatus({ success: false, message: 'Sintaks format JSON tidak valid.' });
+    }
+  };
+
+  const toggleSelectRow = (nim) => {
+    setSelectedRows((prev) =>
+      prev.includes(nim) ? prev.filter((id) => id !== nim) : [...prev, nim]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedRows.length === filteredAccounts.length) {
+      setSelectedRows([]);
+    } else {
+      setSelectedRows(filteredAccounts.map((a) => a.nim));
     }
   };
 
@@ -239,595 +261,1022 @@ const AdminDashboardPage = ({
   });
 
   return (
-    <div className="w-full min-h-screen bg-[#060D25] text-white flex flex-col font-sans">
+    <div className="w-full min-h-screen bg-[#F8F9FC] text-slate-800 flex font-sans antialiased selection:bg-indigo-500 selection:text-white">
       
-      {/* 1. Top Navigation Bar */}
-      <header className="sticky top-0 z-40 bg-[#060D25]/95 backdrop-blur-md border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-4">
-          
-          {/* Left: Brand & Breadcrumb */}
-          <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
+      {/* 1. LEFT SIDEBAR (Matching Reference Nexus Navigation) */}
+      <aside className="w-64 bg-white border-r border-[#EBF0F5] shrink-0 hidden lg:flex flex-col justify-between p-5 min-h-screen sticky top-0 h-screen">
+        <div>
+          {/* Brand Header */}
+          <div className="flex items-center justify-between pb-6 border-b border-gray-100 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-linear-to-br from-[#6366F1] to-[#4F46E5] text-white flex items-center justify-center font-bold shadow-sm shadow-indigo-200">
+                <span className="text-sm font-mono">TD</span>
+              </div>
+              <div>
+                <span className="text-base font-extrabold text-slate-900 tracking-tight block leading-tight">
+                  TeraDesk
+                </span>
+                <span className="text-[10px] font-semibold text-slate-400 font-mono tracking-wider uppercase">
+                  Admin Console
+                </span>
+              </div>
+            </div>
             <button
               onClick={onBackToLanding}
-              className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 px-3.5 py-2 rounded-xl border border-white/10 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:outline-none min-h-[44px]"
-              title="Kembali ke Beranda Depan"
+              className="text-gray-400 hover:text-slate-800 p-1.5 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+              title="Kembali ke Beranda"
             >
               <ArrowLeft size={16} />
-              <span>Kembali ke Beranda</span>
             </button>
-
-            {/* Breadcrumb Trail */}
-            <div className="hidden sm:flex items-center gap-2 text-xs text-gray-400">
-              <button
-                onClick={onBackToLanding}
-                className="hover:text-amber-400 transition-colors cursor-pointer"
-              >
-                Beranda
-              </button>
-              <ChevronRight size={13} className="text-gray-600" />
-              <button
-                onClick={onNavigateToPortal}
-                className="hover:text-amber-400 transition-colors cursor-pointer"
-              >
-                Workspace Hub
-              </button>
-              <ChevronRight size={13} className="text-gray-600" />
-              <span className="text-amber-300 font-semibold">Admin & Dev Console</span>
-            </div>
           </div>
 
-          {/* Right: Environment Pills & User Profile */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-xl">
-              <Terminal size={14} />
-              <span>ADMIN MODE</span>
-            </span>
-
-            {authUser ? (
-              <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl text-xs">
-                <div className="w-6 h-6 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center font-bold text-xs">
-                  {authUser.name ? authUser.name.charAt(0) : 'P'}
-                </div>
-                <div className="text-left hidden sm:block">
-                  <p className="font-bold text-white text-[11px] leading-tight truncate max-w-[120px]">
-                    {authUser.name}
-                  </p>
-                  <p className="text-[9px] text-gray-400 font-mono leading-none">
-                    NIM: {authUser.nim}
-                  </p>
-                </div>
+          {/* Navigation Sections */}
+          <div className="space-y-6">
+            {/* SECTION: GENERAL */}
+            <div>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 px-3">
+                GENERAL
+              </p>
+              <div className="space-y-1">
                 <button
-                  onClick={onForceDestroySession}
-                  className="ml-1 text-rose-300 hover:text-white p-1 hover:bg-rose-500/20 rounded cursor-pointer transition-colors"
-                  title="Logout / Destroy Sesi"
+                  onClick={() => setCurrentNav('dashboard')}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    currentNav === 'dashboard'
+                      ? 'bg-slate-900 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-950 hover:bg-gray-50'
+                  }`}
                 >
-                  <LogOut size={13} />
+                  <div className="flex items-center gap-3">
+                    <LayoutDashboard size={16} className={currentNav === 'dashboard' ? 'text-indigo-400' : 'text-gray-400'} />
+                    <span>Dashboard</span>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => setCurrentNav('students')}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    currentNav === 'students'
+                      ? 'bg-slate-900 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-950 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Users size={16} className={currentNav === 'students' ? 'text-indigo-400' : 'text-gray-400'} />
+                    <span>Mahasiswa</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-gray-100 text-slate-600 font-bold">
+                    {accounts.length}
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => setCurrentNav('session')}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    currentNav === 'session'
+                      ? 'bg-slate-900 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-950 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <ShieldCheck size={16} className={currentNav === 'session' ? 'text-indigo-400' : 'text-gray-400'} />
+                    <span>Sesi & Keamanan</span>
+                  </div>
+                  {authUser && (
+                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  )}
+                </button>
+
+                <button
+                  onClick={() => setCurrentNav('logs')}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    currentNav === 'logs'
+                      ? 'bg-slate-900 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-950 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Activity size={16} className={currentNav === 'logs' ? 'text-indigo-400' : 'text-gray-400'} />
+                    <span>Log Aktivitas</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-gray-100 text-slate-600 font-bold">
+                    {logs.length}
+                  </span>
                 </button>
               </div>
-            ) : (
-              <span className="text-xs font-mono text-gray-400 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl hidden sm:inline-block">
-                Status: Guest
-              </span>
-            )}
+            </div>
 
-            <button
-              onClick={onNavigateToPortal}
-              className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-3.5 py-2 rounded-xl text-xs transition-colors cursor-pointer flex items-center gap-1.5 min-h-[44px]"
-            >
-              <span>Buka Workspace</span>
-              <ChevronRight size={14} />
-            </button>
+            {/* SECTION: TOOLS */}
+            <div>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 px-3">
+                TOOLS
+              </p>
+              <div className="space-y-1">
+                <button
+                  onClick={() => setCurrentNav('modules')}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    currentNav === 'modules'
+                      ? 'bg-slate-900 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-950 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Layers size={16} className={currentNav === 'modules' ? 'text-indigo-400' : 'text-gray-400'} />
+                    <span>Modul Layanan</span>
+                  </div>
+                  <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded">
+                    8 MODUL
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => setCurrentNav('backup')}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    currentNav === 'backup'
+                      ? 'bg-slate-900 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-950 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Database size={16} className={currentNav === 'backup' ? 'text-indigo-400' : 'text-gray-400'} />
+                    <span>Backup & JSON</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            {/* SECTION: SUPPORT */}
+            <div>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 px-3">
+                SUPPORT
+              </p>
+              <div className="space-y-1">
+                <button
+                  onClick={() => {
+                    if (window.confirm('Reset seluruh daftar akun ke 5 akun demo bawaan sistem?')) {
+                      onResetAccounts();
+                      addLog('Database akun direset ke akun bawaan', 'warning');
+                    }
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-950 hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  <RefreshCw size={16} className="text-gray-400" />
+                  <span>Reset Akun Default</span>
+                </button>
+
+                <button
+                  onClick={onBackToLanding}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-950 hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  <ExternalLink size={16} className="text-gray-400" />
+                  <span>Lihat Landing Page</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      </header>
 
-      {/* 2. Hero Header Banner */}
-      <div className="bg-linear-to-b from-[#0b1435] via-[#080E24] to-[#060D25] border-b border-white/10 py-8 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex items-start sm:items-center gap-4">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center shadow-lg shrink-0">
-              <Terminal size={32} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2.5 flex-wrap mb-1.5">
-                <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono">
-                  TERADESK DEV CONSOLE v1.2
-                </span>
-                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
-                  Panel Khusus Pengembang & Admin
-                </span>
+        {/* Sidebar Footer Capsule (Matching Reference Team Capsule & Upgrade button) */}
+        <div className="pt-4 border-t border-gray-100 space-y-3">
+          <div className="bg-[#F8F9FC] border border-gray-200/80 p-3 rounded-2xl flex items-center justify-between">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-xl bg-linear-to-tr from-cyan-500 to-indigo-500 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                TM
               </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                Dashboard Manajemen Developer & Admin Hub
-              </h1>
-              <p className="text-xs sm:text-sm text-gray-300 mt-1 max-w-2xl leading-relaxed">
-                Pusat kendali mandiri: kelola kredensial mahasiswa (NIM & Kata Sandi), audit sesi kerja aktif, simulator bypass modul, dan manajemen data persistensi.
-              </p>
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-slate-900 truncate">TERAMEDIA</p>
+                <p className="text-[10px] text-gray-500 truncate">Dewantara Palopo</p>
+              </div>
             </div>
+            <ChevronDown size={14} className="text-gray-400 shrink-0" />
           </div>
 
-          {/* Quick Action Buttons */}
-          <div className="flex items-center gap-3 flex-wrap">
+          <button
+            onClick={onNavigateToPortal}
+            className="w-full py-2.5 bg-white hover:bg-gray-50 border border-gray-200/80 rounded-xl text-xs font-bold text-slate-800 shadow-xs transition-colors cursor-pointer text-center block"
+          >
+            Buka Workspace Hub
+          </button>
+
+          <p className="text-[10px] text-gray-400 text-center font-mono">
+            © 2026 TeraDesk Internal
+          </p>
+        </div>
+      </aside>
+
+      {/* 2. MAIN VIEW AREA (Header + Content) */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
+        
+        {/* Top Header Bar (Matching Reference Safari/Nexus Header) */}
+        <header className="h-18 px-6 lg:px-8 bg-white border-b border-[#EBF0F5] flex items-center justify-between gap-4 sticky top-0 z-30">
+          
+          {/* Left: Global Search Input */}
+          <div className="relative w-72 sm:w-84">
+            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search NIM, Nama, atau Modul..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-14 py-2 bg-[#F8F9FC] border border-gray-200/80 rounded-xl text-xs text-slate-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium"
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono font-bold text-gray-400 bg-white border border-gray-200 px-1.5 py-0.5 rounded">
+              ⌘ + F
+            </span>
+          </div>
+
+          {/* Right: Quick Triggers & User Profile */}
+          <div className="flex items-center gap-3 sm:gap-4">
+            
+            {/* Quick Add Button */}
             <button
               onClick={() => {
-                setActiveTab('accounts');
-                const formElem = document.getElementById('add-student-form');
-                if (formElem) formElem.scrollIntoView({ behavior: 'smooth' });
+                setIsAddFormOpen(!isAddFormOpen);
+                setCurrentNav('dashboard');
               }}
-              className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm flex items-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer min-h-[44px]"
+              className="w-8 h-8 rounded-full bg-indigo-50 hover:bg-indigo-100 text-indigo-600 flex items-center justify-center transition-colors cursor-pointer"
+              title="Tambah Akun Mahasiswa Baru"
             >
-              <UserPlus size={16} />
-              <span>+ Daftarkan Mahasiswa</span>
+              <Plus size={16} />
             </button>
 
+            {/* Notification Bell */}
+            <div className="relative">
+              <button
+                className="w-8 h-8 rounded-full hover:bg-gray-100 text-gray-500 flex items-center justify-center transition-colors cursor-pointer"
+                title="Notifikasi Sistem"
+              >
+                <Bell size={16} />
+              </button>
+              <span className="w-2 h-2 rounded-full bg-indigo-600 absolute top-1 right-1 ring-2 ring-white"></span>
+            </div>
+
+            {/* User Profile Capsule (Matching Young Alaska / Bussiness) */}
+            <div className="flex items-center gap-3 pl-3 border-l border-gray-200">
+              <div className="w-9 h-9 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs ring-2 ring-gray-100">
+                {authUser?.name ? authUser.name.charAt(0) : 'SA'}
+              </div>
+              <div className="text-left hidden sm:block">
+                <p className="text-xs font-bold text-slate-900 leading-tight">
+                  {authUser ? authUser.name : 'System Admin'}
+                </p>
+                <p className="text-[10px] text-gray-400 font-medium leading-none mt-0.5">
+                  {authUser ? `${authUser.role} (${authUser.nim})` : 'Superuser • Dev'}
+                </p>
+              </div>
+            </div>
+
+            {/* Back to Web Button */}
             <button
-              onClick={handleDownloadJson}
-              className="bg-white/10 hover:bg-white/20 text-white font-semibold px-4 py-2.5 rounded-xl text-xs sm:text-sm border border-white/15 flex items-center gap-2 transition-colors cursor-pointer min-h-[44px]"
+              onClick={onBackToLanding}
+              className="text-xs font-semibold px-3 py-1.5 rounded-xl border border-gray-200 hover:bg-gray-100 text-slate-700 transition-colors cursor-pointer hidden md:flex items-center gap-1.5"
             >
-              <Download size={16} />
-              <span>Ekspor JSON</span>
+              <ArrowLeft size={13} />
+              <span>Kembali</span>
             </button>
           </div>
-        </div>
-      </div>
+        </header>
 
-      {/* 3. Key Telemetry Metric Cards */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-4 mb-6 w-full">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Content Body Container */}
+        <main className="p-6 lg:p-8 space-y-6">
           
-          {/* Metric 1 */}
-          <div className="bg-[#0b1433]/90 border border-white/10 rounded-2xl p-4 sm:p-5 backdrop-blur-md shadow-lg flex items-center justify-between">
+          {/* Dashboard Header Row (Title + Date + Controls) */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <span className="text-[11px] font-semibold text-gray-400 block uppercase tracking-wider mb-1">
-                Mahasiswa Terdaftar
-              </span>
-              <div className="text-2xl sm:text-3xl font-extrabold text-amber-400 font-mono">
-                {accounts.length} Akun
-              </div>
-              <p className="text-[11px] text-gray-400 mt-0.5">Tersimpan dalam database lokal</p>
-            </div>
-            <div className="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center justify-center shrink-0">
-              <Users size={22} />
-            </div>
-          </div>
-
-          {/* Metric 2 */}
-          <div className="bg-[#0b1433]/90 border border-white/10 rounded-2xl p-4 sm:p-5 backdrop-blur-md shadow-lg flex items-center justify-between">
-            <div className="min-w-0 pr-2">
-              <span className="text-[11px] font-semibold text-gray-400 block uppercase tracking-wider mb-1">
-                Status Sesi Saat Ini
-              </span>
-              <div className="text-lg sm:text-xl font-bold truncate">
-                {authUser ? (
-                  <span className="text-emerald-400">{authUser.name}</span>
-                ) : (
-                  <span className="text-gray-400">Guest Mode</span>
-                )}
-              </div>
-              <p className="text-[11px] text-gray-400 mt-0.5 truncate font-mono">
-                {authUser ? `NIM: ${authUser.nim}` : 'Akses workspace terkunci'}
+              <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+                {currentNav === 'dashboard' ? 'Dashboard' :
+                 currentNav === 'students' ? 'Manajemen Mahasiswa' :
+                 currentNav === 'session' ? 'Kontrol Sesi & Keamanan' :
+                 currentNav === 'modules' ? 'Katalog 8 Modul' :
+                 currentNav === 'backup' ? 'Cadangan Data JSON' : 'Log Aktivitas'}
+              </h1>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Pusat kendali akun mahasiswa, audit keamanan sesi, dan telemetry sistem TeraDesk.
               </p>
             </div>
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border ${
-              authUser ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-gray-800 text-gray-400 border-white/10'
-            }`}>
-              <ShieldCheck size={22} />
-            </div>
-          </div>
 
-          {/* Metric 3 */}
-          <div className="bg-[#0b1433]/90 border border-white/10 rounded-2xl p-4 sm:p-5 backdrop-blur-md shadow-lg flex items-center justify-between">
-            <div>
-              <span className="text-[11px] font-semibold text-gray-400 block uppercase tracking-wider mb-1">
-                Protokol Sesi Refresh
-              </span>
-              <div className="text-lg sm:text-xl font-bold text-cyan-300">
-                Auto-Destroy
+            {/* Controls (Date, Period, Filter, Export, Add) */}
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* Date Pill */}
+              <div className="bg-white border border-gray-200/80 px-3 py-1.5 rounded-xl text-xs font-medium text-slate-600 flex items-center gap-2 shadow-2xs">
+                <Calendar size={13} className="text-gray-400" />
+                <span>02 Nov - 08 Nov</span>
               </div>
-              <p className="text-[11px] text-gray-400 mt-0.5">Sesi terhapus otomatis saat F5</p>
-            </div>
-            <div className="w-12 h-12 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 flex items-center justify-center shrink-0">
-              <RefreshCw size={22} />
-            </div>
-          </div>
 
-          {/* Metric 4 */}
-          <div className="bg-[#0b1433]/90 border border-white/10 rounded-2xl p-4 sm:p-5 backdrop-blur-md shadow-lg flex items-center justify-between">
-            <div>
-              <span className="text-[11px] font-semibold text-gray-400 block uppercase tracking-wider mb-1">
-                Katalog Modul Aktif
-              </span>
-              <div className="text-2xl sm:text-3xl font-extrabold text-purple-400 font-mono">
-                8 Modul
+              {/* Monthly Dropdown */}
+              <div className="relative">
+                <select
+                  value={selectedPeriod}
+                  onChange={(e) => setSelectedPeriod(e.target.value)}
+                  className="bg-white border border-gray-200/80 pl-3 pr-7 py-1.5 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none cursor-pointer appearance-none shadow-2xs"
+                >
+                  <option value="Weekly">Weekly ▾</option>
+                  <option value="Monthly">Monthly ▾</option>
+                  <option value="Semester">Semester ▾</option>
+                </select>
+                <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
               </div>
-              <p className="text-[11px] text-gray-400 mt-0.5">Terintegrasi dalam platform</p>
-            </div>
-            <div className="w-12 h-12 rounded-xl bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center justify-center shrink-0">
-              <Layers size={22} />
+
+              {/* Filter Button */}
+              <button
+                onClick={() => {
+                  setSelectedDivision(selectedDivision === 'Semua Divisi' ? 'Medinfo' : 'Semua Divisi');
+                }}
+                className="bg-white border border-gray-200/80 hover:bg-gray-50 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700 flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+              >
+                <Filter size={13} className="text-gray-400" />
+                <span>Filter</span>
+              </button>
+
+              {/* Export Button */}
+              <button
+                onClick={handleDownloadJson}
+                className="bg-white border border-gray-200/80 hover:bg-gray-50 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700 flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+              >
+                <Download size={13} className="text-gray-400" />
+                <span>Export</span>
+              </button>
+
+              {/* Primary Action Button */}
+              <button
+                onClick={() => setIsAddFormOpen(!isAddFormOpen)}
+                className="bg-[#5046E5] hover:bg-[#4338CA] text-white font-bold px-4 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-xs cursor-pointer active:scale-95"
+              >
+                <Plus size={14} />
+                <span>+ Mahasiswa</span>
+              </button>
             </div>
           </div>
 
-        </div>
-      </div>
-
-      {/* 4. Tab Navigation Strip */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full mb-6">
-        <div className="bg-white/5 border border-white/10 p-1.5 rounded-2xl flex flex-wrap gap-2">
-          
-          <button
-            onClick={() => setActiveTab('accounts')}
-            className={`flex items-center gap-2 px-5 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer min-h-[44px] ${
-              activeTab === 'accounts'
-                ? 'bg-amber-400 text-slate-950 shadow-md'
-                : 'text-gray-300 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <KeyRound size={16} />
-            <span>Manajemen Kredensial Mahasiswa ({accounts.length})</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('session')}
-            className={`flex items-center gap-2 px-5 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer min-h-[44px] ${
-              activeTab === 'session'
-                ? 'bg-amber-400 text-slate-950 shadow-md'
-                : 'text-gray-300 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <Activity size={16} />
-            <span>Kontrol Sesi & Simulator Modul</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('backup')}
-            className={`flex items-center gap-2 px-5 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer min-h-[44px] ${
-              activeTab === 'backup'
-                ? 'bg-amber-400 text-slate-950 shadow-md'
-                : 'text-gray-300 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <Database size={16} />
-            <span>Ekspor / Impor JSON</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('logs')}
-            className={`flex items-center gap-2 px-5 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer min-h-[44px] ${
-              activeTab === 'logs'
-                ? 'bg-amber-400 text-slate-950 shadow-md'
-                : 'text-gray-300 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <History size={16} />
-            <span>Log Aktivitas Sistem ({logs.length})</span>
-          </button>
-
-        </div>
-      </div>
-
-      {/* 5. Main Tab Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pb-16 flex-1">
-        
-        {/* TAB 1: Manajemen Akun Mahasiswa */}
-        {activeTab === 'accounts' && (
-          <div className="space-y-8">
-            
-            {/* Form Tambah Mahasiswa Baru */}
-            <div id="add-student-form" className="bg-[#0b1433] border border-amber-500/30 rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl pointer-events-none"></div>
-
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6 border-b border-white/10 pb-4">
+          {/* Form Tambah Mahasiswa (Collapsible or Triggered) */}
+          {isAddFormOpen && (
+            <div className="bg-white border border-indigo-100 rounded-3xl p-6 shadow-sm animate-in fade-in zoom-in-98 duration-150 relative">
+              <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-5">
                 <div>
-                  <h2 className="text-lg font-bold text-white flex items-center gap-2.5">
-                    <UserPlus size={20} className="text-amber-400" />
+                  <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <KeyRound size={17} className="text-indigo-600" />
                     <span>Daftarkan Mahasiswa Baru (NIM & Kata Sandi)</span>
-                  </h2>
-                  <p className="text-xs text-gray-400 mt-1">
-                    Akun yang ditambahkan di sini langsung dapat digunakan mahasiswa untuk login ke Workspace.
+                  </h3>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Kredensial yang didaftarkan langsung aktif dan dapat digunakan untuk login ke Workspace.
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleGenerateRandomPass}
-                  className="text-xs text-amber-300 hover:text-amber-200 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 px-3 py-1.5 rounded-xl font-mono flex items-center gap-1.5 cursor-pointer transition-colors w-fit"
-                >
-                  <Sparkles size={14} />
-                  <span>Generate Password Acak</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleGenerateRandomPass}
+                    className="text-xs text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-xl font-medium flex items-center gap-1 transition-colors cursor-pointer"
+                  >
+                    <Sparkles size={13} />
+                    <span>Generate Sandi Acak</span>
+                  </button>
+                  <button
+                    onClick={() => setIsAddFormOpen(false)}
+                    className="text-gray-400 hover:text-slate-800 p-1.5 rounded-lg hover:bg-gray-100 cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
 
               {formError && (
-                <div className="mb-6 bg-rose-500/15 border border-rose-500/30 rounded-2xl p-4 text-xs sm:text-sm text-rose-300 flex items-center gap-3 animate-in fade-in duration-150">
-                  <AlertCircle size={18} className="shrink-0" />
+                <div className="mb-4 bg-rose-50 border border-rose-200 rounded-xl p-3 text-xs text-rose-700 flex items-center gap-2">
+                  <AlertCircle size={15} className="shrink-0" />
                   <span>{formError}</span>
                 </div>
               )}
 
               {formSuccess && (
-                <div className="mb-6 bg-emerald-500/15 border border-emerald-500/30 rounded-2xl p-4 text-xs sm:text-sm text-emerald-300 flex items-center gap-3 animate-in fade-in duration-150">
-                  <Check size={18} className="shrink-0" />
+                <div className="mb-4 bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-700 flex items-center gap-2">
+                  <Check size={15} className="shrink-0" />
                   <span>{formSuccess}</span>
                 </div>
               )}
 
-              <form onSubmit={handleAddSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  
-                  {/* NIM Field */}
-                  <div>
-                    <label className="block text-xs font-bold text-gray-300 mb-1.5">
-                      Nomor Induk Mahasiswa (NIM) <span className="text-amber-400">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Contoh: 2209010088"
-                      value={formNim}
-                      onChange={(e) => setFormNim(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-900 border border-white/15 rounded-xl text-xs sm:text-sm text-white placeholder-gray-500 font-mono focus:outline-none focus:ring-2 focus:ring-amber-400 min-h-[44px]"
-                    />
-                  </div>
-
-                  {/* Nama Mahasiswa */}
-                  <div>
-                    <label className="block text-xs font-bold text-gray-300 mb-1.5">
-                      Nama Lengkap Mahasiswa <span className="text-amber-400">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Contoh: Fadhil Ardiansyah"
-                      value={formName}
-                      onChange={(e) => setFormName(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-900 border border-white/15 rounded-xl text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-400 min-h-[44px]"
-                    />
-                  </div>
-
-                  {/* Divisi */}
-                  <div>
-                    <label className="block text-xs font-bold text-gray-300 mb-1.5">
-                      Divisi Organisasi
-                    </label>
-                    <select
-                      value={formDivision}
-                      onChange={(e) => setFormDivision(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-900 border border-white/15 rounded-xl text-xs sm:text-sm text-white focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer min-h-[44px]"
-                    >
-                      {divisionsList.filter(d => d !== 'Semua Divisi').map((div) => (
-                        <option key={div} value={div}>{div}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Jabatan / Role */}
-                  <div>
-                    <label className="block text-xs font-bold text-gray-300 mb-1.5">
-                      Jabatan / Role
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Contoh: Staff Publikasi & Sosmed"
-                      value={formRole}
-                      onChange={(e) => setFormRole(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-900 border border-white/15 rounded-xl text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-400 min-h-[44px]"
-                    />
-                  </div>
+              <form onSubmit={handleAddSubmit} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 items-end">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    NIM Mahasiswa <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Contoh: 2209010088"
+                    value={formNim}
+                    onChange={(e) => setFormNim(e.target.value)}
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-slate-800 font-mono focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                  />
                 </div>
 
-                {/* Password & Submit Button Row */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-                  <div className="sm:col-span-2">
-                    <label className="block text-xs font-bold text-gray-300 mb-1.5">
-                      Kata Sandi Akun <span className="text-amber-400">*</span>
-                    </label>
-                    <div className="relative">
-                      <Key size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                      <input
-                        type="text"
-                        required
-                        placeholder="Masukkan kata sandi (minimal 4 karakter)"
-                        value={formPassword}
-                        onChange={(e) => setFormPassword(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-slate-900 border border-white/15 rounded-xl text-xs sm:text-sm text-white placeholder-gray-500 font-mono focus:outline-none focus:ring-2 focus:ring-amber-400 min-h-[44px]"
-                      />
-                    </div>
-                  </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Nama Lengkap <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Contoh: Fadhil Ardiansyah"
+                    value={formName}
+                    onChange={(e) => setFormName(e.target.value)}
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                  />
+                </div>
 
-                  <div className="flex items-end">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Divisi Organisasi
+                  </label>
+                  <select
+                    value={formDivision}
+                    onChange={(e) => setFormDivision(e.target.value)}
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer"
+                  >
+                    {divisionsList.filter(d => d !== 'Semua Divisi').map((div) => (
+                      <option key={div} value={div}>{div}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Jabatan / Role
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Contoh: Staff Publikasi"
+                    value={formRole}
+                    onChange={(e) => setFormRole(e.target.value)}
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Kata Sandi <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      required
+                      placeholder="Min. 4 char"
+                      value={formPassword}
+                      onChange={(e) => setFormPassword(e.target.value)}
+                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-slate-800 font-mono focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                    />
                     <button
                       type="submit"
-                      className="w-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold px-6 py-3 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer min-h-[44px]"
+                      className="bg-[#5046E5] hover:bg-[#4338CA] text-white font-bold px-4 py-2 rounded-xl text-xs shrink-0 transition-colors cursor-pointer shadow-xs"
                     >
-                      <UserPlus size={16} />
-                      <span>Daftarkan Mahasiswa</span>
+                      Daftarkan
                     </button>
                   </div>
                 </div>
               </form>
             </div>
+          )}
 
-            {/* Tabel Kredensial Mahasiswa */}
-            <div className="bg-[#0b1433] border border-white/10 rounded-3xl p-6 sm:p-8 space-y-6">
-              
-              {/* Header with Search, Division Filter, and Reset */}
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          {/* ROW 1: 3 METRIC CARDS (Exact Match to Reference: Page Views, Revenue, Bounce Rate) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            {/* Metric Card 1: Page Views -> Total Mahasiswa */}
+            <div className="bg-white border border-[#EBF0F5] rounded-3xl p-6 shadow-xs flex flex-col justify-between">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2 text-slate-600">
+                  <div className="w-8 h-8 rounded-full bg-slate-50 border border-gray-100 flex items-center justify-center text-slate-600">
+                    <Users size={15} />
+                  </div>
+                  <span className="text-xs font-semibold text-slate-500">Total Mahasiswa Terdaftar</span>
+                </div>
+                <span className="text-gray-300 hover:text-gray-500 cursor-pointer text-xs" title="Total mahasiswa yang telah terdaftar di database">ⓘ</span>
+              </div>
+              <div className="flex items-baseline gap-3">
+                <span className="text-3xl font-extrabold text-slate-900 tracking-tight font-mono">
+                  {accounts.length}
+                </span>
+                <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[11px] font-bold flex items-center gap-0.5">
+                  <span>15.8%</span>
+                  <span className="text-xs">↗</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Metric Card 2: Revenue -> Sesi Kerja Aktif */}
+            <div className="bg-white border border-[#EBF0F5] rounded-3xl p-6 shadow-xs flex flex-col justify-between">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2 text-slate-600">
+                  <div className="w-8 h-8 rounded-full bg-slate-50 border border-gray-100 flex items-center justify-center text-slate-600">
+                    <ShieldCheck size={15} />
+                  </div>
+                  <span className="text-xs font-semibold text-slate-500">Sesi Kerja Aktif Saat Ini</span>
+                </div>
+                <span className="text-gray-300 hover:text-gray-500 cursor-pointer text-xs" title="Informasi status login pengurus aktif">ⓘ</span>
+              </div>
+              <div className="flex items-baseline gap-3 min-w-0">
+                <span className="text-2xl font-extrabold text-slate-900 tracking-tight truncate">
+                  {authUser ? authUser.name : 'Guest Mode'}
+                </span>
+                <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold shrink-0 ${
+                  authUser ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
+                }`}>
+                  {authUser ? 'Aktif ↗' : 'Terkunci 🔒'}
+                </span>
+              </div>
+            </div>
+
+            {/* Metric Card 3: Bounce Rate -> Protokol Keamanan F5 */}
+            <div className="bg-white border border-[#EBF0F5] rounded-3xl p-6 shadow-xs flex flex-col justify-between">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2 text-slate-600">
+                  <div className="w-8 h-8 rounded-full bg-slate-50 border border-gray-100 flex items-center justify-center text-slate-600">
+                    <RefreshCw size={15} />
+                  </div>
+                  <span className="text-xs font-semibold text-slate-500">Protokol Keamanan Sesi</span>
+                </div>
+                <span className="text-gray-300 hover:text-gray-500 cursor-pointer text-xs" title="Sesi otomatis dihancurkan saat refresh">ⓘ</span>
+              </div>
+              <div className="flex items-baseline gap-3">
+                <span className="text-2xl font-extrabold text-slate-900 tracking-tight">
+                  Auto-Destroy F5
+                </span>
+                <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[11px] font-bold flex items-center gap-0.5">
+                  <span>100% Aman</span>
+                  <span className="text-xs">↗</span>
+                </span>
+              </div>
+            </div>
+
+          </div>
+
+          {/* ROW 2: VISUAL OVERVIEW (Matching Sales Overview Chart & Total Subscriber Bar Chart) */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* Left Chart Card: Sales Overview style (8 cols) */}
+            <div className="lg:col-span-8 bg-white border border-[#EBF0F5] rounded-3xl p-6 lg:p-7 shadow-xs flex flex-col justify-between">
+              {/* Card Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>
-                  <h3 className="text-lg font-bold text-white flex items-center gap-2.5">
-                    <KeyRound size={20} className="text-amber-400" />
-                    <span>Daftar Kredensial Mahasiswa ({filteredAccounts.length})</span>
-                  </h3>
-                  <p className="text-xs text-gray-400 mt-1">
-                    Kelola password, lihat akun terdaftar, atau gunakan tombol "Masuk" untuk pengujian tanpa login manual.
-                  </p>
+                  <div className="flex items-center gap-2 text-slate-500 text-xs font-semibold mb-1">
+                    <Activity size={14} className="text-indigo-600" />
+                    <span>Statistik Penyerapan & Beban Kerja Divisi</span>
+                  </div>
+                  <div className="flex items-baseline gap-3">
+                    <span className="text-2xl font-extrabold text-slate-900 font-mono">
+                      {accounts.length * 14} Sesi Kerja
+                    </span>
+                    <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                      +15.8% ↗ +{accounts.length * 3} aktif bulan ini
+                    </span>
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-2.5 flex-wrap">
-                  {/* Search Bar */}
-                  <div className="relative">
-                    <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="text"
-                      placeholder="Cari NIM, Nama, Role..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-9 pr-4 py-2.5 bg-slate-900 border border-white/15 rounded-xl text-xs text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-400 w-52 sm:w-64 min-h-[44px]"
-                    />
-                  </div>
-
-                  {/* Reset Accounts Button */}
-                  <button
-                    onClick={onResetAccounts}
-                    className="px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs text-gray-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1.5 min-h-[44px]"
-                    title="Reset ke 5 akun demo default"
-                  >
-                    <RefreshCw size={14} />
-                    <span>Reset Default</span>
+                <div className="flex items-center gap-2">
+                  <button className="px-3 py-1 bg-white border border-gray-200 rounded-xl text-xs font-semibold text-slate-600 hover:bg-gray-50 flex items-center gap-1 cursor-pointer">
+                    <Filter size={12} />
+                    <span>Filter</span>
+                  </button>
+                  <button className="px-3 py-1 bg-white border border-gray-200 rounded-xl text-xs font-semibold text-slate-600 hover:bg-gray-50 flex items-center gap-1 cursor-pointer">
+                    <span>⇅ Sort</span>
+                  </button>
+                  <button className="px-2.5 py-1 bg-white border border-gray-200 rounded-xl text-xs font-semibold text-slate-600 hover:bg-gray-50 cursor-pointer">
+                    •••
                   </button>
                 </div>
               </div>
 
-              {/* Division Filter Badges */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                {divisionsList.map((div) => {
-                  const isSelected = selectedDivision === div;
-                  const count = div === 'Semua Divisi' 
-                    ? accounts.length 
-                    : accounts.filter(a => a.division === div).length;
+              {/* Graphic Visualization matching exact stacked columns & connection ribbons in reference */}
+              <div className="relative py-4">
+                
+                {/* Value labels on top of columns */}
+                <div className="grid grid-cols-3 text-center text-xs font-bold text-slate-800 font-mono mb-2">
+                  <div>2,988 Sesi</div>
+                  <div>1,765 Sesi</div>
+                  <div>4,005 Sesi</div>
+                </div>
 
-                  return (
-                    <button
-                      key={div}
-                      onClick={() => setSelectedDivision(div)}
-                      className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer border flex items-center gap-1.5 ${
-                        isSelected
-                          ? 'bg-amber-400/20 text-amber-300 border-amber-400/40'
-                          : 'bg-white/5 text-gray-400 border-white/10 hover:text-white hover:bg-white/10'
-                      }`}
-                    >
-                      <span>{div}</span>
-                      <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                        isSelected ? 'bg-amber-400 text-slate-950 font-bold' : 'bg-white/10 text-gray-300'
-                      }`}>
-                        {count}
-                      </span>
-                    </button>
-                  );
-                })}
+                {/* SVG Connecting Ribbons */}
+                <div className="relative h-44 flex items-end justify-between px-8 sm:px-16">
+                  
+                  {/* Background SVG wave bands connecting the stacks */}
+                  <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none" viewBox="0 0 400 160">
+                    <defs>
+                      <linearGradient id="bandGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#4F46E5" stopOpacity="0.25" />
+                        <stop offset="50%" stopColor="#818CF8" stopOpacity="0.15" />
+                        <stop offset="100%" stopColor="#4F46E5" stopOpacity="0.25" />
+                      </linearGradient>
+                      <linearGradient id="bandGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#06B6D4" stopOpacity="0.25" />
+                        <stop offset="50%" stopColor="#38BDF8" stopOpacity="0.15" />
+                        <stop offset="100%" stopColor="#06B6D4" stopOpacity="0.25" />
+                      </linearGradient>
+                    </defs>
+                    <path d="M 60 120 C 130 135, 170 135, 200 135 C 230 135, 270 120, 340 120 L 340 150 C 270 150, 230 155, 200 155 C 170 155, 130 150, 60 150 Z" fill="url(#bandGrad1)" />
+                    <path d="M 60 70 C 130 90, 170 90, 200 90 C 230 90, 270 60, 340 60 L 340 90 C 270 90, 230 110, 200 110 C 170 110, 130 90, 60 90 Z" fill="url(#bandGrad2)" />
+                  </svg>
+
+                  {/* Column 1 (Oct) */}
+                  <div className="w-14 sm:w-16 space-y-1.5 z-10">
+                    <div className="h-3.5 rounded-md bg-[#06B6D4]"></div>
+                    <div className="h-3.5 rounded-md bg-[#38BDF8]"></div>
+                    <div className="h-5 rounded-md bg-[#818CF8]"></div>
+                    <div className="h-6 rounded-md bg-[#6366F1]"></div>
+                    <div className="h-8 rounded-md bg-[#4338CA]"></div>
+                  </div>
+
+                  {/* Column 2 (Nov) */}
+                  <div className="w-14 sm:w-16 space-y-1.5 z-10">
+                    <div className="h-3 rounded-md bg-[#06B6D4]"></div>
+                    <div className="h-3.5 rounded-md bg-[#38BDF8]"></div>
+                    <div className="h-4 rounded-md bg-[#818CF8]"></div>
+                    <div className="h-4.5 rounded-md bg-[#6366F1]"></div>
+                    <div className="h-6 rounded-md bg-[#4338CA]"></div>
+                  </div>
+
+                  {/* Column 3 (Dec) */}
+                  <div className="w-14 sm:w-16 space-y-1.5 z-10">
+                    <div className="h-4 rounded-md bg-[#06B6D4]"></div>
+                    <div className="h-4 rounded-md bg-[#38BDF8]"></div>
+                    <div className="h-6 rounded-md bg-[#818CF8]"></div>
+                    <div className="h-7 rounded-md bg-[#6366F1]"></div>
+                    <div className="h-10 rounded-md bg-[#4338CA]"></div>
+                  </div>
+
+                </div>
+
+                {/* X Axis Months */}
+                <div className="grid grid-cols-3 text-center text-xs font-semibold text-slate-400 mt-3">
+                  <div>Bulan 1 (Okt)</div>
+                  <div>Bulan 2 (Nov)</div>
+                  <div>Bulan 3 (Des)</div>
+                </div>
+
+                {/* Legend at Bottom */}
+                <div className="flex items-center justify-center gap-4 text-[11px] font-semibold text-slate-500 mt-5 flex-wrap">
+                  <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#4338CA]"></span> BPH / Inti</span>
+                  <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#6366F1]"></span> Medinfo</span>
+                  <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#818CF8]"></span> Kaderisasi</span>
+                  <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#38BDF8]"></span> Minat Bakat</span>
+                  <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#06B6D4]"></span> Danus</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Chart Card: Total Subscriber style (4 cols) */}
+            <div className="lg:col-span-4 bg-white border border-[#EBF0F5] rounded-3xl p-6 lg:p-7 shadow-xs flex flex-col justify-between">
+              
+              {/* Header */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2 text-slate-500 text-xs font-semibold">
+                    <Users size={14} className="text-indigo-600" />
+                    <span>Aktivitas Pengurus</span>
+                  </div>
+                  <span className="text-[11px] font-semibold text-slate-500 bg-gray-50 border border-gray-200 px-2 py-0.5 rounded-lg">
+                    Weekly ▾
+                  </span>
+                </div>
+
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-2xl font-extrabold text-slate-900 font-mono">
+                    24,473
+                  </span>
+                </div>
+                <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full inline-block">
+                  8.3% ↗ + 749 sesi kerja
+                </span>
               </div>
 
-              {/* Responsive Table */}
-              <div className="overflow-x-auto rounded-2xl border border-white/10 bg-slate-950/60">
-                <table className="w-full text-left text-xs sm:text-sm">
-                  <thead className="bg-[#0e1940] text-gray-300 font-bold border-b border-white/10 uppercase tracking-wider text-[11px]">
+              {/* Bar Chart with Highlighted Tuesday */}
+              <div className="pt-6">
+                <div className="h-44 flex items-end justify-between gap-2 px-2">
+                  
+                  {/* Sun */}
+                  <div className="flex-1 flex flex-col items-center gap-2">
+                    <div className="w-full bg-slate-100 rounded-xl h-12"></div>
+                    <span className="text-[10px] font-semibold text-gray-400">Sun</span>
+                  </div>
+
+                  {/* Mon */}
+                  <div className="flex-1 flex flex-col items-center gap-2">
+                    <div className="w-full bg-slate-100 rounded-xl h-20"></div>
+                    <span className="text-[10px] font-semibold text-gray-400">Mon</span>
+                  </div>
+
+                  {/* Tue (Highlighted with gradient & badge) */}
+                  <div className="flex-1 flex flex-col items-center gap-2 relative">
+                    <span className="absolute -top-7 text-[10px] font-bold font-mono text-slate-900 bg-slate-100 px-1.5 py-0.5 rounded shadow-2xs">
+                      3,874
+                    </span>
+                    <div className="w-full bg-linear-to-b from-[#6366F1] to-[#4338CA] rounded-xl h-36 shadow-sm shadow-indigo-200"></div>
+                    <span className="text-[10px] font-bold text-slate-900">Tue</span>
+                  </div>
+
+                  {/* Wed */}
+                  <div className="flex-1 flex flex-col items-center gap-2">
+                    <div className="w-full bg-slate-100 rounded-xl h-28"></div>
+                    <span className="text-[10px] font-semibold text-gray-400">Wed</span>
+                  </div>
+
+                  {/* Thu */}
+                  <div className="flex-1 flex flex-col items-center gap-2">
+                    <div className="w-full bg-slate-100 rounded-xl h-22"></div>
+                    <span className="text-[10px] font-semibold text-gray-400">Thu</span>
+                  </div>
+
+                  {/* Fri */}
+                  <div className="flex-1 flex flex-col items-center gap-2">
+                    <div className="w-full bg-slate-100 rounded-xl h-16"></div>
+                    <span className="text-[10px] font-semibold text-gray-400">Fri</span>
+                  </div>
+
+                  {/* Sat */}
+                  <div className="flex-1 flex flex-col items-center gap-2">
+                    <div className="w-full bg-slate-100 rounded-xl h-10"></div>
+                    <span className="text-[10px] font-semibold text-gray-400">Sat</span>
+                  </div>
+
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+          {/* ROW 3: BOTTOM SPLIT (Matching Sales Distribution & List of Integration Table) */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* Left Card: Sales Distribution style (4 cols) */}
+            <div className="lg:col-span-4 bg-white border border-[#EBF0F5] rounded-3xl p-6 lg:p-7 shadow-xs flex flex-col justify-between">
+              
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2 text-slate-500 text-xs font-semibold">
+                    <Boxes size={14} className="text-indigo-600" />
+                    <span>Sebaran Divisi Organisasi</span>
+                  </div>
+                  <span className="text-[11px] font-semibold text-slate-500 bg-gray-50 border border-gray-200 px-2 py-0.5 rounded-lg">
+                    Monthly ▾
+                  </span>
+                </div>
+
+                {/* 3 Categories metrics */}
+                <div className="grid grid-cols-3 gap-2 text-left mb-6">
+                  <div>
+                    <span className="text-[10px] font-semibold text-gray-400 block mb-0.5">BPH / Inti</span>
+                    <strong className="text-sm font-bold text-slate-900 font-mono">
+                      {accounts.filter(a => a.division === 'BPH').length} Akun
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-semibold text-gray-400 block mb-0.5">Medinfo</span>
+                    <strong className="text-sm font-bold text-slate-900 font-mono">
+                      {accounts.filter(a => a.division === 'Medinfo').length} Akun
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-semibold text-gray-400 block mb-0.5">Lainnya</span>
+                    <strong className="text-sm font-bold text-slate-900 font-mono">
+                      {accounts.filter(a => a.division !== 'BPH' && a.division !== 'Medinfo').length} Akun
+                    </strong>
+                  </div>
+                </div>
+              </div>
+
+              {/* Exact Semi-Donut Gauge Graphic matching Reference */}
+              <div className="flex flex-col items-center justify-center pt-2 pb-2">
+                <div className="w-56 h-28 flex items-end justify-center">
+                  <svg className="w-52 h-28" viewBox="0 0 120 70">
+                    {/* Background track */}
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="42"
+                      fill="none"
+                      stroke="#F1F5F9"
+                      strokeWidth="12"
+                      strokeDasharray="132 264"
+                      transform="rotate(-180 60 60)"
+                    />
+                    {/* Purple Segment (BPH & Sekre) */}
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="42"
+                      fill="none"
+                      stroke="#4F46E5"
+                      strokeWidth="12"
+                      strokeDasharray="75 264"
+                      transform="rotate(-180 60 60)"
+                    />
+                    {/* Cyan Segment (Medinfo & Kaderisasi) */}
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="42"
+                      fill="none"
+                      stroke="#06B6D4"
+                      strokeWidth="12"
+                      strokeDasharray="45 264"
+                      strokeDashoffset="-80"
+                      transform="rotate(-180 60 60)"
+                    />
+                    {/* Radial tick marks on right */}
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="49"
+                      fill="none"
+                      stroke="#CBD5E1"
+                      strokeWidth="2"
+                      strokeDasharray="2 3"
+                      strokeDashoffset="-95"
+                      transform="rotate(-180 60 60)"
+                    />
+                  </svg>
+                </div>
+                <div className="text-center mt-2">
+                  <p className="text-xs font-bold text-slate-900 font-mono">86.4% Terdistribusi</p>
+                  <p className="text-[10px] text-gray-400">Rasio alokasi akun aktif pengurus per divisi</p>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Right Card: List of Integration style (8 cols) -> Registered Student Accounts Table */}
+            <div className="lg:col-span-8 bg-white border border-[#EBF0F5] rounded-3xl p-6 lg:p-7 shadow-xs space-y-4">
+              
+              {/* Table Card Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                    <KeyRound size={15} />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900">
+                      Daftar Akun Mahasiswa Terdaftar ({filteredAccounts.length})
+                    </h3>
+                    <p className="text-[11px] text-gray-400">
+                      Kelola NIM, kata sandi, atau gunakan tombol Masuk untuk impersonate.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 flex-wrap">
+                  <select
+                    value={selectedDivision}
+                    onChange={(e) => setSelectedDivision(e.target.value)}
+                    className="bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none cursor-pointer"
+                  >
+                    {divisionsList.map((d) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+
+                  <button
+                    onClick={() => setIsAddFormOpen(true)}
+                    className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors cursor-pointer"
+                  >
+                    + Tambah Akun
+                  </button>
+                </div>
+              </div>
+
+              {/* Table Wrapper (Matching Reference List of Integration: Checkbox, App, Type, Rate, Profit) */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="text-[10px] font-bold uppercase tracking-wider text-gray-400 border-b border-gray-100">
                     <tr>
-                      <th className="px-5 py-3.5">Mahasiswa</th>
-                      <th className="px-5 py-3.5">NIM</th>
-                      <th className="px-5 py-3.5">Divisi & Role</th>
-                      <th className="px-5 py-3.5">Kata Sandi</th>
-                      <th className="px-5 py-3.5 text-right">Aksi Developer</th>
+                      <th className="py-3 px-2 w-8">
+                        <button
+                          onClick={toggleSelectAll}
+                          className="text-gray-400 hover:text-slate-800 cursor-pointer"
+                        >
+                          {selectedRows.length === filteredAccounts.length && filteredAccounts.length > 0 ? (
+                            <CheckSquare size={14} className="text-indigo-600" />
+                          ) : (
+                            <Square size={14} />
+                          )}
+                        </button>
+                      </th>
+                      <th className="py-3 px-3">MAHASISWA</th>
+                      <th className="py-3 px-3">NIM</th>
+                      <th className="py-3 px-3">DIVISI / JABATAN</th>
+                      <th className="py-3 px-3">KATA SANDI</th>
+                      <th className="py-3 px-3 text-right">AKSI</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/5">
+                  <tbody className="divide-y divide-gray-100">
                     {filteredAccounts.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="px-5 py-12 text-center text-gray-400">
-                          <p className="font-semibold text-white mb-1">Tidak ada akun mahasiswa yang cocok</p>
-                          <p className="text-xs">Coba ubah kata kunci pencarian atau pilih divisi yang lain.</p>
+                        <td colSpan={6} className="py-8 text-center text-gray-400">
+                          Tidak ada mahasiswa yang cocok dengan kriteria pencarian.
                         </td>
                       </tr>
                     ) : (
                       filteredAccounts.map((acc) => {
+                        const isSelected = selectedRows.includes(acc.nim);
                         const isShowingPass = visiblePasswords[acc.nim];
                         const isEditing = editingNim === acc.nim;
                         const isCopied = copiedNim === acc.nim;
 
                         return (
-                          <tr key={acc.nim} className="hover:bg-white/5 transition-colors">
-                            {/* Mahasiswa Name */}
-                            <td className="px-5 py-4 font-semibold text-white">
-                              <div className="flex items-center gap-3">
-                                <div className="w-9 h-9 rounded-xl bg-amber-400/20 text-amber-300 border border-amber-400/30 flex items-center justify-center font-bold text-sm shrink-0">
+                          <tr key={acc.nim} className="hover:bg-gray-50/70 transition-colors">
+                            {/* Checkbox */}
+                            <td className="py-3.5 px-2">
+                              <button
+                                onClick={() => toggleSelectRow(acc.nim)}
+                                className="text-gray-400 hover:text-slate-800 cursor-pointer"
+                              >
+                                {isSelected ? (
+                                  <CheckSquare size={14} className="text-indigo-600" />
+                                ) : (
+                                  <Square size={14} />
+                                )}
+                              </button>
+                            </td>
+
+                            {/* Mahasiswa (Icon + Name) */}
+                            <td className="py-3.5 px-3">
+                              <div className="flex items-center gap-2.5">
+                                <div className="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-700 font-bold text-xs flex items-center justify-center shrink-0">
                                   {acc.name ? acc.name.charAt(0) : 'M'}
                                 </div>
-                                <div>
-                                  <p className="font-bold text-white text-xs sm:text-sm">{acc.name}</p>
-                                  {acc.isDefault ? (
-                                    <span className="text-[10px] text-amber-400/80 font-mono">Akun Demo Bawaan</span>
-                                  ) : (
-                                    <span className="text-[10px] text-emerald-400 font-mono">Akun Kustom</span>
+                                <div className="min-w-0">
+                                  <p className="font-bold text-slate-900 truncate max-w-[130px]">{acc.name}</p>
+                                  {acc.isDefault && (
+                                    <span className="text-[9px] text-gray-400 font-mono">Demo Akun</span>
                                   )}
                                 </div>
                               </div>
                             </td>
 
                             {/* NIM with Copy Button */}
-                            <td className="px-5 py-4 font-mono text-amber-300 font-bold">
+                            <td className="py-3.5 px-3 font-mono font-semibold text-slate-800">
                               <button
                                 onClick={() => handleCopyNim(acc.nim)}
-                                className="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer group"
+                                className="flex items-center gap-1 hover:text-indigo-600 transition-colors cursor-pointer group"
                                 title="Klik untuk salin NIM"
                               >
                                 <span>{acc.nim}</span>
                                 {isCopied ? (
-                                  <Check size={13} className="text-emerald-400" />
+                                  <Check size={11} className="text-emerald-600" />
                                 ) : (
-                                  <Copy size={13} className="text-gray-500 group-hover:text-amber-300" />
+                                  <Copy size={11} className="text-gray-300 group-hover:text-indigo-500" />
                                 )}
                               </button>
                             </td>
 
                             {/* Divisi & Role */}
-                            <td className="px-5 py-4">
-                              <span className="font-semibold text-white block text-xs sm:text-sm">{acc.division}</span>
-                              <span className="text-xs text-gray-400 block">{acc.role}</span>
+                            <td className="py-3.5 px-3">
+                              <span className="font-semibold text-slate-800 block">{acc.division}</span>
+                              <span className="text-[10px] text-gray-400 block">{acc.role}</span>
                             </td>
 
-                            {/* Password Column */}
-                            <td className="px-5 py-4 font-mono">
+                            {/* Password Column with show/hide toggle & inline edit */}
+                            <td className="py-3.5 px-3 font-mono">
                               {isEditing ? (
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1.5">
                                   <input
                                     type="text"
                                     autoFocus
                                     value={newPasswordVal}
                                     onChange={(e) => setNewPasswordVal(e.target.value)}
-                                    placeholder="Password baru"
-                                    className="px-3 py-1.5 bg-slate-900 border border-amber-400 rounded-lg text-xs text-white font-mono w-32 focus:outline-none"
+                                    placeholder="Sandi baru"
+                                    className="px-2 py-1 bg-white border border-indigo-400 rounded text-xs text-slate-800 font-mono w-24 focus:outline-none"
                                   />
                                   <button
                                     onClick={() => handleSaveNewPassword(acc.nim)}
-                                    className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold cursor-pointer"
-                                    title="Simpan password"
+                                    className="px-1.5 py-1 bg-emerald-600 text-white rounded text-[10px] font-bold cursor-pointer"
+                                    title="Simpan"
                                   >
                                     ✓
                                   </button>
                                   <button
                                     onClick={() => setEditingNim(null)}
-                                    className="px-2.5 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-xs cursor-pointer"
+                                    className="px-1.5 py-1 bg-gray-200 text-gray-700 rounded text-[10px] cursor-pointer"
                                     title="Batal"
                                   >
                                     ✕
                                   </button>
                                 </div>
                               ) : (
-                                <div className="flex items-center gap-2">
-                                  <span className="text-gray-200 text-xs sm:text-sm">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-slate-600 text-xs">
                                     {isShowingPass ? acc.password : '••••••••'}
                                   </span>
                                   <button
                                     onClick={() => togglePasswordVisibility(acc.nim)}
-                                    className="text-gray-400 hover:text-white transition-colors cursor-pointer p-1"
-                                    title={isShowingPass ? 'Sembunyikan password' : 'Lihat password'}
+                                    className="text-gray-400 hover:text-slate-800 transition-colors cursor-pointer p-0.5"
+                                    title={isShowingPass ? 'Sembunyikan sandi' : 'Lihat sandi'}
                                   >
-                                    {isShowingPass ? <EyeOff size={15} /> : <Eye size={15} />}
+                                    {isShowingPass ? <EyeOff size={13} /> : <Eye size={13} />}
                                   </button>
                                   <button
                                     onClick={() => {
                                       setEditingNim(acc.nim);
                                       setNewPasswordVal(acc.password);
                                     }}
-                                    className="text-[11px] text-amber-400 hover:underline cursor-pointer ml-1"
-                                    title="Ubah password akun ini"
+                                    className="text-[10px] text-indigo-600 hover:underline cursor-pointer ml-1"
+                                    title="Ubah kata sandi"
                                   >
                                     Ubah
                                   </button>
@@ -836,31 +1285,28 @@ const AdminDashboardPage = ({
                             </td>
 
                             {/* Action Buttons */}
-                            <td className="px-5 py-4 text-right">
-                              <div className="flex items-center justify-end gap-2">
-                                
-                                {/* Impersonate / Quick Login */}
+                            <td className="py-3.5 px-3 text-right">
+                              <div className="flex items-center justify-end gap-1.5">
                                 <button
                                   onClick={() => onImpersonate(acc)}
-                                  className="px-3 py-1.5 bg-blue-600/30 hover:bg-blue-600/60 text-blue-200 border border-blue-500/40 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 min-h-[36px]"
-                                  title={`Login instan sebagai ${acc.name} tanpa ketik kata sandi`}
+                                  className="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white rounded-lg text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1"
+                                  title={`Masuk sebagai ${acc.name} tanpa ketik kata sandi`}
                                 >
-                                  <LogIn size={13} />
+                                  <LogIn size={11} />
                                   <span>Masuk</span>
                                 </button>
 
-                                {/* Delete Account */}
                                 <button
                                   onClick={() => {
-                                    if (window.confirm(`Yakin ingin menghapus akun mahasiswa ${acc.name} (${acc.nim})?`)) {
+                                    if (window.confirm(`Hapus akun mahasiswa ${acc.name} (${acc.nim})?`)) {
                                       onDeleteAccount(acc.nim);
                                       addLog(`Akun dihapus: ${acc.name} (${acc.nim})`, 'warning');
                                     }
                                   }}
-                                  className="p-2 text-rose-400 hover:text-white hover:bg-rose-500/20 rounded-xl transition-colors cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center"
-                                  title="Hapus akun mahasiswa ini"
+                                  className="p-1 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors cursor-pointer"
+                                  title="Hapus akun"
                                 >
-                                  <Trash2 size={15} />
+                                  <Trash2 size={13} />
                                 </button>
                               </div>
                             </td>
@@ -872,291 +1318,195 @@ const AdminDashboardPage = ({
                 </table>
               </div>
 
-              {/* Footer Note */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs text-gray-400 pt-2 gap-2">
-                <span>Menampilkan {filteredAccounts.length} dari total {accounts.length} mahasiswa terdaftar.</span>
-                <span className="font-mono text-[11px]">Database tersimpan di localStorage browser pengembang.</span>
+              {/* Table Footer */}
+              <div className="flex items-center justify-between text-[11px] text-gray-400 pt-2 border-t border-gray-100">
+                <span>{selectedRows.length} dari {filteredAccounts.length} mahasiswa dipilih</span>
+                <button
+                  onClick={() => setCurrentNav('students')}
+                  className="text-indigo-600 hover:underline font-semibold cursor-pointer"
+                >
+                  Kelola Detail Akun →
+                </button>
               </div>
+
             </div>
 
           </div>
-        )}
 
-        {/* TAB 2: Kontrol Sesi & Simulator Navigasi */}
-        {activeTab === 'session' && (
-          <div className="space-y-8">
-            
-            {/* Session Inspector Card */}
-            <div className="bg-[#0b1433] border border-white/10 rounded-3xl p-6 sm:p-8">
-              <h2 className="text-lg font-bold text-white flex items-center gap-2.5 mb-4">
-                <ShieldCheck size={22} className="text-emerald-400" />
-                <span>Status & Audit Sesi Otentikasi Workspace</span>
-              </h2>
+          {/* VIEW: Sesi & Keamanan (Active when tab is 'session') */}
+          {currentNav === 'session' && (
+            <div className="bg-white border border-[#EBF0F5] rounded-3xl p-6 lg:p-8 shadow-xs space-y-6">
+              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <ShieldCheck size={18} className="text-indigo-600" />
+                <span>Audit Status Sesi Kerja Workspace</span>
+              </h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-4">
-                
-                {/* Active Session Info */}
-                <div className="bg-slate-900 border border-white/10 rounded-2xl p-6">
-                  <span className="text-xs text-gray-400 block uppercase font-semibold mb-2">
-                    State Pengguna Saat Ini
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-gray-50 border border-gray-200/80 rounded-2xl p-5">
+                  <span className="text-[11px] font-bold uppercase text-gray-400 block mb-2">
+                    State Pengguna Aktif
                   </span>
-
                   {authUser ? (
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center font-bold text-base">
-                          {authUser.name ? authUser.name.charAt(0) : 'P'}
-                        </div>
-                        <div>
-                          <p className="text-lg font-bold text-white">{authUser.name}</p>
-                          <p className="text-xs text-amber-300 font-mono">NIM: {authUser.nim}</p>
-                        </div>
-                      </div>
-                      <div className="pt-2 border-t border-white/10 text-xs text-gray-300 space-y-1">
-                        <p>Divisi: <strong className="text-white">{authUser.division}</strong></p>
-                        <p>Jabatan: <strong className="text-white">{authUser.role}</strong></p>
-                        <p>Status: <span className="text-emerald-400 font-semibold">Tersambung (Akses Workspace Terbuka)</span></p>
-                      </div>
+                    <div className="space-y-1">
+                      <p className="text-base font-bold text-slate-900">{authUser.name}</p>
+                      <p className="text-xs font-mono text-indigo-600 font-bold">NIM: {authUser.nim}</p>
+                      <p className="text-xs text-gray-600">Divisi: {authUser.division} • {authUser.role}</p>
                     </div>
                   ) : (
-                    <div className="py-4">
-                      <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 text-xs text-amber-300 flex items-start gap-3">
-                        <AlertCircle size={18} className="shrink-0 mt-0.5" />
-                        <div>
-                          <strong className="block font-bold">GUEST MODE (Akses Workspace Terkunci)</strong>
-                          <p className="mt-1 text-gray-300">
-                            Pengguna belum login. Setiap tombol menuju workspace akan memunculkan Login Modal untuk meminta NIM & Password.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
+                    <p className="text-xs text-slate-600 font-semibold py-2">
+                      Status: Guest Mode (Akses Workspace terkunci sebelum login)
+                    </p>
                   )}
                 </div>
 
-                {/* Emergency Session Destroy Action */}
-                <div className="bg-slate-900 border border-white/10 rounded-2xl p-6 flex flex-col justify-between">
+                <div className="bg-gray-50 border border-gray-200/80 rounded-2xl p-5 flex flex-col justify-between">
                   <div>
-                    <span className="text-xs text-gray-400 block uppercase font-semibold mb-2">
+                    <span className="text-[11px] font-bold uppercase text-gray-400 block mb-1">
                       Kontrol Sesi Pengembang
                     </span>
-                    <p className="text-xs text-gray-300 leading-relaxed mb-4">
-                      Gunakan tombol di bawah untuk menghancurkan sesi pengurus aktif secara seketika dan mereset status aplikasi kembali ke Guest di beranda utama.
+                    <p className="text-xs text-slate-600 mb-4">
+                      Hancurkan sesi pengurus aktif seketika untuk mereset status aplikasi kembali ke Guest.
                     </p>
                   </div>
-
                   <button
                     onClick={() => {
                       onForceDestroySession();
-                      addLog('Sesi aktif dihancurkan secara manual oleh developer', 'warning');
+                      addLog('Sesi aktif dihancurkan secara manual oleh admin', 'warning');
                     }}
-                    className="w-full bg-rose-600/30 hover:bg-rose-600 text-rose-200 hover:text-white border border-rose-500/40 font-bold px-4 py-3 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer min-h-[44px]"
+                    className="w-full py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold transition-colors cursor-pointer"
                   >
-                    <LogOut size={16} />
-                    <span>Paksa Destroy Sesi Saat Ini</span>
+                    Paksa Destroy Sesi Sekarang
                   </button>
                 </div>
-
-              </div>
-
-              <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 text-xs text-gray-300">
-                <p>
-                  <strong className="text-amber-300">Aturan Session Destroy on Refresh:</strong> Aplikasi telah diprogram dengan in-memory state guard. Ketika halaman direfresh (F5 atau reload browser), token sesi otomatis dibersihkan dan pengguna kembali ke halaman beranda sebagai Guest.
-                </p>
               </div>
             </div>
+          )}
 
-            {/* Simulator Navigasi Cepat (Direct Bypass) */}
-            <div className="bg-[#0b1433] border border-white/10 rounded-3xl p-6 sm:p-8">
-              <h2 className="text-lg font-bold text-white flex items-center gap-2.5 mb-2">
-                <Layers size={22} className="text-amber-400" />
-                <span>Simulator Navigasi Modul (Direct Access)</span>
-              </h2>
-              <p className="text-xs text-gray-400 mb-6">
-                Lompat langsung ke halaman modul internal manapun untuk memeriksa tampilan atau fungsionalitas UI secara langsung.
-              </p>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                
-                {/* Beranda */}
-                <button
-                  onClick={onBackToLanding}
-                  className="p-4 bg-slate-900 hover:bg-white/10 border border-white/10 rounded-2xl text-left transition-all hover:scale-[1.02] cursor-pointer min-h-[44px]"
-                >
-                  <span className="text-[10px] text-gray-400 uppercase font-bold block mb-1">Halaman Depan</span>
-                  <strong className="text-sm text-white block">Beranda Landing Page</strong>
-                  <p className="text-xs text-gray-400 mt-1">Hero, Fitur, Tentang Kami, Footer</p>
-                </button>
-
-                {/* Workspace Hub */}
-                <button
-                  onClick={onNavigateToPortal}
-                  className="p-4 bg-blue-950/40 hover:bg-blue-900/50 border border-blue-500/30 rounded-2xl text-left transition-all hover:scale-[1.02] cursor-pointer min-h-[44px]"
-                >
-                  <span className="text-[10px] text-blue-300 uppercase font-bold block mb-1">Workspace Portal</span>
-                  <strong className="text-sm text-white block">Workspace Hub Organisasi</strong>
-                  <p className="text-xs text-gray-400 mt-1">Katalog 8 layanan & modul internal</p>
-                </button>
-
-                {/* 8 Internal Service Modules */}
+          {/* VIEW: 8 Modul Layanan (Active when tab is 'modules') */}
+          {currentNav === 'modules' && (
+            <div className="bg-white border border-[#EBF0F5] rounded-3xl p-6 lg:p-8 shadow-xs space-y-4">
+              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <Layers size={18} className="text-indigo-600" />
+                <span>Katalog 8 Modul Layanan Organisasi (Bypass Cepat)</span>
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
                 {workspaceModules.map((m) => {
                   const SvcIcon = m.icon;
                   return (
                     <button
                       key={m.id}
                       onClick={() => onNavigateToService(m.id)}
-                      className="p-4 bg-slate-900 hover:bg-white/10 border border-white/10 rounded-2xl text-left transition-all hover:scale-[1.02] cursor-pointer min-h-[44px] group"
+                      className="p-4 bg-gray-50 hover:bg-indigo-50/50 border border-gray-200/80 hover:border-indigo-200 rounded-2xl text-left transition-all cursor-pointer group"
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] text-amber-400 uppercase font-bold">{m.category}</span>
-                        <SvcIcon size={16} className="text-gray-400 group-hover:text-amber-400 transition-colors" />
+                        <span className="text-[10px] font-bold text-indigo-600 uppercase">{m.category}</span>
+                        <SvcIcon size={16} className="text-gray-400 group-hover:text-indigo-600 transition-colors" />
                       </div>
-                      <strong className="text-xs sm:text-sm text-white block truncate">{m.title}</strong>
-                      <p className="text-[11px] text-gray-400 mt-0.5">Buka halaman modul langsung</p>
+                      <p className="text-xs font-bold text-slate-900 truncate">{m.title}</p>
+                      <span className="text-[10px] text-gray-400 mt-0.5 block">Buka modul →</span>
                     </button>
                   );
                 })}
-
               </div>
             </div>
+          )}
 
-          </div>
-        )}
-
-        {/* TAB 3: Ekspor & Impor Data JSON */}
-        {activeTab === 'backup' && (
-          <div className="space-y-8">
-            
-            {/* Export JSON Card */}
-            <div className="bg-[#0b1433] border border-white/10 rounded-3xl p-6 sm:p-8">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+          {/* VIEW: Backup & JSON (Active when tab is 'backup') */}
+          {currentNav === 'backup' && (
+            <div className="bg-white border border-[#EBF0F5] rounded-3xl p-6 lg:p-8 shadow-xs space-y-6">
+              <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-lg font-bold text-white flex items-center gap-2.5">
-                    <Download size={20} className="text-amber-400" />
-                    <span>Ekspor Database Kredensial Mahasiswa (JSON)</span>
-                  </h2>
-                  <p className="text-xs text-gray-400 mt-1">
-                    Cadangkan atau migrasikan seluruh kredensial mahasiswa terdaftar ke format file JSON.
+                  <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <Database size={18} className="text-indigo-600" />
+                    <span>Cadangan & Ekspor/Impor Database Akun JSON</span>
+                  </h3>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Salin, unduh, atau pulihkan akun mahasiswa dalam format file JSON standar.
                   </p>
                 </div>
-
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2">
                   <button
                     onClick={handleCopyJson}
-                    className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 min-h-[44px]"
+                    className="px-3.5 py-2 bg-gray-100 hover:bg-gray-200 text-slate-800 rounded-xl text-xs font-semibold cursor-pointer"
                   >
-                    {copiedJson ? <Check size={15} className="text-emerald-400" /> : <Copy size={15} />}
-                    <span>{copiedJson ? 'Tersalin ke Clipboard!' : 'Salin JSON'}</span>
+                    {copiedJson ? 'Tersalin!' : 'Salin JSON'}
                   </button>
-
                   <button
                     onClick={handleDownloadJson}
-                    className="px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 min-h-[44px]"
+                    className="px-3.5 py-2 bg-[#5046E5] hover:bg-[#4338CA] text-white rounded-xl text-xs font-bold cursor-pointer"
                   >
-                    <Download size={15} />
-                    <span>Unduh File .json</span>
+                    Unduh File .json
                   </button>
                 </div>
               </div>
 
-              <pre className="bg-slate-950 border border-white/10 rounded-2xl p-5 text-xs font-mono text-amber-300/90 overflow-x-auto max-h-72">
+              <pre className="p-4 bg-slate-900 text-amber-300 font-mono text-xs rounded-2xl max-h-56 overflow-y-auto">
                 {JSON.stringify(accounts, null, 2)}
               </pre>
-            </div>
 
-            {/* Import JSON Card */}
-            <div className="bg-[#0b1433] border border-white/10 rounded-3xl p-6 sm:p-8">
-              <h2 className="text-lg font-bold text-white flex items-center gap-2.5 mb-2">
-                <Upload size={20} className="text-blue-400" />
-                <span>Impor Akun Mahasiswa Baru dari Format JSON</span>
-              </h2>
-              <p className="text-xs text-gray-400 mb-4">
-                Tempelkan array objek akun mahasiswa untuk mendaftarkan banyak akun sekaligus secara otomatis.
-              </p>
-
-              {importStatus && (
-                <div
-                  className={`mb-4 p-4 rounded-2xl text-xs sm:text-sm flex items-center gap-3 ${
-                    importStatus.success
-                      ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-300'
-                      : 'bg-rose-500/15 border border-rose-500/30 text-rose-300'
-                  }`}
-                >
-                  {importStatus.success ? <Check size={18} /> : <AlertCircle size={18} />}
-                  <span>{importStatus.message}</span>
+              {/* Import Textarea */}
+              <div className="pt-2">
+                <p className="text-xs font-bold text-slate-700 mb-2">Impor Akun Massal dari JSON:</p>
+                {importStatus && (
+                  <p className={`text-xs mb-2 ${importStatus.success ? 'text-emerald-600 font-bold' : 'text-rose-600'}`}>
+                    {importStatus.message}
+                  </p>
+                )}
+                <textarea
+                  rows={4}
+                  value={importJsonText}
+                  onChange={(e) => setImportJsonText(e.target.value)}
+                  placeholder={`[\n  {\n    "nim": "2209010115",\n    "name": "Budi Santoso",\n    "division": "Kaderisasi",\n    "role": "Staff",\n    "password": "password123"\n  }\n]`}
+                  className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-mono text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                ></textarea>
+                <div className="flex justify-end mt-2">
+                  <button
+                    onClick={handleImportJson}
+                    disabled={!importJsonText.trim()}
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white rounded-xl text-xs font-bold cursor-pointer"
+                  >
+                    Jalankan Impor
+                  </button>
                 </div>
-              )}
+              </div>
+            </div>
+          )}
 
-              <textarea
-                rows={6}
-                value={importJsonText}
-                onChange={(e) => setImportJsonText(e.target.value)}
-                placeholder={`[\n  {\n    "nim": "2209010112",\n    "name": "Salsa Putri",\n    "division": "Medinfo",\n    "role": "Staff Publikasi",\n    "password": "password123"\n  }\n]`}
-                className="w-full p-4 bg-slate-950 border border-white/15 rounded-2xl text-xs font-mono text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              ></textarea>
-
-              <div className="flex justify-end mt-4">
+          {/* VIEW: Log Aktivitas (Active when tab is 'logs') */}
+          {currentNav === 'logs' && (
+            <div className="bg-white border border-[#EBF0F5] rounded-3xl p-6 lg:p-8 shadow-xs space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                  <Activity size={18} className="text-indigo-600" />
+                  <span>Log Riwayat Aktivitas Sistem ({logs.length})</span>
+                </h3>
                 <button
-                  onClick={handleImportJson}
-                  disabled={!importJsonText.trim()}
-                  className="px-6 py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold rounded-xl text-xs sm:text-sm transition-colors cursor-pointer flex items-center gap-2 min-h-[44px]"
+                  onClick={() => setLogs([])}
+                  className="text-xs text-gray-400 hover:text-slate-800 cursor-pointer"
                 >
-                  <Upload size={16} />
-                  <span>Jalankan Impor Akun Mahasiswa</span>
+                  Bersihkan Log
                 </button>
               </div>
-            </div>
 
-          </div>
-        )}
-
-        {/* TAB 4: Log Aktivitas Sistem */}
-        {activeTab === 'logs' && (
-          <div className="bg-[#0b1433] border border-white/10 rounded-3xl p-6 sm:p-8 space-y-4">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <div>
-                <h2 className="text-lg font-bold text-white flex items-center gap-2.5">
-                  <History size={20} className="text-amber-400" />
-                  <span>Log Riwayat Aktivitas & Event Internal</span>
-                </h2>
-                <p className="text-xs text-gray-400 mt-1">
-                  Mencatat aksi penambahan mahasiswa, perubahan sandi, pemutusan sesi, dan aktivitas konsol pengembang.
-                </p>
-              </div>
-              <button
-                onClick={() => setLogs([])}
-                className="text-xs text-gray-400 hover:text-white px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
-              >
-                Bersihkan Log
-              </button>
-            </div>
-
-            <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
-              {logs.length === 0 ? (
-                <div className="py-12 text-center text-gray-400 text-xs">
-                  Belum ada log aktivitas yang tercatat.
-                </div>
-              ) : (
-                logs.map((log) => (
-                  <div
-                    key={log.id}
-                    className="p-3.5 bg-slate-950/70 border border-white/5 rounded-xl flex items-center justify-between text-xs font-mono"
-                  >
-                    <div className="flex items-center gap-3">
+              <div className="space-y-2">
+                {logs.map((log) => (
+                  <div key={log.id} className="p-3 bg-gray-50 border border-gray-100 rounded-xl flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2.5">
                       <span className={`w-2 h-2 rounded-full ${
-                        log.type === 'success' ? 'bg-emerald-400' :
-                        log.type === 'warning' ? 'bg-amber-400' : 'bg-blue-400'
+                        log.type === 'success' ? 'bg-emerald-500' :
+                        log.type === 'warning' ? 'bg-amber-500' : 'bg-indigo-500'
                       }`}></span>
-                      <span className="text-gray-200">{log.event}</span>
+                      <span className="text-slate-800 font-medium">{log.event}</span>
                     </div>
-                    <span className="text-gray-500 text-[11px] shrink-0 ml-4">{log.time}</span>
+                    <span className="font-mono text-gray-400 text-[11px]">{log.time}</span>
                   </div>
-                ))
-              )}
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-      </main>
+        </main>
+      </div>
 
     </div>
   );
