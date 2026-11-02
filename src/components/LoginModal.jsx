@@ -8,7 +8,6 @@ import {
   ArrowRight,
   ShieldCheck,
   AlertCircle,
-  KeyRound,
   Terminal
 } from 'lucide-react';
 import { initialDefaultAccounts } from '../data/defaultAccounts';
@@ -115,9 +114,11 @@ const LoginModal = ({
         {/* Modal Header */}
         <div className="p-6 sm:p-8 pb-4 flex items-start justify-between border-b border-white/10">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center shadow-md shrink-0">
-              <KeyRound size={20} />
-            </div>
+            <img
+              src="/logo-teramedia.png"
+              alt="Logo TERAMEDIA"
+              className="w-10 h-10 object-contain drop-shadow-md shrink-0"
+            />
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-base font-bold text-white tracking-tight">TeraDesk</span>

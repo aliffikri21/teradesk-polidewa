@@ -12,15 +12,15 @@
     "semantic_hash": ""
   },
   "src/App.jsx": {
-    "mtime": 1793604005.1244948,
-    "seen": 1793604761.8682353,
-    "ast_hash": "72d28d0693f65f8bae132a2539b490b1",
+    "mtime": 1793648945.3580647,
+    "seen": 1793649413.9808302,
+    "ast_hash": "f859e4cbcd547b17e4ccafe7e4ff3ec8",
     "semantic_hash": ""
   },
   "src/components/AboutUs.jsx": {
-    "mtime": 1790973104.629496,
-    "seen": 1793598012.4977372,
-    "ast_hash": "5d2c4c8f09e84b22919d5874ca36d914",
+    "mtime": 1793646012.3101037,
+    "seen": 1793646329.4030185,
+    "ast_hash": "34dcde9783375b4f3938ab5a43e5e8df",
     "semantic_hash": ""
   },
   "src/components/ContactModal.jsx": {
@@ -30,27 +30,27 @@
     "semantic_hash": ""
   },
   "src/components/Features.jsx": {
-    "mtime": 1793601791.8778057,
-    "seen": 1793602632.2620957,
-    "ast_hash": "cb8d1c53fd9440baaef2b40a46c6c447",
+    "mtime": 1793646012.4153695,
+    "seen": 1793646329.4030185,
+    "ast_hash": "eafd5ad3cf68542977b679fc22f08ae6",
     "semantic_hash": ""
   },
   "src/components/FeaturesPortal.jsx": {
-    "mtime": 1793602732.022313,
-    "seen": 1793603229.3766212,
-    "ast_hash": "40b9372c667f87814d4a95e9a4d6c3dd",
+    "mtime": 1793646353.4337504,
+    "seen": 1793646476.7795246,
+    "ast_hash": "1f628fc91c83f08774901fdacc0604f2",
     "semantic_hash": ""
   },
   "src/components/Footer.jsx": {
-    "mtime": 1793603288.672605,
-    "seen": 1793603758.2954648,
-    "ast_hash": "47d17573a7320b7da706cc667ebbb582",
+    "mtime": 1793646515.1928113,
+    "seen": 1793646904.1645515,
+    "ast_hash": "ec465f7ca29b222799cdd40be556b48b",
     "semantic_hash": ""
   },
   "src/components/Hero.jsx": {
-    "mtime": 1793601792.0254948,
-    "seen": 1793602632.2620957,
-    "ast_hash": "d272cef41325b8cc9e70e2c2cc4a9a55",
+    "mtime": 1793646353.8029397,
+    "seen": 1793646476.7795246,
+    "ast_hash": "7815981e528d44d86354e7ec2896e2fa",
     "semantic_hash": ""
   },
   "src/main.jsx": {
@@ -72,9 +72,9 @@
     "semantic_hash": ""
   },
   "index.html": {
-    "mtime": 1790972313.0259442,
-    "seen": 1793598012.4977372,
-    "ast_hash": "ae90887b93babd0a672b2ec4da8822dd",
+    "mtime": 1793646353.2934964,
+    "seen": 1793646476.7795246,
+    "ast_hash": "8d29be558ad9e3c7a3cf0789a26d163b",
     "semantic_hash": ""
   },
   "public/favicon.svg": {
@@ -930,21 +930,51 @@
     "semantic_hash": ""
   },
   "src/components/LoginModal.jsx": {
-    "mtime": 1793603288.7327604,
-    "seen": 1793603758.2954648,
-    "ast_hash": "23445f403de5d6a1d9018ea2d32726a5",
+    "mtime": 1793646353.8682122,
+    "seen": 1793646476.7795246,
+    "ast_hash": "a4970c3189a5bcd116a8c1509d1b2c1f",
     "semantic_hash": ""
   },
   "src/data/defaultAccounts.js": {
-    "mtime": 1793603257.5130782,
-    "seen": 1793603758.2954648,
-    "ast_hash": "c2f1613beb977368a82aa319092643a6",
+    "mtime": 1793647398.7463648,
+    "seen": 1793647994.1857057,
+    "ast_hash": "893696df974f4322d57073cf90e60513",
     "semantic_hash": ""
   },
   "src/components/admin/AdminDashboardPage.jsx": {
-    "mtime": 1793604639.7228837,
-    "seen": 1793604761.8682353,
-    "ast_hash": "42b29c658592a9903bfbf5b5212c8aa8",
+    "mtime": 1793649341.09876,
+    "seen": 1793649413.9808302,
+    "ast_hash": "2074ebe3d9d8f873c13eedb3f51b0ea8",
+    "semantic_hash": ""
+  },
+  "Landing Page.png": {
+    "mtime": 1790971641.2171695,
+    "seen": 1793605680.4950423,
+    "ast_hash": "707587ffa4a8cc54201493ace5eab420",
+    "semantic_hash": ""
+  },
+  "logo-teramedia.png": {
+    "mtime": 1788076321.7120757,
+    "seen": 1793605680.4950423,
+    "ast_hash": "6341e6ab629bdf2f1576b15ebff4864d",
+    "semantic_hash": ""
+  },
+  "public/images/logo-teramedia.png": {
+    "mtime": 1788076321.7120757,
+    "seen": 1793646329.4030185,
+    "ast_hash": "6341e6ab629bdf2f1576b15ebff4864d",
+    "semantic_hash": ""
+  },
+  "public/logo-teramedia.png": {
+    "mtime": 1788076321.7120757,
+    "seen": 1793646329.4030185,
+    "ast_hash": "6341e6ab629bdf2f1576b15ebff4864d",
+    "semantic_hash": ""
+  },
+  "src/components/LoginPage.jsx": {
+    "mtime": 1793647398.5280795,
+    "seen": 1793647994.1857057,
+    "ast_hash": "4a23f72ff81dac0da490a0aab98cc818",
     "semantic_hash": ""
   }
 }

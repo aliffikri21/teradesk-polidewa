@@ -2,15 +2,15 @@ import React from 'react';
 
 const AboutUs = () => {
   return (
-    <section id="tentang-kami" className="w-full bg-white text-slate-900 pt-20 pb-0">
-      <div className="max-w-4xl mx-auto px-6 md:px-12 text-center md:text-left mb-16">
-        {/* Section Heading */}
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight mb-8 text-center md:text-left">
+    <section id="tentang-kami" className="w-full bg-white text-slate-900 pt-20 pb-0 scroll-mt-20">
+      <div className="max-w-3xl mx-auto px-6 text-center mb-16">
+        {/* Section Heading - Centered */}
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight mb-8 text-center">
           Tentang Kami
         </h2>
 
-        {/* Text Paragraphs */}
-        <div className="space-y-6 text-slate-800 text-sm sm:text-base leading-relaxed text-justify">
+        {/* Text Paragraphs - Centered */}
+        <div className="space-y-6 text-slate-700 text-sm sm:text-base leading-relaxed text-center">
           <p>
             TERAMEDIA merupakan suatu organisasi Program Studi Teknologi Rekayasa Multimedia yang dinaungi oleh kampus Politeknik Dewantara. Didirikan pada tahun 14 Februari 2020 hingga saat ini telah aktif selama 6 tahun.
           </p>

@@ -230,9 +230,11 @@ const FeaturesPortal = ({ onBackToLanding, onOpenContact, onSelectService, authU
             </button>
 
             <div className="hidden sm:flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-full border border-blue-400/50 flex items-center justify-center bg-blue-950/60 shadow-sm">
-                <span className="text-white text-xs">⚛</span>
-              </div>
+              <img
+                src="/logo-teramedia.png"
+                alt="Logo TERAMEDIA"
+                className="w-7 h-7 object-contain drop-shadow-sm shrink-0"
+              />
               <span className="text-base font-bold tracking-wide text-white">TeraDesk</span>
               <span className="text-[10px] bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2.5 py-0.5 rounded-full font-semibold">
                 Workspace Hub
