@@ -77,7 +77,7 @@ const sampleDocs = [
   },
 ];
 
-const ArchiveServicePage = ({ onBackToPortal, onBackToLanding, onSelectService }) => {
+const ArchiveServicePage = (props) => {
   const [activeTab, setActiveTab] = useState('explorer'); // 'explorer' | 'generator' | 'upload' | 'struktur'
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Semua');
@@ -165,9 +165,7 @@ const ArchiveServicePage = ({ onBackToPortal, onBackToLanding, onSelectService }
       category="Administrasi & Legalitas"
       badge="Modul Inti"
       icon={FolderArchive}
-      onBackToPortal={onBackToPortal}
-      onBackToLanding={onBackToLanding}
-      onSelectService={onSelectService}
+      {...props}
     >
       {/* Top Metric Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

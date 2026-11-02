@@ -22,7 +22,7 @@ const sampleAttendanceList = [
   { id: 'ATT-06', name: 'Siti Aminah', division: 'Divisi Humas & Jaringan', role: 'Staff', time: '14:02 WIB', status: 'Tepat Waktu' },
 ];
 
-const AttendanceServicePage = ({ onBackToPortal, onBackToLanding, onSelectService }) => {
+const AttendanceServicePage = (props) => {
   const [activeTab, setActiveTab] = useState('qr'); // 'qr' | 'log' | 'rekap'
   const [searchQuery, setSearchQuery] = useState('');
   const [sessionActive] = useState(true);
@@ -48,9 +48,7 @@ const AttendanceServicePage = ({ onBackToPortal, onBackToLanding, onSelectServic
       category="Operasional & Aset"
       badge="Modul Aktif"
       icon={ClipboardCheck}
-      onBackToPortal={onBackToPortal}
-      onBackToLanding={onBackToLanding}
-      onSelectService={onSelectService}
+      {...props}
     >
       {/* Top Metric Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

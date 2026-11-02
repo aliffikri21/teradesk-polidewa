@@ -73,7 +73,7 @@ const divisionBudgets = [
   { division: 'Divisi Humas & Jaringan', allocated: 5000000, spent: 1850000 },
 ];
 
-const FinanceServicePage = ({ onBackToPortal, onBackToLanding, onSelectService }) => {
+const FinanceServicePage = (props) => {
   const [activeTab, setActiveTab] = useState('kas'); // 'kas' | 'reimburse' | 'pagu'
   const [filterType, setFilterType] = useState('Semua');
   const [searchQuery, setSearchQuery] = useState('');
@@ -137,9 +137,7 @@ const FinanceServicePage = ({ onBackToPortal, onBackToLanding, onSelectService }
       category="Keuangan & Anggaran"
       badge="Modul Aktif"
       icon={Receipt}
-      onBackToPortal={onBackToPortal}
-      onBackToLanding={onBackToLanding}
-      onSelectService={onSelectService}
+      {...props}
     >
       {/* Top Metric Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

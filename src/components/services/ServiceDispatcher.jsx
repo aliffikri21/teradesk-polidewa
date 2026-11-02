@@ -13,93 +13,49 @@ const ServiceDispatcher = ({
   onBackToPortal,
   onBackToLanding,
   onSelectService,
+  authUser,
+  onLogout,
 }) => {
+  const commonProps = {
+    onBackToPortal,
+    onBackToLanding,
+    onSelectService,
+    authUser,
+    onLogout,
+  };
+
   switch (serviceId) {
     case 'par':
     case 'proposal':
-      return (
-        <ParServicePage
-          onBackToPortal={onBackToPortal}
-          onBackToLanding={onBackToLanding}
-          onSelectService={onSelectService}
-        />
-      );
+      return <ParServicePage {...commonProps} />;
     case 'archive':
     case 'arsip':
-      return (
-        <ArchiveServicePage
-          onBackToPortal={onBackToPortal}
-          onBackToLanding={onBackToLanding}
-          onSelectService={onSelectService}
-        />
-      );
+      return <ArchiveServicePage {...commonProps} />;
     case 'asset':
     case 'aset':
-      return (
-        <AssetServicePage
-          onBackToPortal={onBackToPortal}
-          onBackToLanding={onBackToLanding}
-          onSelectService={onSelectService}
-        />
-      );
+      return <AssetServicePage {...commonProps} />;
     case 'finance':
     case 'kas':
     case 'reimburse':
-      return (
-        <FinanceServicePage
-          onBackToPortal={onBackToPortal}
-          onBackToLanding={onBackToLanding}
-          onSelectService={onSelectService}
-        />
-      );
+      return <FinanceServicePage {...commonProps} />;
     case 'attendance':
     case 'meeting':
     case 'presensi':
-      return (
-        <AttendanceServicePage
-          onBackToPortal={onBackToPortal}
-          onBackToLanding={onBackToLanding}
-          onSelectService={onSelectService}
-        />
-      );
+      return <AttendanceServicePage {...commonProps} />;
     case 'timeline':
     case 'calendar':
     case 'jadwal':
-      return (
-        <TimelineServicePage
-          onBackToPortal={onBackToPortal}
-          onBackToLanding={onBackToLanding}
-          onSelectService={onSelectService}
-        />
-      );
+      return <TimelineServicePage {...commonProps} />;
     case 'hr':
     case 'members':
     case 'sdm':
-      return (
-        <HrServicePage
-          onBackToPortal={onBackToPortal}
-          onBackToLanding={onBackToLanding}
-          onSelectService={onSelectService}
-        />
-      );
+      return <HrServicePage {...commonProps} />;
     case 'helpdesk':
     case 'tiket':
     case 'request':
-      return (
-        <HelpdeskServicePage
-          onBackToPortal={onBackToPortal}
-          onBackToLanding={onBackToLanding}
-          onSelectService={onSelectService}
-        />
-      );
+      return <HelpdeskServicePage {...commonProps} />;
     default:
-      return (
-        <ParServicePage
-          onBackToPortal={onBackToPortal}
-          onBackToLanding={onBackToLanding}
-          onSelectService={onSelectService}
-        />
-      );
+      return <ParServicePage {...commonProps} />;
   }
 };
 

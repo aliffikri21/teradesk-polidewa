@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const Footer = ({ onNavigateToPortal }) => {
+const Footer = ({ onNavigateToPortal, onOpenDevDashboard }) => {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
@@ -91,11 +91,22 @@ const Footer = ({ onNavigateToPortal }) => {
           </div>
         </div>
 
-        {/* Bottom Horizontal Divider & Copyright */}
-        <div className="pt-6 border-t border-white/10 text-left">
-          <p className="text-xs text-gray-500 font-medium">
-            © 2026 All Rights Reserved
+        {/* Bottom Horizontal Divider, Copyright & Dev Console */}
+        <div className="pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+          <p className="text-gray-500 font-medium">
+            © 2026 All Rights Reserved • TERAMEDIA Dewantara
           </p>
+
+          {onOpenDevDashboard && (
+            <button
+              onClick={onOpenDevDashboard}
+              className="flex items-center gap-1.5 text-gray-400 hover:text-amber-400 font-mono transition-colors cursor-pointer"
+              title="Buka Developer Dashboard (Kelola NIM, Password, dan Sesi)"
+            >
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+              <span>Developer Console</span>
+            </button>
+          )}
         </div>
       </div>
     </footer>

@@ -11,7 +11,8 @@ import {
   ClipboardCheck,
   CalendarRange,
   Users,
-  Headphones
+  Headphones,
+  LogOut
 } from 'lucide-react';
 
 const allServices = [
@@ -90,6 +91,8 @@ const ServicePageLayout = ({
   onBackToPortal,
   onBackToLanding,
   onSelectService,
+  authUser,
+  onLogout,
   children,
 }) => {
   const [isSwitcherOpen, setIsSwitcherOpen] = useState(false);
@@ -134,16 +137,34 @@ const ServicePageLayout = ({
             </div>
           </div>
 
-          {/* Right: Quick Switcher Dropdown */}
-          <div className="relative">
-            <button
-              onClick={() => setIsSwitcherOpen(!isSwitcherOpen)}
-              className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white border border-white/15 px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:outline-none"
-            >
-              <LayoutGrid size={15} className="text-amber-400" />
-              <span className="hidden sm:inline">Pindah Layanan</span>
-              <ChevronDown size={14} className={`transition-transform duration-200 ${isSwitcherOpen ? 'rotate-180' : ''}`} />
-            </button>
+          {/* Right: Quick Switcher Dropdown & User Profile / Logout */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {authUser && (
+              <div className="hidden sm:flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl text-xs">
+                <div className="w-5 h-5 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center font-bold text-[10px]">
+                  {authUser.name ? authUser.name.charAt(0) : 'P'}
+                </div>
+                <div className="text-left">
+                  <p className="font-bold text-white text-[11px] leading-tight truncate max-w-[120px]">
+                    {authUser.name || authUser.nim}
+                  </p>
+                  <p className="text-[9px] text-gray-400 font-mono leading-none">
+                    NIM: {authUser.nim}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Switcher Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setIsSwitcherOpen(!isSwitcherOpen)}
+                className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white border border-white/15 px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:outline-none"
+              >
+                <LayoutGrid size={15} className="text-amber-400" />
+                <span className="hidden sm:inline">Pindah Layanan</span>
+                <ChevronDown size={14} className={`transition-transform duration-200 ${isSwitcherOpen ? 'rotate-180' : ''}`} />
+              </button>
 
             {isSwitcherOpen && (
               <>
@@ -191,8 +212,19 @@ const ServicePageLayout = ({
             )}
           </div>
 
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              className="flex items-center gap-1.5 text-xs font-semibold text-rose-300 hover:text-white bg-rose-500/15 hover:bg-rose-500/30 px-3 py-2 rounded-xl border border-rose-500/30 transition-colors cursor-pointer"
+              title="Keluar / Reset Sesi Organisasi"
+            >
+              <LogOut size={14} />
+              <span className="hidden sm:inline">Keluar</span>
+            </button>
+          )}
         </div>
-      </header>
+      </div>
+    </header>
 
       {/* Hero Header for Active Service */}
       <div className="bg-linear-to-b from-[#0a1233] to-[#060D25] border-b border-white/10 py-8 px-4 sm:px-6 lg:px-8">

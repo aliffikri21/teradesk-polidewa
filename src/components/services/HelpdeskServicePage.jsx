@@ -53,7 +53,7 @@ const sampleTickets = [
   },
 ];
 
-const HelpdeskServicePage = ({ onBackToPortal, onBackToLanding, onSelectService }) => {
+const HelpdeskServicePage = (props) => {
   const [activeTab, setActiveTab] = useState('tiket'); // 'tiket' | 'buat' | 'panduan'
   const [tickets, setTickets] = useState(sampleTickets);
   const [searchQuery, setSearchQuery] = useState('');
@@ -115,9 +115,7 @@ const HelpdeskServicePage = ({ onBackToPortal, onBackToLanding, onSelectService 
       category="Tata Kelola SDM"
       badge="Modul Aktif"
       icon={Headphones}
-      onBackToPortal={onBackToPortal}
-      onBackToLanding={onBackToLanding}
-      onSelectService={onSelectService}
+      {...props}
     >
       {/* Top Metric Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

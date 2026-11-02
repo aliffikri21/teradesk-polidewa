@@ -13,7 +13,8 @@ import {
   Headphones,
   FileCheck2,
   Hash,
-  X
+  X,
+  LogOut
 } from 'lucide-react';
 
 const featuresData = [
@@ -179,7 +180,7 @@ const featuresData = [
   },
 ];
 
-const FeaturesPortal = ({ onBackToLanding, onOpenContact, onSelectService }) => {
+const FeaturesPortal = ({ onBackToLanding, onOpenContact, onSelectService, authUser, onLogout }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Semua');
 
@@ -239,14 +240,41 @@ const FeaturesPortal = ({ onBackToLanding, onOpenContact, onSelectService }) => 
             </div>
           </div>
 
-          {/* Right: Quick CTA */}
+          {/* Right: Quick CTA & User Status / Logout */}
           <div className="flex items-center gap-3">
+            {authUser && (
+              <div className="hidden sm:flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl text-xs">
+                <div className="w-5 h-5 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center font-bold text-[10px]">
+                  {authUser.name ? authUser.name.charAt(0) : 'P'}
+                </div>
+                <div className="text-left">
+                  <p className="font-bold text-white text-[11px] leading-tight truncate max-w-[120px]">
+                    {authUser.name || authUser.nim}
+                  </p>
+                  <p className="text-[9px] text-gray-400 font-mono leading-none">
+                    NIM: {authUser.nim}
+                  </p>
+                </div>
+              </div>
+            )}
+
             <button
               onClick={onOpenContact}
-              className="bg-[#FFA000] hover:bg-[#ffaa1a] text-slate-950 font-bold px-5 py-2 rounded-full text-xs sm:text-sm transition-all duration-150 shadow-md active:scale-95 cursor-pointer focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:outline-none"
+              className="bg-[#FFA000] hover:bg-[#ffaa1a] text-slate-950 font-bold px-4 py-2 rounded-full text-xs sm:text-sm transition-all duration-150 shadow-md active:scale-95 cursor-pointer focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:outline-none"
             >
-              Konsultasi & Kontak
+              Konsultasi
             </button>
+
+            {onLogout && (
+              <button
+                onClick={onLogout}
+                className="flex items-center gap-1.5 text-xs font-semibold text-rose-300 hover:text-white bg-rose-500/15 hover:bg-rose-500/30 px-3 py-2 rounded-xl border border-rose-500/30 transition-colors cursor-pointer"
+                title="Keluar / Reset Sesi Organisasi"
+              >
+                <LogOut size={14} />
+                <span className="hidden sm:inline">Keluar</span>
+              </button>
+            )}
           </div>
 
         </div>

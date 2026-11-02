@@ -70,7 +70,7 @@ const sampleEvents = [
   },
 ];
 
-const TimelineServicePage = ({ onBackToPortal, onBackToLanding, onSelectService }) => {
+const TimelineServicePage = (props) => {
   const [activeTab, setActiveTab] = useState('roadmap'); // 'roadmap' | 'agenda' | 'tambah'
   const [events, setEvents] = useState(sampleEvents);
   const [searchQuery, setSearchQuery] = useState('');
@@ -130,9 +130,7 @@ const TimelineServicePage = ({ onBackToPortal, onBackToLanding, onSelectService 
       category="Operasional & Aset"
       badge="Modul Aktif"
       icon={CalendarRange}
-      onBackToPortal={onBackToPortal}
-      onBackToLanding={onBackToLanding}
-      onSelectService={onSelectService}
+      {...props}
     >
       {/* Top Metric Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

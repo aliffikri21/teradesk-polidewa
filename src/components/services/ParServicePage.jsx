@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import ServicePageLayout from './ServicePageLayout';
 
-const ParServicePage = ({ onBackToPortal, onBackToLanding, onSelectService }) => {
+const ParServicePage = (props) => {
   const [activeTab, setActiveTab] = useState('simulasi'); // 'simulasi' | 'daftar' | 'form' | 'sop'
   const [approvalStep, setApprovalStep] = useState(2); // 1: Pengaju, 2: Kadiv, 3: BPH, 4: Pembina/Ketum
   const [searchQuery, setSearchQuery] = useState('');
@@ -187,9 +187,7 @@ const ParServicePage = ({ onBackToPortal, onBackToLanding, onSelectService }) =>
       category="Administrasi & Legalitas"
       badge="Modul Inti"
       icon={FileCheck2}
-      onBackToPortal={onBackToPortal}
-      onBackToLanding={onBackToLanding}
-      onSelectService={onSelectService}
+      {...props}
     >
       {/* Top Metric Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

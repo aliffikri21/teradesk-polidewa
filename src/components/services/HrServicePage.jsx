@@ -93,7 +93,7 @@ const sampleMembers = [
   },
 ];
 
-const HrServicePage = ({ onBackToPortal, onBackToLanding, onSelectService }) => {
+const HrServicePage = (props) => {
   const [activeTab, setActiveTab] = useState('direktori'); // 'direktori' | 'struktur' | 'kinerja'
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDiv, setSelectedDiv] = useState('Semua');
@@ -123,9 +123,7 @@ const HrServicePage = ({ onBackToPortal, onBackToLanding, onSelectService }) => 
       category="Tata Kelola SDM"
       badge="Modul Aktif"
       icon={Users}
-      onBackToPortal={onBackToPortal}
-      onBackToLanding={onBackToLanding}
-      onSelectService={onSelectService}
+      {...props}
     >
       {/* Top Metric Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

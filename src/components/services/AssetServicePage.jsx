@@ -94,7 +94,7 @@ const initialAssets = [
   },
 ];
 
-const AssetServicePage = ({ onBackToPortal, onBackToLanding, onSelectService }) => {
+const AssetServicePage = (props) => {
   const [activeTab, setActiveTab] = useState('katalog'); // 'katalog' | 'booking' | 'log' | 'jadwal'
   const [assets, setAssets] = useState(initialAssets);
   const [searchQuery, setSearchQuery] = useState('');
@@ -190,9 +190,7 @@ const AssetServicePage = ({ onBackToPortal, onBackToLanding, onSelectService }) 
       category="Operasional & Aset"
       badge="Modul Inti"
       icon={Boxes}
-      onBackToPortal={onBackToPortal}
-      onBackToLanding={onBackToLanding}
-      onSelectService={onSelectService}
+      {...props}
     >
       {/* Top Metric Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

@@ -1,0 +1,48 @@
+export const initialDefaultAccounts = [
+  {
+    nim: '2209010042',
+    name: 'Muhammad Farhan',
+    role: 'Ketua Umum (Ketum)',
+    division: 'BPH',
+    password: 'password123',
+    createdAt: '2026-10-15',
+    isDefault: true,
+  },
+  {
+    nim: '2209010018',
+    name: 'Nadia Safitri',
+    role: 'Kadiv Media & Informasi',
+    division: 'Medinfo',
+    password: 'password123',
+    createdAt: '2026-10-18',
+    isDefault: true,
+  },
+  {
+    nim: '2209010025',
+    name: 'Ahmad Fauzi',
+    role: 'Sekretaris Umum',
+    division: 'BPH',
+    password: 'password123',
+    createdAt: '2026-10-20',
+    isDefault: true,
+  },
+  {
+    nim: '2209010033',
+    name: 'Siti Rahmawati',
+    role: 'Bendahara Umum',
+    division: 'BPH',
+    password: 'password123',
+    createdAt: '2026-10-22',
+    isDefault: true,
+  },
+  {
+    nim: '2209010064',
+    name: 'Bima Satria',
+    role: 'Staff Divisi Inventaris',
+    division: 'Inventaris & Logistik',
+    password: 'password123',
+    createdAt: '2026-10-25',
+    isDefault: true,
+  },
+];
+
