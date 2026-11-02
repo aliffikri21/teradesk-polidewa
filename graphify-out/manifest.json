@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "src/App.jsx": {
-    "mtime": 1793597698.0138197,
-    "seen": 1793598012.4977372,
-    "ast_hash": "ffb1607beb3370444ccf17fec11c172d",
+    "mtime": 1793601606.9728615,
+    "seen": 1793601670.448484,
+    "ast_hash": "272966e655e84d1ae12b3742d6851a39",
     "semantic_hash": ""
   },
   "src/components/AboutUs.jsx": {
@@ -30,15 +30,15 @@
     "semantic_hash": ""
   },
   "src/components/Features.jsx": {
-    "mtime": 1793599352.1900043,
-    "seen": 1793599598.156685,
-    "ast_hash": "b9e0b6038a880c56202cb649200d9a1d",
+    "mtime": 1793601560.7876563,
+    "seen": 1793601670.448484,
+    "ast_hash": "cb8d1c53fd9440baaef2b40a46c6c447",
     "semantic_hash": ""
   },
   "src/components/FeaturesPortal.jsx": {
-    "mtime": 1793599480.0188403,
-    "seen": 1793599598.156685,
-    "ast_hash": "bb2e5d49fb0f0b8df29190f06ef72ebe",
+    "mtime": 1793601641.3583002,
+    "seen": 1793601670.448484,
+    "ast_hash": "0ef0cef83fc71bcddb5e94d482c2e012",
     "semantic_hash": ""
   },
   "src/components/Footer.jsx": {
@@ -48,33 +48,9 @@
     "semantic_hash": ""
   },
   "src/components/Hero.jsx": {
-    "mtime": 1793598493.93079,
-    "seen": 1793598838.2564352,
-    "ast_hash": "e0b6d329118f58d00eb70b2f1b51aa47",
-    "semantic_hash": ""
-  },
-  "src/components/modals/ArchiveModal.jsx": {
-    "mtime": 1793599616.1249046,
-    "seen": 1793599630.7930799,
-    "ast_hash": "bfebac2dd7d569fa25ba5bd154b1f3c4",
-    "semantic_hash": ""
-  },
-  "src/components/modals/AssetModal.jsx": {
-    "mtime": 1793599570.8616295,
-    "seen": 1793599598.156685,
-    "ast_hash": "583c4208cd809900df161ff8e64b7b25",
-    "semantic_hash": ""
-  },
-  "src/components/modals/FeatureDetailModal.jsx": {
-    "mtime": 1793599580.9856412,
-    "seen": 1793599598.156685,
-    "ast_hash": "5d189f1a89a3801b88ad4f3a81efc9c3",
-    "semantic_hash": ""
-  },
-  "src/components/modals/ParModal.jsx": {
-    "mtime": 1793599532.5235355,
-    "seen": 1793599598.156685,
-    "ast_hash": "a4a7856dae4c453993a416365e4c0e6d",
+    "mtime": 1793601591.6154435,
+    "seen": 1793601670.448484,
+    "ast_hash": "d272cef41325b8cc9e70e2c2cc4a9a55",
     "semantic_hash": ""
   },
   "src/main.jsx": {
@@ -228,8 +204,8 @@
     "semantic_hash": ""
   },
   ".agents/skills/design-system/scripts/generate-tokens.cjs": {
-    "mtime": 1793599485.7950304,
-    "seen": 1793599598.156685,
+    "mtime": 1793599697.9992497,
+    "seen": 1793600892.1945393,
     "ast_hash": "b7c71432d0b3de301f414e5e8f528749",
     "semantic_hash": ""
   },
@@ -891,6 +867,66 @@
     "mtime": 1793599079.9583983,
     "seen": 1793599116.0201373,
     "ast_hash": "9403b4970ce10bcfe5e3965761ae22f8",
+    "semantic_hash": ""
+  },
+  "src/components/services/ArchiveServicePage.jsx": {
+    "mtime": 1793601259.023571,
+    "seen": 1793601670.448484,
+    "ast_hash": "040663deca654c677702b9e7f00e5363",
+    "semantic_hash": ""
+  },
+  "src/components/services/AssetServicePage.jsx": {
+    "mtime": 1793601259.1414416,
+    "seen": 1793601670.448484,
+    "ast_hash": "5cf20ae7121b8ea0bee3c437c63a848f",
+    "semantic_hash": ""
+  },
+  "src/components/services/AttendanceServicePage.jsx": {
+    "mtime": 1793601259.221084,
+    "seen": 1793601670.448484,
+    "ast_hash": "24a211184fe8972beaff44a4ee2b8860",
+    "semantic_hash": ""
+  },
+  "src/components/services/FinanceServicePage.jsx": {
+    "mtime": 1793601259.3053243,
+    "seen": 1793601670.448484,
+    "ast_hash": "d86f4d4c5d48428f5692eb6a3c8724ed",
+    "semantic_hash": ""
+  },
+  "src/components/services/HelpdeskServicePage.jsx": {
+    "mtime": 1793601259.378484,
+    "seen": 1793601670.448484,
+    "ast_hash": "bcbc65ff81759f36d525dade16f828f1",
+    "semantic_hash": ""
+  },
+  "src/components/services/HrServicePage.jsx": {
+    "mtime": 1793601259.4458833,
+    "seen": 1793601670.448484,
+    "ast_hash": "344bfae537b8d34496e1a23a92438c82",
+    "semantic_hash": ""
+  },
+  "src/components/services/ParServicePage.jsx": {
+    "mtime": 1793601259.5439315,
+    "seen": 1793601670.448484,
+    "ast_hash": "bade8f93ae4683ba3a386e5f3ebcc45e",
+    "semantic_hash": ""
+  },
+  "src/components/services/ServiceDispatcher.jsx": {
+    "mtime": 1793601507.251848,
+    "seen": 1793601670.448484,
+    "ast_hash": "f9a78f72517aa7d2c101c6cf3ad5ca08",
+    "semantic_hash": ""
+  },
+  "src/components/services/ServicePageLayout.jsx": {
+    "mtime": 1793601259.6139681,
+    "seen": 1793601670.448484,
+    "ast_hash": "08e3dadd45a543f62f7073372abd03f8",
+    "semantic_hash": ""
+  },
+  "src/components/services/TimelineServicePage.jsx": {
+    "mtime": 1793601259.6743762,
+    "seen": 1793601670.448484,
+    "ast_hash": "c58a17d0db63277c6a94c41ade0f08e0",
     "semantic_hash": ""
   }
 }

@@ -14,6 +14,7 @@ import {
 
 const features = [
   {
+    serviceId: 'par',
     icon: FileCheck2,
     tag: 'Modul Utama',
     tagColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
@@ -23,6 +24,7 @@ const features = [
       'Ajukan dan verifikasi proposal kegiatan secara digital dengan alur bertingkat, live review, dan tanda tangan digital.',
   },
   {
+    serviceId: 'archive',
     icon: FolderArchive,
     tag: 'Modul Utama',
     tagColor: 'bg-blue-50 text-blue-700 border-blue-200',
@@ -32,15 +34,17 @@ const features = [
       'Penyimpanan terpusat untuk SK, proposal, LPJ, dan generator penomoran surat otomatis yang mencegah bentrok nomor surat.',
   },
   {
+    serviceId: 'asset',
     icon: LayoutDashboard,
     tag: 'Operasional',
     tagColor: 'bg-amber-50 text-amber-700 border-amber-200',
     iconColor: 'bg-amber-50 text-amber-600 border-amber-100',
-    title: 'Dashboard Monitoring Kegiatan',
+    title: 'Dashboard Monitoring & Aset',
     description:
-      'Pantau progres eksekusi program kerja dan performa kepengurusan secara real-time melalui dashboard visual yang informatif.',
+      'Pantau ketersediaan barang inventaris, jadwal pemakaian ruangan sekretariat, dan progres proker secara real-time.',
   },
   {
+    serviceId: 'hr',
     icon: Users,
     tag: 'Tata Kelola SDM',
     tagColor: 'bg-purple-50 text-purple-700 border-purple-200',
@@ -50,24 +54,27 @@ const features = [
       'Kelola hierarki organisasi, peran divisi, database anggota aktif, dan riwayat penugasan kepanitiaan secara terpadu.',
   },
   {
+    serviceId: 'helpdesk',
     icon: BellRing,
     tag: 'Notifikasi',
     tagColor: 'bg-rose-50 text-rose-700 border-rose-200',
     iconColor: 'bg-rose-50 text-rose-600 border-rose-100',
-    title: 'Pemberitahuan Otomatis & SLA',
+    title: 'Pemberitahuan Otomatis & Helpdesk',
     description:
-      'Dapatkan notifikasi langsung terkait batas waktu persetujuan proposal, disposisi surat, dan status peminjaman inventaris.',
+      'Dapatkan notifikasi langsung terkait batas waktu persetujuan proposal, request desain visual, dan tiket bantuan teknis.',
   },
   {
+    serviceId: 'finance',
     icon: Workflow,
     tag: 'Efisiensi',
     tagColor: 'bg-cyan-50 text-cyan-700 border-cyan-200',
     iconColor: 'bg-cyan-50 text-cyan-600 border-cyan-100',
-    title: 'Otomatisasi Alur Birokrasi',
+    title: 'Kas & Reimbursement Anggaran',
     description:
-      'Pangkas rantai birokrasi manual yang lambat menjadi alur kerja digital terstruktur yang menghemat waktu hingga 75%.',
+      'Pangkas rantai klaim nota manual belanja kegiatan menjadi alur approval reimbursement digital yang transparan dan cepat.',
   },
   {
+    serviceId: 'timeline',
     icon: CalendarDays,
     tag: 'Jadwal',
     tagColor: 'bg-teal-50 text-teal-700 border-teal-200',
@@ -77,13 +84,14 @@ const features = [
       'Petakan timeline acara seluruh divisi kepengurusan dalam satu kalender induk untuk mendeteksi tabrakan jadwal sejak awal.',
   },
   {
+    serviceId: 'attendance',
     icon: ShieldCheck,
-    tag: 'Keamanan',
+    tag: 'Operasional',
     tagColor: 'bg-indigo-50 text-indigo-700 border-indigo-200',
     iconColor: 'bg-indigo-50 text-indigo-600 border-indigo-100',
-    title: 'Akses Berjenjang (RBAC)',
+    title: 'Presensi Digital & QR Code Acara',
     description:
-      'Proteksi dokumen dan hak akses data organisasi berdasarkan peran kepengurusan (Ketua, Sekretaris, Bendahara, Anggota).',
+      'Check-in cepat rapat pleno dan kegiatan kepanitiaan dengan validasi lokasi anti-kecurangan dan rekapitulasi kehadiran otomatis.',
   },
 ];
 
@@ -112,7 +120,8 @@ const Features = ({ onNavigateToPortal }) => {
             return (
               <div
                 key={index}
-                className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-xl hover:border-blue-400/50 hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between group"
+                onClick={() => onNavigateToPortal && onNavigateToPortal(item.serviceId)}
+                className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-xl hover:border-blue-400/50 hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between group cursor-pointer"
               >
                 <div>
                   {/* Top Bar: Icon + Tag */}
@@ -139,7 +148,7 @@ const Features = ({ onNavigateToPortal }) => {
                 {/* Action Link */}
                 <div className="pt-2 border-t border-slate-100">
                   <button
-                    onClick={onNavigateToPortal}
+                    onClick={() => onNavigateToPortal && onNavigateToPortal(item.serviceId)}
                     className="w-full text-xs font-bold text-slate-700 group-hover:text-blue-700 flex items-center justify-between py-1 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none rounded-lg"
                   >
                     <span>Buka Alur Kerja</span>

@@ -15,10 +15,6 @@ import {
   Hash,
   X
 } from 'lucide-react';
-import ParModal from './modals/ParModal';
-import ArchiveModal from './modals/ArchiveModal';
-import AssetModal from './modals/AssetModal';
-import FeatureDetailModal from './modals/FeatureDetailModal';
 
 const featuresData = [
   {
@@ -102,7 +98,7 @@ const featuresData = [
     primaryAction: 'Buka Buku Kas & Reimburse',
   },
   {
-    id: 'meeting',
+    id: 'attendance',
     title: 'Presensi QR & Notula Rapat Digital',
     category: 'Tata Kelola SDM',
     badge: 'Tersedia',
@@ -122,7 +118,7 @@ const featuresData = [
     primaryAction: 'Buka Presensi & Notula',
   },
   {
-    id: 'calendar',
+    id: 'timeline',
     title: 'Master Timeline & Kalender Proker',
     category: 'Operasional & Aset',
     badge: 'Tersedia',
@@ -142,7 +138,7 @@ const featuresData = [
     primaryAction: 'Lihat Timeline Proker',
   },
   {
-    id: 'members',
+    id: 'hr',
     title: 'Database Anggota & Struktur Pengurus',
     category: 'Tata Kelola SDM',
     badge: 'Tersedia',
@@ -183,15 +179,9 @@ const featuresData = [
   },
 ];
 
-const FeaturesPortal = ({ onBackToLanding, onOpenContact }) => {
+const FeaturesPortal = ({ onBackToLanding, onOpenContact, onSelectService }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Semua');
-
-  // Modals state
-  const [isParOpen, setIsParOpen] = useState(false);
-  const [isArchiveOpen, setIsArchiveOpen] = useState(false);
-  const [isAssetOpen, setIsAssetOpen] = useState(false);
-  const [selectedGenericFeature, setSelectedGenericFeature] = useState(null);
 
   const categories = [
     { label: 'Semua', count: featuresData.length },
@@ -211,14 +201,8 @@ const FeaturesPortal = ({ onBackToLanding, onOpenContact }) => {
   });
 
   const handleOpenFeature = (feature) => {
-    if (feature.id === 'par') {
-      setIsParOpen(true);
-    } else if (feature.id === 'archive') {
-      setIsArchiveOpen(true);
-    } else if (feature.id === 'asset') {
-      setIsAssetOpen(true);
-    } else {
-      setSelectedGenericFeature(feature);
+    if (onSelectService) {
+      onSelectService(feature.id);
     }
   };
 
@@ -335,7 +319,7 @@ const FeaturesPortal = ({ onBackToLanding, onOpenContact }) => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
               <button
-                onClick={() => setIsParOpen(true)}
+                onClick={() => onSelectService && onSelectService('par')}
                 className="flex items-center gap-3.5 p-3.5 rounded-2xl border border-slate-200 hover:border-blue-400 hover:bg-blue-50/40 hover:-translate-y-0.5 transition-all duration-150 text-left cursor-pointer group focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none"
               >
                 <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center shrink-0 border border-blue-100 group-hover:scale-105 transition-transform duration-150">
@@ -348,7 +332,7 @@ const FeaturesPortal = ({ onBackToLanding, onOpenContact }) => {
               </button>
 
               <button
-                onClick={() => setIsArchiveOpen(true)}
+                onClick={() => onSelectService && onSelectService('archive')}
                 className="flex items-center gap-3.5 p-3.5 rounded-2xl border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50/40 hover:-translate-y-0.5 transition-all duration-150 text-left cursor-pointer group focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:outline-none"
               >
                 <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 border border-emerald-100 group-hover:scale-105 transition-transform duration-150">
@@ -361,7 +345,7 @@ const FeaturesPortal = ({ onBackToLanding, onOpenContact }) => {
               </button>
 
               <button
-                onClick={() => setIsAssetOpen(true)}
+                onClick={() => onSelectService && onSelectService('asset')}
                 className="flex items-center gap-3.5 p-3.5 rounded-2xl border border-slate-200 hover:border-amber-400 hover:bg-amber-50/40 hover:-translate-y-0.5 transition-all duration-150 text-left cursor-pointer group focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:outline-none"
               >
                 <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center shrink-0 border border-amber-100 group-hover:scale-105 transition-transform duration-150">
@@ -374,7 +358,7 @@ const FeaturesPortal = ({ onBackToLanding, onOpenContact }) => {
               </button>
 
               <button
-                onClick={() => handleOpenFeature(featuresData.find((f) => f.id === 'finance'))}
+                onClick={() => onSelectService && onSelectService('finance')}
                 className="flex items-center gap-3.5 p-3.5 rounded-2xl border border-slate-200 hover:border-purple-400 hover:bg-purple-50/40 hover:-translate-y-0.5 transition-all duration-150 text-left cursor-pointer group focus-visible:ring-2 focus-visible:ring-purple-600 focus-visible:outline-none"
               >
                 <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center shrink-0 border border-purple-100 group-hover:scale-105 transition-transform duration-150">
@@ -470,7 +454,8 @@ const FeaturesPortal = ({ onBackToLanding, onOpenContact }) => {
                 return (
                   <div
                     key={item.id}
-                    className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-[0_2px_14px_rgba(0,0,0,0.03)] hover:shadow-xl hover:border-blue-400/60 hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between group"
+                    onClick={() => handleOpenFeature(item)}
+                    className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-[0_2px_14px_rgba(0,0,0,0.03)] hover:shadow-xl hover:border-blue-400/60 hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between group cursor-pointer"
                   >
                     <div>
                       {/* Top Row: Icon & Category/Badge */}
@@ -586,17 +571,6 @@ const FeaturesPortal = ({ onBackToLanding, onOpenContact }) => {
 
         </div>
       </main>
-
-      {/* Modals */}
-      <ParModal isOpen={isParOpen} onClose={() => setIsParOpen(false)} />
-      <ArchiveModal isOpen={isArchiveOpen} onClose={() => setIsArchiveOpen(false)} />
-      <AssetModal isOpen={isAssetOpen} onClose={() => setIsAssetOpen(false)} />
-      <FeatureDetailModal
-        feature={selectedGenericFeature}
-        isOpen={!!selectedGenericFeature}
-        onClose={() => setSelectedGenericFeature(null)}
-      />
-
     </div>
   );
 };

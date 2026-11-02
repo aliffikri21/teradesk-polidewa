@@ -88,7 +88,7 @@ const Hero = ({ onOpenContact, onNavigateToPortal }) => {
               Workshop Desain Grafis dengan Audiens Siswa/Siswi SMK Negeri 1 Palopo
             </p>
             <button
-              onClick={onNavigateToPortal}
+              onClick={() => onNavigateToPortal && onNavigateToPortal('par')}
               className="text-xs text-blue-300 hover:text-blue-200 flex items-center gap-1 transition-colors font-medium cursor-pointer"
             >
               Cek asesmen program kerja
@@ -117,7 +117,7 @@ const Hero = ({ onOpenContact, onNavigateToPortal }) => {
                 </div>
               </div>
               <button
-                onClick={onNavigateToPortal}
+                onClick={() => onNavigateToPortal && onNavigateToPortal('archive')}
                 className="text-xs text-blue-700 hover:text-blue-900 underline font-medium cursor-pointer"
               >
                 Buka E-Arsip
