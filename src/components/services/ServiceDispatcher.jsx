@@ -7,6 +7,8 @@ import AttendanceServicePage from './AttendanceServicePage';
 import TimelineServicePage from './TimelineServicePage';
 import HrServicePage from './HrServicePage';
 import HelpdeskServicePage from './HelpdeskServicePage';
+import HumasServicePage from './HumasServicePage';
+import KkmServicePage from './KkmServicePage';
 
 const ServiceDispatcher = ({
   serviceId,
@@ -54,10 +56,17 @@ const ServiceDispatcher = ({
     case 'tiket':
     case 'request':
       return <HelpdeskServicePage {...commonProps} />;
+    case 'humas':
+    case 'medpart':
+    case 'relasi':
+      return <HumasServicePage {...commonProps} />;
+    case 'kkm':
+    case 'merch':
+    case 'usaha':
+      return <KkmServicePage {...commonProps} />;
     default:
       return <ParServicePage {...commonProps} />;
   }
 };
 
 export default ServiceDispatcher;
-

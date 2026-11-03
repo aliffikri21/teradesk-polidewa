@@ -22,12 +22,118 @@
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #070B19;
+  background: #f1f5f9;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
+  background: #cbd5e1;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #94a3b8;
+}
+
+/* ==========================================================================
+   Landing Page Cursor & Selection Hygiene:
+   Mencegah kursor berganti menjadi 'type' (I-beam / text cursor) saat mouse
+   ditekan/diklik/drag pada elemen landing page (kartu, teks, tombol, widget).
+   ========================================================================== */
+.landing-page-root {
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+
+.landing-page-root * {
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+
+/* Elemen interaktif tetap mempertahankan kursor pointer (tangan klik) */
+.landing-page-root button,
+.landing-page-root button *,
+.landing-page-root a,
+.landing-page-root a *,
+.landing-page-root [role="button"],
+.landing-page-root [role="button"] *,
+.landing-page-root .cursor-pointer,
+.landing-page-root .cursor-pointer * {
+  cursor: pointer !important;
+}
+
+/* Mencegah ghost drag pada gambar */
+.landing-page-root img {
+  -webkit-user-drag: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Input formulir (seperti newsletter footer) tetap mempertahankan kursor ketik dan pemilihan teks */
+.landing-page-root input,
+.landing-page-root textarea,
+.landing-page-root [contenteditable="true"] {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  cursor: text !important;
+}
+
+/* SaaS Service Content Light Theme Overrides (Nexus Style) */
+.saas-service-content {
+  color: #1e293b;
+}
+
+.saas-service-content .bg-white\/5,
+.saas-service-content .bg-white\/10,
+.saas-service-content .bg-\[\#0a122e\],
+.saas-service-content .bg-\[\#0A122E\],
+.saas-service-content .bg-\[\#0c132c\],
+.saas-service-content .bg-\[\#060D25\],
+.saas-service-content .bg-\[\#08102b\],
+.saas-service-content .bg-\[\#0b1536\],
+.saas-service-content .bg-\[\#0d1430\] {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04) !important;
+}
+
+.saas-service-content .text-white:not([class*="bg-blue"]):not([class*="bg-indigo"]):not([class*="bg-emerald"]):not([class*="bg-slate"]):not([class*="bg-violet"]):not([class*="bg-purple"]):not([class*="bg-rose"]):not([class*="bg-red"]):not([class*="bg-teal"]):not([class*="bg-amber"]):not([class*="bg-cyan"]):not([class*="bg-sky"]):not([class*="bg-green"]) {
+  color: #0f172a !important;
+}
+
+.saas-service-content .text-gray-200,
+.saas-service-content .text-gray-300 {
+  color: #334155 !important;
+}
+
+.saas-service-content .text-gray-400 {
+  color: #64748b !important;
+}
+
+.saas-service-content .border-white\/5,
+.saas-service-content .border-white\/10,
+.saas-service-content .border-white\/15,
+.saas-service-content .border-white\/20 {
+  border-color: #e2e8f0 !important;
+}
+
+.saas-service-content .divide-white\/10 {
+  border-color: #f1f5f9 !important;
+}
+
+.saas-service-content .hover\:bg-white\/5:hover,
+.saas-service-content .hover\:bg-white\/10:hover {
+  background-color: #f8fafc !important;
+}
+
+.saas-service-content input:not([type="checkbox"]):not([type="radio"]),
+.saas-service-content select,
+.saas-service-content textarea {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+.saas-service-content input::placeholder,
+.saas-service-content textarea::placeholder {
+  color: #94a3b8 !important;
 }

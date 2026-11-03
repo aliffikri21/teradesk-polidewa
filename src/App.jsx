@@ -12,8 +12,14 @@ import { initialDefaultAccounts } from './data/defaultAccounts';
 
 function App() {
   const [pendingTarget, setPendingTarget] = useState(() => {
-    if (typeof window !== 'undefined' && window.location.pathname === '/admin') {
-      return { page: 'admin', serviceId: null };
+    if (typeof window !== 'undefined') {
+      if (window.location.pathname === '/admin') {
+        return { page: 'admin', serviceId: null };
+      }
+      if (window.location.pathname.startsWith('/service/')) {
+        const sid = window.location.pathname.replace('/service/', '').trim();
+        return { page: 'service', serviceId: sid };
+      }
     }
     return null;
   });
@@ -25,6 +31,10 @@ function App() {
         return { page: 'login', serviceId: null };
       }
       if (window.location.pathname === '/login') {
+        return { page: 'login', serviceId: null };
+      }
+      if (window.location.pathname.startsWith('/service/')) {
+        // Tamu yang mengakses /service/:id langsung diarahkan ke form login terlebih dahulu
         return { page: 'login', serviceId: null };
       }
     }
@@ -190,6 +200,15 @@ function App() {
     );
   };
 
+  const handleUpdateAccount = (originalNim, updatedAccount) => {
+    setRegisteredAccounts((prev) =>
+      prev.map((acc) => (acc.nim === originalNim ? { ...acc, ...updatedAccount } : acc))
+    );
+    if (authUser && authUser.nim === originalNim) {
+      setAuthUser((prev) => ({ ...prev, ...updatedAccount }));
+    }
+  };
+
   const handleDeleteAccount = (nim) => {
     setRegisteredAccounts((prev) => prev.filter((acc) => acc.nim !== nim));
   };
@@ -231,9 +250,13 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#060D25] text-white font-sans selection:bg-amber-400 selection:text-slate-950 flex flex-col">
+    <div className={`min-h-screen font-sans flex flex-col ${
+      currentView.page === 'landing'
+        ? 'bg-[#060D25] text-white landing-page-root'
+        : 'bg-[#F8FAFC] text-slate-800 selection:bg-blue-600 selection:text-white'
+    }`}>
       {currentView.page === 'landing' ? (
-        <>
+        <div className="landing-page-root w-full flex flex-col">
           {/* Hero Section with Embedded Nav & Sliced Widgets */}
           <Hero
             onOpenContact={() => setIsContactOpen(true)}
@@ -257,7 +280,7 @@ function App() {
             onNavigateToPortal={() => handleNavigate('portal')}
             onOpenDevDashboard={() => handleNavigate('admin')}
           />
-        </>
+        </div>
       ) : currentView.page === 'login' ? (
         /* Halaman Baru: Dedicated Login Page (Trendy Clean White Palette) */
         <LoginPage
@@ -275,6 +298,7 @@ function App() {
           onNavigateToService={(serviceId) => handleNavigate('service', serviceId)}
           accounts={registeredAccounts}
           onAddAccount={handleAddAccount}
+          onUpdateAccount={handleUpdateAccount}
           onUpdatePassword={handleUpdatePassword}
           onDeleteAccount={handleDeleteAccount}
           onResetAccounts={handleResetAccounts}
@@ -284,35 +308,23 @@ function App() {
         />
       ) : currentView.page === 'service' ? (
         /* Halaman Layanan Spesifik (PAR, Arsip, Aset, Kas, dsb.) */
-        <>
-          <ServiceDispatcher
-            serviceId={currentView.serviceId}
-            onBackToPortal={() => handleNavigate('portal')}
-            onBackToLanding={() => handleNavigate('landing')}
-            onSelectService={(serviceId) => handleNavigate('service', serviceId)}
-            authUser={authUser}
-            onLogout={handleLogout}
-          />
-          <Footer
-            onNavigateToPortal={() => handleNavigate('portal')}
-            onOpenDevDashboard={() => handleNavigate('admin')}
-          />
-        </>
+        <ServiceDispatcher
+          serviceId={currentView.serviceId}
+          onBackToPortal={() => handleNavigate('portal')}
+          onBackToLanding={() => handleNavigate('landing')}
+          onSelectService={(serviceId) => handleNavigate('service', serviceId)}
+          authUser={authUser}
+          onLogout={handleLogout}
+        />
       ) : (
         /* Halaman Khusus Portal Fitur & Katalog Aplikasi Organisasi */
-        <>
-          <FeaturesPortal
-            onBackToLanding={() => handleNavigate('landing')}
-            onOpenContact={() => setIsContactOpen(true)}
-            onSelectService={(serviceId) => handleNavigate('service', serviceId)}
-            authUser={authUser}
-            onLogout={handleLogout}
-          />
-          <Footer
-            onNavigateToPortal={() => handleNavigate('portal')}
-            onOpenDevDashboard={() => handleNavigate('admin')}
-          />
-        </>
+        <FeaturesPortal
+          onBackToLanding={() => handleNavigate('landing')}
+          onOpenContact={() => setIsContactOpen(true)}
+          onSelectService={(serviceId) => handleNavigate('service', serviceId)}
+          authUser={authUser}
+          onLogout={handleLogout}
+        />
       )}
 
       {/* Contact Modal */}

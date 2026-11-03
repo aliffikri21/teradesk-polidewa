@@ -14,7 +14,7 @@ const Footer = ({ onOpenDevDashboard }) => {
   };
 
   return (
-    <footer className="w-full bg-[#121318] text-white pt-16 pb-8 border-t border-white/5">
+    <footer className="w-full bg-[#121318] text-white pt-16 pb-8 border-t border-white/5 select-none">
       <div className="max-w-6xl mx-auto px-6 md:px-12">
         {/* Main Footer Row */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 pb-14">
@@ -24,7 +24,8 @@ const Footer = ({ onOpenDevDashboard }) => {
               <img
                 src="/logo-teramedia.png"
                 alt="Logo TERAMEDIA"
-                className="w-8 h-8 object-contain drop-shadow-sm shrink-0"
+                draggable="false"
+                className="w-8 h-8 object-contain drop-shadow-sm shrink-0 select-none"
               />
               <span className="text-lg font-bold tracking-wide">TeraDesk</span>
             </div>
@@ -45,7 +46,7 @@ const Footer = ({ onOpenDevDashboard }) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email Address"
-                className="flex-1 bg-white text-slate-900 placeholder-gray-400 px-4 py-2.5 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium min-h-[44px]"
+                className="flex-1 bg-white text-slate-900 placeholder-gray-400 px-4 py-2.5 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium min-h-[44px] select-text cursor-text"
               />
               <button
                 type="submit"

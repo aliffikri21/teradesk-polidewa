@@ -12,6 +12,8 @@ import {
   Check,
   Headphones,
   FileCheck2,
+  Globe,
+  ShoppingBag,
   Hash,
   X,
   LogOut
@@ -160,23 +162,63 @@ const featuresData = [
   },
   {
     id: 'helpdesk',
-    title: 'Helpdesk & Request Layanan Antar-Divisi',
+    title: 'Helpdesk & Request Desain Pubdok',
     category: 'Administrasi & Legalitas',
     badge: 'Tersedia',
-    badgeColor: 'bg-sky-50 text-sky-700 border-sky-200',
+    badgeColor: 'bg-rose-50 text-rose-700 border-rose-200',
     icon: Headphones,
-    iconColor: 'bg-sky-50 text-sky-600 border-sky-200',
+    iconColor: 'bg-rose-50 text-rose-600 border-rose-200',
     description:
-      'Sistem tiket permohonan bantuan antar divisi: request materi publikasi ke Medinfo, permintaan logistik ke Perlengkapan, dan surat tugas ke Kesekretariatan.',
+      'Sistem tiket request desain publikasi dengan SLA pengerjaan & ukuran canvas (Feed/Story/A3) untuk Divisi Pubdok.',
     longDescription:
       'Hindari permintaan dadakan di chat pribadi yang sering terlupakan. Dengan sistem tiket layanan internal, setiap request memiliki batas waktu penyelesaian yang disepakati bersama.',
     benefits: [
       'Alur request desain publikasi dengan brief yang jelas sejak awal',
       'Menghilangkan miss-komunikasi antar divisi dalam persiapan kegiatan',
-      'Antrean kerja terorganisir untuk divisi pelayanan seperti Medinfo & Logistik',
+      'Antrean kerja terorganisir untuk divisi pelayanan Pubdok & Logistik',
       'Status pengerjaan transparan (Diajukan ➔ Sedang Dikerjakan ➔ Selesai)',
     ],
     primaryAction: 'Buka Layanan Tiket',
+  },
+  {
+    id: 'humas',
+    title: 'Humas & Media Partner Gateway',
+    category: 'Hubungan Masyarakat',
+    badge: 'Modul Divisi',
+    badgeColor: 'bg-sky-50 text-sky-700 border-sky-200',
+    icon: Globe,
+    iconColor: 'bg-sky-50 text-sky-600 border-sky-200',
+    description:
+      'Portal pengajuan permohonan media partner, tinjauan paket promosi medsos, serta buku kontak relasi BEM/UKM kampus dan alumni.',
+    longDescription:
+      'Pusat kendali Divisi Humas untuk menyaring permohonan media partner dari organisasi eksternal, validasi barter publikasi, serta inventarisasi database relasi mitra strategis se-kampus.',
+    benefits: [
+      'Form pengajuan proposal media partner terstandarisasi',
+      'Integrasi langsung peninjauan barter promo ke Divisi Publikasi & Dokumentasi',
+      'Direktori kontak WhatsApp ketua organisasi mitra & alumni',
+      'Arsip riwayat kolaborasi kepanitiaan periode berjalan',
+    ],
+    primaryAction: 'Buka Hub Humas',
+  },
+  {
+    id: 'kkm',
+    title: 'Kreativitas & Kewirausahaan (KKM)',
+    category: 'Kewirausahaan Mahasiswa',
+    badge: 'Modul Divisi',
+    badgeColor: 'bg-amber-50 text-amber-700 border-amber-200',
+    icon: ShoppingBag,
+    iconColor: 'bg-amber-50 text-amber-600 border-amber-200',
+    description:
+      'Manajemen pre-order merchandise resmi TERAMEDIA, penyewaan alat multimedia (kamera, lighting, mic), dan buku kas laba-rugi divisi usaha.',
+    longDescription:
+      'Platform operasional Divisi KKM untuk mengelola unit bisnis mandiri UKM, mulai dari pendataan pesanan hoodie/lanyard, jadwal sewa peralatan multimedia, hingga pelaporan bagi hasil kas organisasi 40%.',
+    benefits: [
+      'Pencatatan pre-order merchandise otomatis anti-salah ukuran dan jumlah',
+      'Jadwal ketersediaan sewa kamera dan jasa liputan acara kampus',
+      'Perhitungan laba-rugi bersih dan otomatisasi alokasi bagi hasil kas UKM',
+      'Status pelunasan pembayaran (Lunas, DP 50%, Menunggu Transfer)',
+    ],
+    primaryAction: 'Buka Portal KKM',
   },
 ];
 
@@ -190,6 +232,8 @@ const FeaturesPortal = ({ onBackToLanding, onOpenContact, onSelectService, authU
     { label: 'Operasional & Aset', count: featuresData.filter(f => f.category === 'Operasional & Aset').length },
     { label: 'Keuangan & Anggaran', count: featuresData.filter(f => f.category === 'Keuangan & Anggaran').length },
     { label: 'Tata Kelola SDM', count: featuresData.filter(f => f.category === 'Tata Kelola SDM').length },
+    { label: 'Hubungan Masyarakat', count: featuresData.filter(f => f.category === 'Hubungan Masyarakat').length },
+    { label: 'Kewirausahaan Mahasiswa', count: featuresData.filter(f => f.category === 'Kewirausahaan Mahasiswa').length },
   ];
 
   const filteredFeatures = featuresData.filter((feat) => {
@@ -213,17 +257,17 @@ const FeaturesPortal = ({ onBackToLanding, onOpenContact, onSelectService, authU
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#060D25] text-white flex flex-col font-sans">
+    <div className="w-full min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col font-sans antialiased selection:bg-blue-600 selection:text-white">
       
-      {/* Top Navigation Bar */}
-      <header className="sticky top-0 z-40 bg-[#060D25]/95 border-b border-white/10">
+      {/* Top Navigation Bar (Clean White SaaS Theme) */}
+      <header className="sticky top-0 z-40 bg-white border-b border-slate-200/80 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
           
           {/* Left: Brand & Back to Landing */}
           <div className="flex items-center gap-4 sm:gap-6">
             <button
               onClick={onBackToLanding}
-              className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 px-3.5 py-2 rounded-full border border-white/10 transition-all duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:outline-none"
+              className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3.5 py-2 rounded-xl transition-all duration-150 cursor-pointer"
             >
               <ArrowLeft size={16} />
               <span>Kembali ke Beranda</span>
@@ -233,10 +277,10 @@ const FeaturesPortal = ({ onBackToLanding, onOpenContact, onSelectService, authU
               <img
                 src="/logo-teramedia.png"
                 alt="Logo TERAMEDIA"
-                className="w-7 h-7 object-contain drop-shadow-sm shrink-0"
+                className="w-7 h-7 object-contain drop-shadow-xs shrink-0"
               />
-              <span className="text-base font-bold tracking-wide text-white">TeraDesk</span>
-              <span className="text-[10px] bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2.5 py-0.5 rounded-full font-semibold">
+              <span className="text-base font-extrabold tracking-tight text-slate-900">TeraDesk</span>
+              <span className="text-[10px] bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-0.5 rounded-full font-bold">
                 Workspace Hub
               </span>
             </div>
@@ -245,15 +289,15 @@ const FeaturesPortal = ({ onBackToLanding, onOpenContact, onSelectService, authU
           {/* Right: Quick CTA & User Status / Logout */}
           <div className="flex items-center gap-3">
             {authUser && (
-              <div className="hidden sm:flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl text-xs">
-                <div className="w-5 h-5 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center font-bold text-[10px]">
-                  {authUser.name ? authUser.name.charAt(0) : 'P'}
+              <div className="hidden sm:flex items-center gap-2 bg-slate-50 border border-slate-200/80 px-3 py-1.5 rounded-xl text-xs">
+                <div className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-[10px]">
+                  {authUser.name ? authUser.name.charAt(0) : 'A'}
                 </div>
                 <div className="text-left">
-                  <p className="font-bold text-white text-[11px] leading-tight truncate max-w-[120px]">
+                  <p className="font-bold text-slate-900 text-[11px] leading-tight truncate max-w-[120px]">
                     {authUser.name || authUser.nim}
                   </p>
-                  <p className="text-[9px] text-gray-400 font-mono leading-none">
+                  <p className="text-[9px] text-slate-400 font-mono leading-none">
                     NIM: {authUser.nim}
                   </p>
                 </div>
@@ -262,15 +306,15 @@ const FeaturesPortal = ({ onBackToLanding, onOpenContact, onSelectService, authU
 
             <button
               onClick={onOpenContact}
-              className="bg-[#FFA000] hover:bg-[#ffaa1a] text-slate-950 font-bold px-4 py-2 rounded-full text-xs sm:text-sm transition-all duration-150 shadow-md active:scale-95 cursor-pointer focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:outline-none"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl text-xs sm:text-sm transition-all duration-150 shadow-xs cursor-pointer"
             >
-              Konsultasi
+              Bantuan Admin
             </button>
 
             {onLogout && (
               <button
                 onClick={onLogout}
-                className="flex items-center gap-1.5 text-xs font-semibold text-rose-300 hover:text-white bg-rose-500/15 hover:bg-rose-500/30 px-3 py-2 rounded-xl border border-rose-500/30 transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 text-xs font-semibold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-2 rounded-xl border border-rose-200 transition-colors cursor-pointer"
                 title="Keluar / Reset Sesi Organisasi"
               >
                 <LogOut size={14} />
@@ -283,50 +327,50 @@ const FeaturesPortal = ({ onBackToLanding, onOpenContact, onSelectService, authU
       </header>
 
       {/* Hero Portal Header */}
-      <section className="relative w-full pt-10 pb-14 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-[#091334] to-[#060D25] border-b border-white/10">
+      <section className="relative w-full pt-10 pb-12 px-4 sm:px-6 lg:px-8 bg-white border-b border-slate-200/80">
         <div className="relative max-w-5xl mx-auto flex flex-col items-center text-center">
           
           {/* Breadcrumb Navigation */}
-          <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-gray-400 mb-5 font-medium">
-            <button onClick={onBackToLanding} className="hover:text-white transition-colors cursor-pointer">
+          <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-slate-400 mb-4 font-medium">
+            <button onClick={onBackToLanding} className="hover:text-slate-900 transition-colors cursor-pointer">
               Beranda
             </button>
             <span>/</span>
-            <span className="text-amber-300">Portal Fitur Organisasi</span>
+            <span className="text-blue-600 font-bold">Portal Fitur Organisasi</span>
           </nav>
 
-          <span className="text-xs font-bold uppercase tracking-widest text-amber-400 mb-3">
+          <span className="text-[11px] font-bold uppercase tracking-widest text-blue-600 mb-2">
             Ekosistem Efisiensi Kerja Organisasi Modern
           </span>
 
-          <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white mb-4 leading-tight">
-            Katalog Fitur & Solusi Digital <br className="hidden sm:inline" />
-            <span className="text-amber-300">
-              Tingkatkan Produktivitas Pengurus Organisasi
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 mb-3 leading-tight">
+            Katalog 8 Layanan & Solusi Digital <br className="hidden sm:inline" />
+            <span className="text-blue-600">
+              TeraDesk TERAMEDIA
             </span>
           </h1>
 
-          <p className="text-gray-300 text-xs sm:text-sm md:text-base max-w-3xl mb-8 leading-relaxed font-normal">
+          <p className="text-slate-500 text-xs sm:text-sm md:text-base max-w-3xl mb-8 leading-relaxed font-normal">
             Satu platform terintegrasi untuk menangani alur persetujuan program kerja (PAR), digitalisasi surat dan dokumen arsip, serta peminjaman aset inventaris organisasi secara transparan.
           </p>
 
-          {/* Key Stat Cards - solid clean surfaces */}
+          {/* Key Stat Cards - SaaS Clean White */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full max-w-3xl">
-            <div className="bg-[#0b1536] border border-white/10 rounded-2xl p-4 text-center">
-              <div className="text-xl sm:text-2xl font-black text-amber-400">8 Modul</div>
-              <div className="text-[11px] text-gray-300 mt-0.5 font-medium">Siap Digunakan</div>
+            <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 text-center">
+              <div className="text-xl sm:text-2xl font-black text-slate-900">8 Modul</div>
+              <div className="text-[11px] text-slate-500 mt-0.5 font-medium">Siap Digunakan</div>
             </div>
-            <div className="bg-[#0b1536] border border-white/10 rounded-2xl p-4 text-center">
-              <div className="text-xl sm:text-2xl font-black text-emerald-400">&lt; 24 Jam</div>
-              <div className="text-[11px] text-gray-300 mt-0.5 font-medium">Siklus Approval PAR</div>
+            <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 text-center">
+              <div className="text-xl sm:text-2xl font-black text-emerald-600">&lt; 24 Jam</div>
+              <div className="text-[11px] text-slate-500 mt-0.5 font-medium">Siklus Approval PAR</div>
             </div>
-            <div className="bg-[#0b1536] border border-white/10 rounded-2xl p-4 text-center">
-              <div className="text-xl sm:text-2xl font-black text-blue-400">100%</div>
-              <div className="text-[11px] text-gray-300 mt-0.5 font-medium">E-Arsip Cloud Aman</div>
+            <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 text-center">
+              <div className="text-xl sm:text-2xl font-black text-blue-600">100%</div>
+              <div className="text-[11px] text-slate-500 mt-0.5 font-medium">E-Arsip Cloud Aman</div>
             </div>
-            <div className="bg-[#0b1536] border border-white/10 rounded-2xl p-4 text-center">
-              <div className="text-xl sm:text-2xl font-black text-purple-400">0 Konflik</div>
-              <div className="text-[11px] text-gray-300 mt-0.5 font-medium">Peminjaman Aset</div>
+            <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 text-center">
+              <div className="text-xl sm:text-2xl font-black text-purple-600">0 Konflik</div>
+              <div className="text-[11px] text-slate-500 mt-0.5 font-medium">Peminjaman Aset</div>
             </div>
           </div>
 
@@ -334,11 +378,11 @@ const FeaturesPortal = ({ onBackToLanding, onOpenContact, onSelectService, authU
       </section>
 
       {/* Main Content Area: Light / Clean Workspace Look */}
-      <main className="w-full bg-[#F8FAFC] text-slate-900 py-12 px-4 sm:px-6 lg:px-8 grow">
+      <main className="w-full bg-[#F8FAFC] text-slate-900 py-10 px-4 sm:px-6 lg:px-8 grow">
         <div className="max-w-7xl mx-auto space-y-10">
 
-          {/* Quick Actions Shortcuts Bar (Semantic SVGs, accessible micro-interactions) */}
-          <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200/90">
+          {/* Quick Actions Shortcuts Bar */}
+          <div className="bg-white rounded-3xl p-6 shadow-xs border border-slate-200/90">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>

@@ -97,7 +97,7 @@ const Features = ({ onNavigateToPortal }) => {
               <div
                 key={index}
                 onClick={() => onNavigateToPortal && onNavigateToPortal(item.serviceId)}
-                className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-xl hover:border-blue-400/50 hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between group cursor-pointer"
+                className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-xl hover:border-blue-400/50 hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between group cursor-pointer select-none"
               >
                 <div>
                   {/* Circular Icon Container */}

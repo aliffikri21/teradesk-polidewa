@@ -12,15 +12,15 @@
     "semantic_hash": ""
   },
   "src/App.jsx": {
-    "mtime": 1793648945.3580647,
-    "seen": 1793649413.9808302,
-    "ast_hash": "f859e4cbcd547b17e4ccafe7e4ff3ec8",
+    "mtime": 1793675786.8249226,
+    "seen": 1793676199.190001,
+    "ast_hash": "7c8781d859cdca9efe4adc578cbf0d79",
     "semantic_hash": ""
   },
   "src/components/AboutUs.jsx": {
-    "mtime": 1793646012.3101037,
-    "seen": 1793646329.4030185,
-    "ast_hash": "34dcde9783375b4f3938ab5a43e5e8df",
+    "mtime": 1793675573.0755627,
+    "seen": 1793676199.190001,
+    "ast_hash": "4daae8b8fbc6020e62199fbcfd7e02bc",
     "semantic_hash": ""
   },
   "src/components/ContactModal.jsx": {
@@ -30,27 +30,27 @@
     "semantic_hash": ""
   },
   "src/components/Features.jsx": {
-    "mtime": 1793646012.4153695,
-    "seen": 1793646329.4030185,
-    "ast_hash": "eafd5ad3cf68542977b679fc22f08ae6",
+    "mtime": 1793675573.223223,
+    "seen": 1793676199.190001,
+    "ast_hash": "ef125901b89af6233ea6e1fd5afa20a2",
     "semantic_hash": ""
   },
   "src/components/FeaturesPortal.jsx": {
-    "mtime": 1793646353.4337504,
-    "seen": 1793646476.7795246,
-    "ast_hash": "1f628fc91c83f08774901fdacc0604f2",
+    "mtime": 1793674417.2742195,
+    "seen": 1793675318.1041253,
+    "ast_hash": "cfa00b2f0c7e575ad7bd9ef9d6c9080b",
     "semantic_hash": ""
   },
   "src/components/Footer.jsx": {
-    "mtime": 1793646515.1928113,
-    "seen": 1793646904.1645515,
-    "ast_hash": "ec465f7ca29b222799cdd40be556b48b",
+    "mtime": 1793675573.2786772,
+    "seen": 1793676199.190001,
+    "ast_hash": "479519bd880ef69d293d3df2466b20a0",
     "semantic_hash": ""
   },
   "src/components/Hero.jsx": {
-    "mtime": 1793646353.8029397,
-    "seen": 1793646476.7795246,
-    "ast_hash": "7815981e528d44d86354e7ec2896e2fa",
+    "mtime": 1793681562.777828,
+    "seen": 1793681614.8936012,
+    "ast_hash": "0fc227b9e4e18fd7d35fe9579e9a2145",
     "semantic_hash": ""
   },
   "src/main.jsx": {
@@ -912,15 +912,15 @@
     "semantic_hash": ""
   },
   "src/components/services/ServiceDispatcher.jsx": {
-    "mtime": 1793602732.2466404,
-    "seen": 1793603229.3766212,
-    "ast_hash": "3dad7afbfccfc263faae897af8332829",
+    "mtime": 1793674417.9175875,
+    "seen": 1793675318.1041253,
+    "ast_hash": "0dc66cf7366f08d2d68a51aac7781448",
     "semantic_hash": ""
   },
   "src/components/services/ServicePageLayout.jsx": {
-    "mtime": 1793602732.349342,
-    "seen": 1793603229.3766212,
-    "ast_hash": "6cc2729280ba0e76dc069461fd0af26a",
+    "mtime": 1793674417.9997709,
+    "seen": 1793675318.1041253,
+    "ast_hash": "cec4d2677e3ce52cbb20da5686fdc7bc",
     "semantic_hash": ""
   },
   "src/components/services/TimelineServicePage.jsx": {
@@ -942,9 +942,9 @@
     "semantic_hash": ""
   },
   "src/components/admin/AdminDashboardPage.jsx": {
-    "mtime": 1793649341.09876,
-    "seen": 1793649413.9808302,
-    "ast_hash": "2074ebe3d9d8f873c13eedb3f51b0ea8",
+    "mtime": 1793676440.66707,
+    "seen": 1793677597.088457,
+    "ast_hash": "2ecde00ba496f7993a1d0bd3f0429cb0",
     "semantic_hash": ""
   },
   "Landing Page.png": {
@@ -975,6 +975,18 @@
     "mtime": 1793647398.5280795,
     "seen": 1793647994.1857057,
     "ast_hash": "4a23f72ff81dac0da490a0aab98cc818",
+    "semantic_hash": ""
+  },
+  "src/components/services/HumasServicePage.jsx": {
+    "mtime": 1793674417.7506351,
+    "seen": 1793675318.1041253,
+    "ast_hash": "3b8ed2bdeb0befbca633b2efd01704e9",
+    "semantic_hash": ""
+  },
+  "src/components/services/KkmServicePage.jsx": {
+    "mtime": 1793674417.8793674,
+    "seen": 1793675318.1041253,
+    "ast_hash": "aafea908dbf2c833f1de83f67370bd7b",
     "semantic_hash": ""
   }
 }

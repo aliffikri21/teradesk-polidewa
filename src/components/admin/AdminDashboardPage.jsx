@@ -38,18 +38,21 @@ import {
   Clock,
   Database,
   SlidersHorizontal,
-  Layers
+  Layers,
+  Globe,
+  ShoppingBag,
+  Award,
+  TrendingUp
 } from 'lucide-react';
 
 const divisionsList = [
   'Semua Divisi',
-  'BPH',
-  'Medinfo',
-  'Kaderisasi',
-  'Minat & Bakat',
-  'Dana Usaha',
-  'Humas & Jaringan',
-  'Inventaris & Logistik',
+  'BPH (Badan Pengurus Harian)',
+  'Divisi Kesekretariatan',
+  'Divisi Publikasi dan Dokumentasi',
+  'Divisi Humas',
+  'Divisi Kaderisasi',
+  'Divisi KKM (Kewirausahaan)',
 ];
 
 const availableServices = [
@@ -67,13 +70,57 @@ const availableServices = [
   {
     id: 'archive',
     title: 'Digitalisasi E-Arsip & Persuratan',
-    category: 'Administrasi & Legalitas',
+    category: 'Divisi Kesekretariatan',
     badge: 'Modul Inti',
     icon: FolderArchive,
     color: 'text-blue-600 bg-blue-50 border-blue-200/80',
-    description: 'Repositori SK, generator kode nomor surat dinas otomatis, dan brankas penyimpanan berkas LPJ.',
-    pic: 'Kesekretariatan',
+    description: 'Generator nomor surat dinas otomatis anti-bentrok, repositori SK, dan checklist kelengkapan berkas LPJ.',
+    pic: 'Divisi Kesekretariatan',
     activeCount: '148 Surat',
+  },
+  {
+    id: 'helpdesk',
+    title: 'Tiket Desain & Publikasi Pubdok',
+    category: 'Publikasi & Dokumentasi',
+    badge: 'Modul Divisi',
+    icon: Headphones,
+    color: 'text-rose-600 bg-rose-50 border-rose-200/80',
+    description: 'Tiket request desain visual (Feed/Story/A3/Twibbon), SLA pengerjaan, dan papan kanban kerja Pubdok.',
+    pic: 'Publikasi & Dokumentasi',
+    activeCount: '6 Tiket Aktif',
+  },
+  {
+    id: 'humas',
+    title: 'Media Partner Gateway & Relasi',
+    category: 'Hubungan Masyarakat',
+    badge: 'Modul Divisi',
+    icon: Globe,
+    color: 'text-sky-600 bg-sky-50 border-sky-200/80',
+    description: 'Tinjauan proposal media partner, koordinasi barter promosi dengan Pubdok, & direktori kontak relasi/alumni.',
+    pic: 'Divisi Humas',
+    activeCount: '8 Pengajuan Medpart',
+  },
+  {
+    id: 'hr',
+    title: 'Rapor Kader & Scoring Keaktifan',
+    category: 'Kaderisasi & SDM',
+    badge: 'Modul Divisi',
+    icon: Users,
+    color: 'text-violet-600 bg-violet-50 border-violet-200/80',
+    description: 'Scoring keaktifan kader, tracking rekrutmen/diksar, database profil anggota, dan sertifikasi.',
+    pic: 'Divisi Kaderisasi',
+    activeCount: '48 Kader Aktif',
+  },
+  {
+    id: 'kkm',
+    title: 'Kreativitas & Kewirausahaan (KKM)',
+    category: 'Kewirausahaan Mahasiswa',
+    badge: 'Modul Divisi',
+    icon: ShoppingBag,
+    color: 'text-amber-600 bg-amber-50 border-amber-200/80',
+    description: 'Pre-order official merchandise (hoodie, lanyard), sewa alat multimedia/liputan, dan kas laba-rugi KKM.',
+    pic: 'Divisi KKM',
+    activeCount: '38 Order Pre-Order',
   },
   {
     id: 'asset',
@@ -81,9 +128,9 @@ const availableServices = [
     category: 'Operasional & Aset',
     badge: 'Modul Inti',
     icon: Boxes,
-    color: 'text-amber-600 bg-amber-50 border-amber-200/80',
+    color: 'text-emerald-600 bg-emerald-50 border-emerald-200/80',
     description: 'Pencatatan inventaris alat multimedia (kamera, mic, sound), booking ruang rapat, dan audit fisik.',
-    pic: 'Inventaris & Logistik',
+    pic: 'Logistik & BPH',
     activeCount: '24 Alat Terdata',
   },
   {
@@ -105,7 +152,7 @@ const availableServices = [
     icon: ClipboardCheck,
     color: 'text-purple-600 bg-purple-50 border-purple-200/80',
     description: 'Check-in rapat pleno dan proker via scan QR code instan dengan rekapitulasi kehadiran real-time.',
-    pic: 'Kaderisasi & SDM',
+    pic: 'Kesekretariatan',
     activeCount: '94% Kehadiran',
   },
   {
@@ -119,28 +166,6 @@ const availableServices = [
     pic: 'Ketua Umum & BPH',
     activeCount: '16 Agenda',
   },
-  {
-    id: 'hr',
-    title: 'Database Anggota & Struktur Pengurus',
-    category: 'Tata Kelola SDM',
-    badge: 'Tersedia',
-    icon: Users,
-    color: 'text-violet-600 bg-violet-50 border-violet-200/80',
-    description: 'Direktori kader aktif, struktur hierarki divisi, dan riwayat penugasan kepanitiaan organisasi.',
-    pic: 'Kaderisasi',
-    activeCount: '48 Kader Aktif',
-  },
-  {
-    id: 'helpdesk',
-    title: 'Helpdesk & Request Desain Medinfo',
-    category: 'Layanan Kreatif',
-    badge: 'Tersedia',
-    icon: Headphones,
-    color: 'text-rose-600 bg-rose-50 border-rose-200/80',
-    description: 'Tiket bantuan teknis operasional dan alur permohonan materi visual ke Divisi Medinfo.',
-    pic: 'Media & Informasi',
-    activeCount: '6 Tiket Aktif',
-  },
 ];
 
 const getTimestamp = () => new Date().toLocaleTimeString('id-ID');
@@ -152,6 +177,7 @@ const AdminDashboardPage = ({
   onNavigateToService,
   accounts,
   onAddAccount,
+  onUpdateAccount,
   onUpdatePassword,
   onDeleteAccount,
   onResetAccounts,
@@ -172,11 +198,23 @@ const AdminDashboardPage = ({
   const [isAddFormOpen, setIsAddFormOpen] = useState(false);
   const [formNim, setFormNim] = useState('');
   const [formName, setFormName] = useState('');
-  const [formDivision, setFormDivision] = useState('Medinfo');
+  const [formDivision, setFormDivision] = useState('Divisi Kesekretariatan');
   const [formRole, setFormRole] = useState('Anggota Aktif');
   const [formPassword, setFormPassword] = useState('password123');
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
+
+  // Form State for Editing Account
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingTargetNim, setEditingTargetNim] = useState('');
+  const [editFormNim, setEditFormNim] = useState('');
+  const [editFormName, setEditFormName] = useState('');
+  const [editFormDivision, setEditFormDivision] = useState('Divisi Kesekretariatan');
+  const [editFormRole, setEditFormRole] = useState('Anggota Aktif');
+  const [editFormPassword, setEditFormPassword] = useState('');
+  const [editFormShowPass, setEditFormShowPass] = useState(false);
+  const [editFormError, setEditFormError] = useState('');
+  const [editFormSuccess, setEditFormSuccess] = useState('');
 
   // Password Visibility toggles per row
   const [visiblePasswords, setVisiblePasswords] = useState({});
@@ -209,6 +247,8 @@ const AdminDashboardPage = ({
     timeline: true,
     hr: true,
     helpdesk: true,
+    humas: true,
+    kkm: true,
   });
 
   // Mock PAR Submissions
@@ -216,7 +256,7 @@ const AdminDashboardPage = ({
     {
       id: 'PAR-2026-001',
       title: 'Latihan Dasar Kepemimpinan (LDK) 2026',
-      division: 'Kaderisasi',
+      division: 'Divisi Kaderisasi',
       budget: 'Rp 8.500.000',
       date: '15 - 17 Nov 2026',
       status: 'Review BPH',
@@ -226,7 +266,7 @@ const AdminDashboardPage = ({
     {
       id: 'PAR-2026-002',
       title: 'Workshop Desain Grafis & UI/UX Multimedia',
-      division: 'Medinfo',
+      division: 'Divisi Publikasi dan Dokumentasi',
       budget: 'Rp 3.200.000',
       date: '28 Nov 2026',
       status: 'Disetujui',
@@ -235,23 +275,208 @@ const AdminDashboardPage = ({
     },
     {
       id: 'PAR-2026-003',
-      title: 'Turnamen Futsal Antar Angkatan TeraCup',
-      division: 'Minat & Bakat',
-      budget: 'Rp 5.400.000',
+      title: 'Media Visit & Studi Banding Lembaga Pers Mahasiswa',
+      division: 'Divisi Humas',
+      budget: 'Rp 4.200.000',
       date: '05 Des 2026',
-      status: 'Perlu Revisi',
-      statusColor: 'bg-rose-50 text-rose-700 border-rose-200',
+      status: 'Review Kadiv',
+      statusColor: 'bg-blue-50 text-blue-700 border-blue-200',
       pic: 'Rian Pratama',
     },
     {
       id: 'PAR-2026-004',
-      title: 'Seminar Kewirausahaan & Inkubasi Bisnis',
-      division: 'Dana Usaha',
-      budget: 'Rp 4.750.000',
+      title: 'Produksi Merchandise Resmi & Ekspo Kewirausahaan',
+      division: 'Divisi KKM (Kewirausahaan)',
+      budget: 'Rp 5.750.000',
       date: '12 Des 2026',
-      status: 'Review Kadiv',
-      statusColor: 'bg-blue-50 text-blue-700 border-blue-200',
+      status: 'Disetujui',
+      statusColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
       pic: 'Ilham Ramadhan',
+    },
+  ]);
+
+  // 1. DIVISI KESEKRETARIATAN: State & Logic
+  const [suratGenType, setSuratGenType] = useState('UND');
+  const [suratGenDiv, setSuratGenDiv] = useState('KESEKRETARIATAN');
+  const [suratGenPerihal, setSuratGenPerihal] = useState('Undangan Rapat Pleno Koordinasi');
+  const [generatedSurat, setGeneratedSurat] = useState('024/TERA-UKM/UND/SEKRE/XI/2026');
+  const [copiedSuratNum, setCopiedSuratNum] = useState(false);
+  const [suratLog, setSuratLog] = useState([
+    {
+      id: 1,
+      no: '023/TERA-UKM/UND/BPH/XI/2026',
+      perihal: 'Undangan Rapat Kerja Paruh Periode',
+      div: 'BPH',
+      date: '02 Nov 2026',
+      status: 'Terdaftar Resmi',
+    },
+    {
+      id: 2,
+      no: '022/TERA-UKM/ST/PUBDOK/X/2026',
+      perihal: 'Surat Tugas Dokumentasi Dies Natalis',
+      div: 'Pubdok',
+      date: '28 Okt 2026',
+      status: 'Terdaftar Resmi',
+    },
+    {
+      id: 3,
+      no: '021/TERA-UKM/SP/KADER/X/2026',
+      perihal: 'Surat Permohonan Peminjaman Aula Kampus',
+      div: 'Kaderisasi',
+      date: '22 Okt 2026',
+      status: 'Terdaftar Resmi',
+    },
+  ]);
+
+  // 2. DIVISI PUBLIKASI & DOKUMENTASI (PUBDOK): State & Logic
+  const [pubdokTickets, setPubdokTickets] = useState([
+    {
+      id: 'PUB-001',
+      title: 'Feed & Reels Open Recruitment Kader Muda 2026',
+      division: 'Divisi Kaderisasi',
+      canvas: 'Feed 1:1 + Reels 9:16',
+      deadline: '08 Nov 2026',
+      status: 'Dikerjakan',
+      statusColor: 'bg-amber-50 text-amber-700 border-amber-200',
+      designer: 'Bagas Aditya (Pubdok)',
+    },
+    {
+      id: 'PUB-002',
+      title: 'Backdrop Spanduk Panggung & Sertifikat Seminar',
+      division: 'BPH',
+      canvas: 'Spanduk 3x1m & A4 Cetak',
+      deadline: '14 Nov 2026',
+      status: 'Antrean',
+      statusColor: 'bg-blue-50 text-blue-700 border-blue-200',
+      designer: 'Menunggu Penugasan',
+    },
+    {
+      id: 'PUB-003',
+      title: 'Twibbon Mahasiswa Baru Dies Natalis Ke-12',
+      division: 'Divisi Kesekretariatan',
+      canvas: 'Twibbon PNG Transparan',
+      deadline: '20 Nov 2026',
+      status: 'Selesai',
+      statusColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      designer: 'Nadia Safitri (Pubdok)',
+    },
+  ]);
+  const [pubdokFilter, setPubdokFilter] = useState('Semua');
+  const [formPubTitle, setFormPubTitle] = useState('');
+  const [formPubDiv, setFormPubDiv] = useState('Divisi Kaderisasi');
+  const [formPubCanvas, setFormPubCanvas] = useState('Feed Instagram (1:1)');
+  const [formPubDeadline, setFormPubDeadline] = useState('');
+
+  // 3. DIVISI HUMAS: State & Logic
+  const [humasMedparts, setHumasMedparts] = useState([
+    {
+      id: 'MP-01',
+      event: 'Seminar Nasional AI & Web3 Ecosystem',
+      organizer: 'BEM Fasilkom',
+      package: 'Paket Gold (Feed + Reels + Story)',
+      date: '18 Nov 2026',
+      pic: 'Dimas Setiawan (0812-9876-5432)',
+      status: 'Menunggu Review',
+      statusColor: 'bg-amber-50 text-amber-700 border-amber-200',
+    },
+    {
+      id: 'MP-02',
+      event: 'Turnamen Futsal Se-Kampus TeraCup',
+      organizer: 'UKM Olahraga',
+      package: 'Paket Silver (Story + Logo Backdrop)',
+      date: '25 Nov 2026',
+      pic: 'Rian Fahrezi (0857-1122-3344)',
+      status: 'Disetujui - Forward Pubdok',
+      statusColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    },
+    {
+      id: 'MP-03',
+      event: 'Lomba Fotografi & Videografi Kreatif',
+      organizer: 'HIMAFOTO',
+      package: 'Paket Barter Media',
+      date: '01 Des 2026',
+      pic: 'Maya Safira (0813-5566-7788)',
+      status: 'Tayang di Medsos',
+      statusColor: 'bg-blue-50 text-blue-700 border-blue-200',
+    },
+  ]);
+
+  // 4. DIVISI KADERISASI: State & Logic
+  const [kaderRaporList] = useState([
+    {
+      nim: '24401012',
+      name: 'Rizky Ramadhan',
+      division: 'Divisi Publikasi dan Dokumentasi',
+      diksar: 'Lulus Diksar I & II',
+      score: 94,
+      attendance: '96%',
+      grade: 'A (Sangat Aktif)',
+      gradeColor: 'text-emerald-700 bg-emerald-50 border-emerald-200',
+      certStatus: 'Siap Terbit',
+    },
+    {
+      nim: '24402034',
+      name: 'Dewi Lestari',
+      division: 'Divisi Humas',
+      diksar: 'Lulus Diksar I & II',
+      score: 88,
+      attendance: '92%',
+      grade: 'A (Sangat Aktif)',
+      gradeColor: 'text-emerald-700 bg-emerald-50 border-emerald-200',
+      certStatus: 'Siap Terbit',
+    },
+    {
+      nim: '25403055',
+      name: 'Fikri Haikal',
+      division: 'Divisi KKM',
+      diksar: 'Lulus Diksar I',
+      score: 76,
+      attendance: '80%',
+      grade: 'B (Aktif)',
+      gradeColor: 'text-blue-700 bg-blue-50 border-blue-200',
+      certStatus: 'Proses Magang',
+    },
+    {
+      nim: '25404099',
+      name: 'Nabila Putri',
+      division: 'Divisi Kesekretariatan',
+      diksar: 'Lulus Diksar I',
+      score: 68,
+      attendance: '72%',
+      grade: 'C (Cukup)',
+      gradeColor: 'text-amber-700 bg-amber-50 border-amber-200',
+      certStatus: 'Remedial Presensi',
+    },
+  ]);
+
+  // 5. DIVISI KKM: State & Logic
+  const [kkmOrders, setKkmOrders] = useState([
+    {
+      id: 'PO-01',
+      name: 'Alif Fikri (23404053)',
+      item: 'Official Hoodie TERAMEDIA 2026',
+      size: 'XL',
+      total: 'Rp 165.000',
+      status: 'Lunas',
+      statusColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    },
+    {
+      id: 'PO-02',
+      name: 'Bagas Aditya (23403112)',
+      item: 'Lanyard + ID Card Holder Satin Doff',
+      size: 'All Size',
+      total: 'Rp 25.000',
+      status: 'Lunas',
+      statusColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    },
+    {
+      id: 'PO-03',
+      name: 'Fani Rahmawati (25402011)',
+      item: 'Sticker Pack Hologram Vinyl (6 Pcs)',
+      size: 'Bundle',
+      total: 'Rp 15.000',
+      status: 'DP 50%',
+      statusColor: 'bg-amber-50 text-amber-700 border-amber-200',
     },
   ]);
 
@@ -277,6 +502,120 @@ const AdminDashboardPage = ({
   const handleGenerateRandomPass = () => {
     const randomPass = 'tera' + Math.floor(1000 + Math.random() * 9000);
     setFormPassword(randomPass);
+  };
+
+  // Divisi Kesekretariatan handlers
+  const handleGenerateSurat = (e) => {
+    e.preventDefault();
+    const nextSeq = String(suratLog.length + 24).padStart(3, '0');
+    const romanMonths = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+    const currentRoman = romanMonths[new Date().getMonth()];
+    const newNum = `${nextSeq}/TERA-UKM/${suratGenType}/${suratGenDiv}/${currentRoman}/2026`;
+    setGeneratedSurat(newNum);
+
+    const newEntry = {
+      id: Date.now(),
+      no: newNum,
+      perihal: suratGenPerihal || 'Surat Dinas Organisasi',
+      div: suratGenDiv,
+      date: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }),
+      status: 'Terdaftar Resmi',
+    };
+    setSuratLog([newEntry, ...suratLog]);
+    addLog(`Penerbitan nomor surat resmi baru: ${newNum}`, 'success');
+  };
+
+  const handleCopySurat = () => {
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(generatedSurat);
+    }
+    setCopiedSuratNum(true);
+    setTimeout(() => setCopiedSuratNum(false), 2000);
+  };
+
+  // Divisi Pubdok handlers
+  const handleCreatePubdokTicket = (e) => {
+    e.preventDefault();
+    if (!formPubTitle.trim()) return;
+
+    const newTicket = {
+      id: `PUB-00${pubdokTickets.length + 1}`,
+      title: formPubTitle.trim(),
+      division: formPubDiv,
+      canvas: formPubCanvas,
+      deadline: formPubDeadline || '15 Nov 2026',
+      status: 'Antrean',
+      statusColor: 'bg-blue-50 text-blue-700 border-blue-200',
+      designer: 'Antrean Pubdok',
+    };
+
+    setPubdokTickets([newTicket, ...pubdokTickets]);
+    setFormPubTitle('');
+    addLog(`Tiket request desain baru dibuat: ${newTicket.id} (${newTicket.title})`, 'info');
+  };
+
+  const handleToggleTicketStatus = (ticketId, nextStatus) => {
+    const statusMap = {
+      'Antrean': 'bg-blue-50 text-blue-700 border-blue-200',
+      'Dikerjakan': 'bg-amber-50 text-amber-700 border-amber-200',
+      'Selesai': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    };
+
+    setPubdokTickets(
+      pubdokTickets.map((t) =>
+        t.id === ticketId
+          ? { ...t, status: nextStatus, statusColor: statusMap[nextStatus] || t.statusColor }
+          : t
+      )
+    );
+    addLog(`Update status tiket desain ${ticketId} ➔ ${nextStatus}`, 'success');
+  };
+
+  // Divisi Humas handlers
+  const handleApproveMedpart = (medpartId) => {
+    setHumasMedparts(
+      humasMedparts.map((m) =>
+        m.id === medpartId
+          ? {
+              ...m,
+              status: 'Disetujui - Forward Pubdok',
+              statusColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+            }
+          : m
+      )
+    );
+    addLog(`Pengajuan Medpart ${medpartId} disetujui & diteruskan ke Pubdok`, 'success');
+  };
+
+  const handleRejectMedpart = (medpartId) => {
+    setHumasMedparts(
+      humasMedparts.map((m) =>
+        m.id === medpartId
+          ? {
+              ...m,
+              status: 'Ditolak (Slot Penuh)',
+              statusColor: 'bg-rose-50 text-rose-700 border-rose-200',
+            }
+          : m
+      )
+    );
+    addLog(`Pengajuan Medpart ${medpartId} ditolak`, 'info');
+  };
+
+  // Divisi KKM handlers
+  const handleSetKkmLunas = (orderId) => {
+    setKkmOrders(
+      kkmOrders.map((o) =>
+        o.id === orderId
+          ? {
+              ...o,
+              status: 'Lunas',
+              statusColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+            }
+          : o
+      )
+    );
+    addLog(`Pesanan Pre-Order ${orderId} diverifikasi lunas`, 'success');
   };
 
   const handleAddSubmit = (e) => {
@@ -331,6 +670,76 @@ const AdminDashboardPage = ({
       setFormSuccess('');
       setIsAddFormOpen(false);
     }, 1500);
+  };
+
+  const handleOpenEditModal = (acc) => {
+    setEditingTargetNim(acc.nim);
+    setEditFormNim(acc.nim);
+    setEditFormName(acc.name || '');
+    setEditFormDivision(acc.division || 'Divisi Kesekretariatan');
+    setEditFormRole(acc.role || 'Anggota Aktif');
+    setEditFormPassword(acc.password || '');
+    setEditFormShowPass(false);
+    setEditFormError('');
+    setEditFormSuccess('');
+    setIsEditModalOpen(true);
+  };
+
+  const handleGenerateEditPass = () => {
+    const randomPass = 'tera' + Math.floor(1000 + Math.random() * 9000);
+    setEditFormPassword(randomPass);
+  };
+
+  const handleEditSubmit = (e) => {
+    e.preventDefault();
+    setEditFormError('');
+    setEditFormSuccess('');
+
+    const cleanNim = editFormNim.trim();
+    const cleanName = editFormName.trim();
+    const cleanPass = editFormPassword.trim();
+    const cleanRole = editFormRole.trim();
+
+    if (!cleanNim) {
+      setEditFormError('NIM mahasiswa wajib diisi.');
+      return;
+    }
+    if (!cleanName) {
+      setEditFormError('Nama lengkap mahasiswa wajib diisi.');
+      return;
+    }
+    if (!cleanPass || cleanPass.length < 4) {
+      setEditFormError('Kata sandi minimal 4 karakter.');
+      return;
+    }
+
+    // Check if changed NIM collides with another account
+    if (cleanNim !== editingTargetNim && accounts.some((a) => a.nim === cleanNim)) {
+      setEditFormError(`NIM ${cleanNim} sudah digunakan oleh akun mahasiswa lain.`);
+      return;
+    }
+
+    const updatedAccount = {
+      nim: cleanNim,
+      name: cleanName,
+      division: editFormDivision,
+      role: cleanRole || 'Anggota Aktif',
+      password: cleanPass,
+    };
+
+    if (onUpdateAccount) {
+      onUpdateAccount(editingTargetNim, updatedAccount);
+    } else if (onUpdatePassword) {
+      onUpdatePassword(editingTargetNim, cleanPass);
+    }
+
+    addLog(`Data akun diperbarui: ${cleanName} (NIM: ${cleanNim})`, 'success');
+    setEditFormSuccess(`Data akun ${cleanName} berhasil diperbarui!`);
+
+    setTimeout(() => {
+      setEditFormSuccess('');
+      setIsEditModalOpen(false);
+    }, 1200);
   };
 
   const handleStartEditPassword = (acc) => {
@@ -547,7 +956,7 @@ const AdminDashboardPage = ({
             {/* SECTION 2: TAB LAYANAN ASLI TERADESK */}
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-3">
-                LAYANAN WORKSPACE (8 MODUL)
+                LAYANAN WORKSPACE (10 MODUL)
               </p>
               <div className="space-y-1">
                 {availableServices.map((svc) => {
@@ -1117,21 +1526,21 @@ const AdminDashboardPage = ({
                     <div className="grid grid-cols-3 gap-2 text-left mb-4">
                       <div>
                         <p className="text-[10px] text-slate-400 font-medium flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-violet-600"></span> BPH & Medinfo
+                          <span className="w-1.5 h-1.5 rounded-full bg-violet-600"></span> BPH & Kesekretariatan
                         </p>
-                        <p className="text-sm font-bold text-slate-900 mt-0.5">15 Kader (35%)</p>
+                        <p className="text-sm font-bold text-slate-900 mt-0.5">14 Kader (29%)</p>
                       </div>
                       <div>
                         <p className="text-[10px] text-slate-400 font-medium flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-teal-400"></span> Kaderisasi & Bakat
+                          <span className="w-1.5 h-1.5 rounded-full bg-teal-400"></span> Pubdok & Humas
                         </p>
-                        <p className="text-sm font-bold text-slate-900 mt-0.5">22 Kader (45%)</p>
+                        <p className="text-sm font-bold text-slate-900 mt-0.5">20 Kader (42%)</p>
                       </div>
                       <div>
                         <p className="text-[10px] text-slate-400 font-medium flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span> Logistik & Danus
+                          <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span> Kaderisasi & KKM
                         </p>
-                        <p className="text-sm font-bold text-slate-900 mt-0.5">11 Kader (20%)</p>
+                        <p className="text-sm font-bold text-slate-900 mt-0.5">14 Kader (29%)</p>
                       </div>
                     </div>
                   </div>
@@ -1340,7 +1749,7 @@ const AdminDashboardPage = ({
             </div>
           )}
 
-          {/* TAB: ARCHIVE (DIGITALISASI E-ARSIP & PERSURATAN) */}
+          {/* TAB: ARCHIVE (DIGITALISASI E-ARSIP & PERSURATAN - DIVISI KESEKRETARIATAN) */}
           {currentNav === 'archive' && (
             <div className="max-w-6xl mx-auto space-y-6">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -1350,10 +1759,10 @@ const AdminDashboardPage = ({
                   </div>
                   <div>
                     <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-                      Digitalisasi E-Arsip & Persuratan
+                      Divisi Kesekretariatan: E-Arsip & Persuratan
                     </h1>
                     <p className="text-xs text-slate-500 font-medium">
-                      Repositori cloud SK kepengurusan, generator nomor surat resmi, dan brankas LPJ.
+                      Generator nomor surat dinas otomatis anti-bentrok, checklist kelengkapan LPJ, & repositori SK.
                     </p>
                   </div>
                 </div>
@@ -1367,21 +1776,147 @@ const AdminDashboardPage = ({
                 </button>
               </div>
 
+              {/* Top 3 Summary Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
-                  <span className="text-xs font-bold text-slate-400 uppercase">Generator Nomor Surat</span>
-                  <p className="text-lg font-bold text-slate-900 mt-2 font-mono">019/UND/MEDINFO/XI/2026</p>
-                  <p className="text-xs text-slate-500 mt-1">Kode otomatis anti-bentrok divisi</p>
+                  <span className="text-xs font-bold text-slate-400 uppercase">Nomor Terbit Terakhir</span>
+                  <p className="text-base font-bold text-blue-600 mt-2 font-mono truncate">{generatedSurat}</p>
+                  <p className="text-xs text-slate-500 mt-1">Format baku baku Teramedia 2026</p>
                 </div>
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
-                  <span className="text-xs font-bold text-slate-400 uppercase">Total Surat Masuk & Keluar</span>
-                  <p className="text-lg font-bold text-slate-900 mt-2">148 Dokumen Tersimpan</p>
-                  <p className="text-xs text-emerald-600 mt-1 font-semibold">Semua dokumen terenkripsi</p>
+                  <span className="text-xs font-bold text-slate-400 uppercase">Total Surat Keluar Terdata</span>
+                  <p className="text-2xl font-extrabold text-slate-900 mt-1">{suratLog.length + 23} Dokumen</p>
+                  <p className="text-xs text-emerald-600 mt-1 font-semibold flex items-center gap-1">
+                    <Check size={12} /> Terarsip otomatis di cloud
+                  </p>
                 </div>
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
-                  <span className="text-xs font-bold text-slate-400 uppercase">LPJ Kegiatan Terarsip</span>
-                  <p className="text-lg font-bold text-slate-900 mt-2">8 Berkas Disahkan</p>
-                  <p className="text-xs text-slate-500 mt-1">Siap untuk Musyawarah Besar</p>
+                  <span className="text-xs font-bold text-slate-400 uppercase">Verifikasi Kelengkapan LPJ</span>
+                  <p className="text-2xl font-extrabold text-slate-900 mt-1">4 dari 4 Syarat</p>
+                  <p className="text-xs text-slate-500 mt-1">100% Berkas Siap untuk Mubes</p>
+                </div>
+              </div>
+
+              {/* Interactive Tool: Generator Nomor Surat Otomatis */}
+              <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                      <FolderArchive size={16} className="text-blue-600" />
+                      <span>Generator Nomor Surat Dinas Otomatis (Anti-Bentrok)</span>
+                    </h3>
+                    <p className="text-xs text-slate-500">Pilih kode divisi dan jenis surat untuk mendapatkan nomor resmi instan</p>
+                  </div>
+                  <span className="text-[11px] font-semibold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200">
+                    Sistem Kesekretariatan
+                  </span>
+                </div>
+
+                <form onSubmit={handleGenerateSurat} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-[11px] font-medium text-slate-700 mb-1">Jenis Surat</label>
+                    <select
+                      value={suratGenType}
+                      onChange={(e) => setSuratGenType(e.target.value)}
+                      className="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-200/80 rounded-lg text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
+                    >
+                      <option value="UND">UND (Surat Undangan)</option>
+                      <option value="ST">ST (Surat Tugas Panitia)</option>
+                      <option value="SP">SP (Surat Permohonan / Izin)</option>
+                      <option value="SK">SK (Surat Keputusan)</option>
+                      <option value="PBR">PBR (Surat Pemberitahuan)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-medium text-slate-700 mb-1">Divisi Pemohon</label>
+                    <select
+                      value={suratGenDiv}
+                      onChange={(e) => setSuratGenDiv(e.target.value)}
+                      className="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-200/80 rounded-lg text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
+                    >
+                      <option value="BPH">BPH (Badan Pengurus Harian)</option>
+                      <option value="SEKRE">KESEKRETARIATAN</option>
+                      <option value="PUBDOK">PUBDOK (Publikasi & Dokumentasi)</option>
+                      <option value="HUMAS">HUMAS (Hubungan Masyarakat)</option>
+                      <option value="KADER">KADERISASI</option>
+                      <option value="KKM">KKM (Kewirausahaan)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-medium text-slate-700 mb-1">Perihal / Keperluan Surat</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Contoh: Undangan Narasumber Workshop"
+                      value={suratGenPerihal}
+                      onChange={(e) => setSuratGenPerihal(e.target.value)}
+                      className="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-200/80 rounded-lg text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-3 flex items-center justify-between pt-2">
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Plus size={14} />
+                      <span>Terbitkan & Registrasi Nomor Surat</span>
+                    </button>
+
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-500">Nomor Baru Terbit:</span>
+                      <span className="px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-lg font-mono font-bold text-xs text-slate-900">
+                        {generatedSurat}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleCopySurat}
+                        className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        {copiedSuratNum ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
+                        <span>{copiedSuratNum ? 'Tersalin!' : 'Salin'}</span>
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+              {/* Table of Generated Letters */}
+              <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs">
+                <h4 className="text-sm font-bold text-slate-900 mb-3">Buku Registrasi Nomor Surat Terbit</h4>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50/75 border-y border-slate-200/80 text-slate-600 font-semibold uppercase tracking-wider">
+                      <tr>
+                        <th className="py-2.5 px-3">Nomor Surat Resmi</th>
+                        <th className="py-2.5 px-3">Perihal Dokumen</th>
+                        <th className="py-2.5 px-3">Divisi</th>
+                        <th className="py-2.5 px-3">Tanggal Terbit</th>
+                        <th className="py-2.5 px-3">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {suratLog.map((s) => (
+                        <tr key={s.id} className="hover:bg-slate-50/60 transition-colors">
+                          <td className="py-2.5 px-3 font-mono font-bold text-blue-600">{s.no}</td>
+                          <td className="py-2.5 px-3 font-medium text-slate-900">{s.perihal}</td>
+                          <td className="py-2.5 px-3">
+                            <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-semibold">
+                              {s.div}
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-3 text-slate-500">{s.date}</td>
+                          <td className="py-2.5 px-3">
+                            <span className="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full text-[10px] font-semibold">
+                              <Check size={11} /> {s.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
@@ -1418,7 +1953,7 @@ const AdminDashboardPage = ({
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
                   <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">Tersedia</span>
                   <h3 className="font-bold text-slate-900 mt-2 text-sm">Sony Mirrorless A6400</h3>
-                  <p className="text-xs text-slate-500 mt-1">Kit Lensa 16-50mm • Medinfo</p>
+                  <p className="text-xs text-slate-500 mt-1">Kit Lensa 16-50mm • Divisi Pubdok</p>
                 </div>
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
                   <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">Sedang Dipinjam</span>
@@ -1585,7 +2120,7 @@ const AdminDashboardPage = ({
             </div>
           )}
 
-          {/* TAB: HR (DATABASE ANGGOTA & SDM) */}
+          {/* TAB: HR (DIVISI KADERISASI - RAPOR KADER & SCORING KEAKTIFAN) */}
           {currentNav === 'hr' && (
             <div className="max-w-6xl mx-auto space-y-6">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -1595,10 +2130,10 @@ const AdminDashboardPage = ({
                   </div>
                   <div>
                     <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-                      Database Anggota & Tata Kelola SDM
+                      Divisi Kaderisasi: Rapor Kader & Scoring Keaktifan
                     </h1>
                     <p className="text-xs text-slate-500 font-medium">
-                      Direktori profil pengurus, keahlian khusus, dan histori penugasan kepanitiaan.
+                      Pemantauan keaktifan, tracking kelulusan Diksar, evaluasi anggota, dan penerbitan e-sertifikat.
                     </p>
                   </div>
                 </div>
@@ -1612,28 +2147,97 @@ const AdminDashboardPage = ({
                 </button>
               </div>
 
+              {/* Kaderisasi Metrics */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs text-center">
                   <p className="text-2xl font-extrabold text-slate-900">48</p>
-                  <p className="text-xs text-slate-500 mt-1">Kader Aktif</p>
+                  <p className="text-xs text-slate-500 mt-1 font-medium">Kader Aktif Terdaftar</p>
                 </div>
                 <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs text-center">
-                  <p className="text-2xl font-extrabold text-blue-600">7</p>
-                  <p className="text-xs text-slate-500 mt-1">Divisi Struktural</p>
+                  <p className="text-2xl font-extrabold text-blue-600">92%</p>
+                  <p className="text-xs text-slate-500 mt-1 font-medium">Rata-rata Presensi</p>
                 </div>
                 <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs text-center">
-                  <p className="text-2xl font-extrabold text-emerald-600">100%</p>
-                  <p className="text-xs text-slate-500 mt-1">SK Diterbitkan</p>
+                  <p className="text-2xl font-extrabold text-emerald-600">38</p>
+                  <p className="text-xs text-slate-500 mt-1 font-medium">Lulus Diksar Penuh</p>
                 </div>
                 <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs text-center">
-                  <p className="text-2xl font-extrabold text-purple-600">32</p>
-                  <p className="text-xs text-slate-500 mt-1">Kepanitiaan Aktif</p>
+                  <p className="text-2xl font-extrabold text-purple-600">100%</p>
+                  <p className="text-xs text-slate-500 mt-1 font-medium">E-Sertifikat Siap Terbit</p>
+                </div>
+              </div>
+
+              {/* Rapor Keaktifan Table */}
+              <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                      <Award size={16} className="text-violet-600" />
+                      <span>Rapor Nilai Keaktifan Kader TERAMEDIA 2026</span>
+                    </h3>
+                    <p className="text-xs text-slate-500">Kalkulasi otomatis dari kehadiran pleno, kepanitiaan, dan pengerjaan tugas divisi</p>
+                  </div>
+                  <span className="text-xs font-semibold text-slate-500">Periode 2026/2027</span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50/75 border-y border-slate-200/80 text-slate-600 font-semibold uppercase tracking-wider">
+                      <tr>
+                        <th className="py-2.5 px-3">NIM / Nama Kader</th>
+                        <th className="py-2.5 px-3">Divisi Kepengurusan</th>
+                        <th className="py-2.5 px-3">Status Diksar</th>
+                        <th className="py-2.5 px-3">Presensi</th>
+                        <th className="py-2.5 px-3">Skor Poin</th>
+                        <th className="py-2.5 px-3">Predikat Nilai</th>
+                        <th className="py-2.5 px-3">E-Sertifikat</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {kaderRaporList.map((k) => (
+                        <tr key={k.nim} className="hover:bg-slate-50/60 transition-colors">
+                          <td className="py-3 px-3">
+                            <span className="font-bold text-slate-900 block">{k.name}</span>
+                            <span className="text-[11px] font-mono text-slate-400">NIM: {k.nim}</span>
+                          </td>
+                          <td className="py-3 px-3 font-medium text-slate-700">{k.division}</td>
+                          <td className="py-3 px-3">
+                            <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-semibold">
+                              {k.diksar}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3 font-semibold text-slate-800">{k.attendance}</td>
+                          <td className="py-3 px-3">
+                            <div className="flex items-center gap-2">
+                              <span className="font-extrabold text-slate-900">{k.score}</span>
+                              <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-violet-600 rounded-full"
+                                  style={{ width: `${k.score}%` }}
+                                ></div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-3 px-3">
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${k.gradeColor}`}>
+                              {k.grade}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3">
+                            <span className="text-emerald-700 font-semibold text-[11px] flex items-center gap-1">
+                              <Check size={12} /> {k.certStatus}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
           )}
 
-          {/* TAB: HELPDESK (HELPDESK & REQUEST DESAIN) */}
+          {/* TAB: HELPDESK (DIVISI PUBLIKASI & DOKUMENTASI - PUBDOK TICKET KANBAN) */}
           {currentNav === 'helpdesk' && (
             <div className="max-w-6xl mx-auto space-y-6">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -1643,10 +2247,10 @@ const AdminDashboardPage = ({
                   </div>
                   <div>
                     <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-                      Helpdesk & Request Desain Medinfo
+                      Divisi Pubdok: Sistem Tiket & Antrean Desain Visual
                     </h1>
                     <p className="text-xs text-slate-500 font-medium">
-                      Tiket permohonan materi publikasi visual, feed IG, dan bantuan teknis multimedia.
+                      Manajemen request materi visual (Feed, Story, Spanduk, Twibbon) dengan spesifikasi canvas & SLA jelas.
                     </p>
                   </div>
                 </div>
@@ -1660,23 +2264,378 @@ const AdminDashboardPage = ({
                 </button>
               </div>
 
-              <div className="space-y-3">
-                <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+              {/* Form Input Request Desain Cepat */}
+              <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs">
+                <h3 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
+                  <Plus size={16} className="text-rose-600" />
+                  <span>+ Ajukan Permohonan Desain ke Divisi Pubdok</span>
+                </h3>
+                <form onSubmit={handleCreatePubdokTicket} className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
                   <div>
-                    <span className="font-mono text-[10px] text-rose-600 font-bold block">TIKET-089</span>
-                    <h4 className="text-sm font-bold text-slate-900">Request Desain Poster & Twibbon LDK 2026</h4>
-                    <p className="text-xs text-slate-500">Pengaju: Divisi Kaderisasi • Deadline: 10 Nov 2026</p>
+                    <label className="block font-medium text-slate-700 mb-1">Judul Kebutuhan Desain</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Contoh: Poster Webinar AI"
+                      value={formPubTitle}
+                      onChange={(e) => setFormPubTitle(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200/80 rounded-lg text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-rose-500/20"
+                    />
                   </div>
-                  <span className="text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">Sedang Dikerjakan</span>
+
+                  <div>
+                    <label className="block font-medium text-slate-700 mb-1">Divisi Pemohon</label>
+                    <select
+                      value={formPubDiv}
+                      onChange={(e) => setFormPubDiv(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200/80 rounded-lg text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-rose-500/20"
+                    >
+                      <option value="BPH">BPH</option>
+                      <option value="Divisi Kesekretariatan">Divisi Kesekretariatan</option>
+                      <option value="Divisi Humas">Divisi Humas</option>
+                      <option value="Divisi Kaderisasi">Divisi Kaderisasi</option>
+                      <option value="Divisi KKM">Divisi KKM</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-medium text-slate-700 mb-1">Ukuran / Format Canvas</label>
+                    <select
+                      value={formPubCanvas}
+                      onChange={(e) => setFormPubCanvas(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200/80 rounded-lg text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-rose-500/20"
+                    >
+                      <option value="Feed Instagram (1:1)">Feed Instagram (1:1)</option>
+                      <option value="Story & Reels (9:16)">Story & Reels (9:16)</option>
+                      <option value="Spanduk Banner (3x1m)">Spanduk Banner (3x1m)</option>
+                      <option value="Poster Cetak (A3)">Poster Cetak (A3)</option>
+                      <option value="Twibbon PNG Transparan">Twibbon PNG Transparan</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-medium text-slate-700 mb-1">Batas Waktu (Deadline)</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="date"
+                        value={formPubDeadline}
+                        onChange={(e) => setFormPubDeadline(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200/80 rounded-lg text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-rose-500/20"
+                      />
+                      <button
+                        type="submit"
+                        className="px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-semibold shrink-0 cursor-pointer shadow-xs transition-colors"
+                      >
+                        Kirim
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+              {/* Tickets Kanban List */}
+              <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs space-y-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-900">Antrean Kerja Desain Divisi Pubdok</h4>
+                    <p className="text-xs text-slate-500">Pantau SLA pengerjaan dan ganti status desain secara live</p>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-lg text-xs">
+                    {['Semua', 'Antrean', 'Dikerjakan', 'Selesai'].map((f) => (
+                      <button
+                        key={f}
+                        onClick={() => setPubdokFilter(f)}
+                        className={`px-3 py-1 rounded-md font-semibold transition-all cursor-pointer ${
+                          pubdokFilter === f
+                            ? 'bg-white text-slate-900 shadow-xs'
+                            : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        {f}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
-                <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
-                  <div>
-                    <span className="font-mono text-[10px] text-rose-600 font-bold block">TIKET-090</span>
-                    <h4 className="text-sm font-bold text-slate-900">Permohonan Pinjam Sound Portable & Mic</h4>
-                    <p className="text-xs text-slate-500">Pengaju: Divisi Minat & Bakat • Acara: TeraCup</p>
+                <div className="space-y-3">
+                  {pubdokTickets
+                    .filter((t) => pubdokFilter === 'Semua' || t.status === pubdokFilter)
+                    .map((t) => (
+                      <div
+                        key={t.id}
+                        className="p-4 bg-slate-50/80 hover:bg-slate-50 border border-slate-200/80 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 transition-colors"
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-[11px] font-bold text-rose-600">{t.id}</span>
+                            <span className="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 text-[10px] font-semibold">
+                              {t.canvas}
+                            </span>
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${t.statusColor}`}>
+                              {t.status}
+                            </span>
+                          </div>
+                          <h4 className="text-sm font-bold text-slate-900">{t.title}</h4>
+                          <p className="text-xs text-slate-500">
+                            Pengaju: <span className="font-semibold text-slate-700">{t.division}</span> • Deadline: {t.deadline} • PIC: {t.designer}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+                          {t.status === 'Antrean' && (
+                            <button
+                              onClick={() => handleToggleTicketStatus(t.id, 'Dikerjakan')}
+                              className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-semibold cursor-pointer shadow-xs"
+                            >
+                              Mulai Kerjakan
+                            </button>
+                          )}
+                          {t.status === 'Dikerjakan' && (
+                            <button
+                              onClick={() => handleToggleTicketStatus(t.id, 'Selesai')}
+                              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold cursor-pointer shadow-xs"
+                            >
+                              Tandai Selesai
+                            </button>
+                          )}
+                          {t.status === 'Selesai' && (
+                            <span className="text-xs font-bold text-emerald-700 flex items-center gap-1">
+                              <Check size={14} /> Selesai Siap Upload
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB: HUMAS (DIVISI HUMAS - MEDIA PARTNER GATEWAY & RELASI) */}
+          {currentNav === 'humas' && (
+            <div className="max-w-6xl mx-auto space-y-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 text-sky-600 flex items-center justify-center">
+                    <Globe size={22} />
                   </div>
-                  <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">Disetujui</span>
+                  <div>
+                    <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+                      Divisi Humas: Gateway Media Partner & Relasi
+                    </h1>
+                    <p className="text-xs text-slate-500 font-medium">
+                      Pusat verifikasi permohonan publikasi media partner, barter promosi, & buku kontak relasi kampus.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => onNavigateToService('humas')}
+                  className="flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs"
+                >
+                  <ExternalLink size={14} />
+                  <span>Buka Halaman Humas Penuh</span>
+                </button>
+              </div>
+
+              {/* Humas Summary Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+                  <span className="text-xs font-bold text-slate-400 uppercase">Pengajuan Masuk Bulan Ini</span>
+                  <p className="text-2xl font-extrabold text-slate-900 mt-1">{humasMedparts.length} Permohonan</p>
+                  <p className="text-xs text-sky-600 mt-1 font-semibold">Trafik medpart aktif meningkat</p>
+                </div>
+                <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+                  <span className="text-xs font-bold text-slate-400 uppercase">Mitra Kampus & Alumni</span>
+                  <p className="text-2xl font-extrabold text-slate-900 mt-1">24 Organisasi</p>
+                  <p className="text-xs text-slate-500 mt-1">BEM, DEMA, Himpunan & UKM</p>
+                </div>
+                <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+                  <span className="text-xs font-bold text-slate-400 uppercase">Koordinasi ke Pubdok</span>
+                  <p className="text-2xl font-extrabold text-emerald-600 mt-1">Otomatis Sync</p>
+                  <p className="text-xs text-slate-500 mt-1">Disetujui langsung masuk antrean Medsos</p>
+                </div>
+              </div>
+
+              {/* Medpart Approval Table */}
+              <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900">Pengajuan Media Partner Terbaru</h3>
+                    <p className="text-xs text-slate-500">Tinjau kesesuaian barter publikasi sebelum materi diteruskan ke Medsos</p>
+                  </div>
+                  <span className="text-xs font-semibold text-slate-500">Filter: Semua Event</span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50/75 border-y border-slate-200/80 text-slate-600 font-semibold uppercase tracking-wider">
+                      <tr>
+                        <th className="py-2.5 px-3">Kode / Event</th>
+                        <th className="py-2.5 px-3">Lembaga Penyelenggara</th>
+                        <th className="py-2.5 px-3">Paket Barter</th>
+                        <th className="py-2.5 px-3">Tanggal Kegiatan</th>
+                        <th className="py-2.5 px-3">Kontak PIC</th>
+                        <th className="py-2.5 px-3">Status</th>
+                        <th className="py-2.5 px-3 text-right">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {humasMedparts.map((m) => (
+                        <tr key={m.id} className="hover:bg-slate-50/60 transition-colors">
+                          <td className="py-3 px-3">
+                            <span className="font-bold text-slate-900 block">{m.event}</span>
+                            <span className="font-mono text-[11px] text-slate-400">{m.id}</span>
+                          </td>
+                          <td className="py-3 px-3 font-semibold text-slate-800">{m.organizer}</td>
+                          <td className="py-3 px-3 font-medium text-slate-700">{m.package}</td>
+                          <td className="py-3 px-3 text-slate-600">{m.date}</td>
+                          <td className="py-3 px-3 text-slate-500">{m.pic}</td>
+                          <td className="py-3 px-3">
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${m.statusColor}`}>
+                              {m.status}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3 text-right">
+                            {m.status === 'Menunggu Review' ? (
+                              <div className="flex items-center justify-end gap-1.5">
+                                <button
+                                  onClick={() => handleApproveMedpart(m.id)}
+                                  className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-semibold cursor-pointer"
+                                >
+                                  Setujui
+                                </button>
+                                <button
+                                  onClick={() => handleRejectMedpart(m.id)}
+                                  className="px-2.5 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded text-[11px] font-semibold cursor-pointer"
+                                >
+                                  Tolak
+                                </button>
+                              </div>
+                            ) : (
+                              <span className="text-emerald-700 font-semibold text-[11px]">Terverifikasi</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB: KKM (DIVISI KREATIVITAS & KEWIRAUSAHAAN - MERCH & SEWA ALAT) */}
+          {currentNav === 'kkm' && (
+            <div className="max-w-6xl mx-auto space-y-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center">
+                    <ShoppingBag size={22} />
+                  </div>
+                  <div>
+                    <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+                      Divisi KKM: Kewirausahaan, Merch & Sewa Alat
+                    </h1>
+                    <p className="text-xs text-slate-500 font-medium">
+                      Pre-order merchandise resmi, booking persewaan kamera/multimedia, & pembukuan kas laba-rugi usaha.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => onNavigateToService('kkm')}
+                  className="flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs"
+                >
+                  <ExternalLink size={14} />
+                  <span>Buka Halaman KKM Penuh</span>
+                </button>
+              </div>
+
+              {/* KKM Summary Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+                  <span className="text-xs font-bold text-slate-400 uppercase">Total Omzet Usaha</span>
+                  <p className="text-2xl font-extrabold text-slate-900 mt-1">Rp 14.850.000</p>
+                  <p className="text-xs text-emerald-600 mt-1 font-semibold flex items-center gap-1">
+                    <TrendingUp size={12} /> +24% dari periode lalu
+                  </p>
+                </div>
+                <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+                  <span className="text-xs font-bold text-slate-400 uppercase">Pre-Order Merch Aktif</span>
+                  <p className="text-2xl font-extrabold text-slate-900 mt-1">{kkmOrders.length + 35} Pesanan</p>
+                  <p className="text-xs text-blue-600 mt-1 font-semibold">Hoodie & Lanyard Batch 1</p>
+                </div>
+                <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+                  <span className="text-xs font-bold text-slate-400 uppercase">Sewa Alat & Liputan</span>
+                  <p className="text-2xl font-extrabold text-slate-900 mt-1">5 Jadwal</p>
+                  <p className="text-xs text-purple-600 mt-1 font-semibold">Kamera Sony, Mic, Godox</p>
+                </div>
+                <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+                  <span className="text-xs font-bold text-slate-400 uppercase">Laba Bersih KKM</span>
+                  <p className="text-2xl font-extrabold text-emerald-600 mt-1">Rp 4.920.000</p>
+                  <p className="text-xs text-slate-500 mt-1 font-medium">Bagi Hasil UKM: Rp 1.968.000 (40%)</p>
+                </div>
+              </div>
+
+              {/* Pre-Order Tracking Table */}
+              <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900">Daftar Pesanan Pre-Order Official Merchandise</h3>
+                    <p className="text-xs text-slate-500">Rekapitulasi ukuran kaos hoodie, lanyard, dan status pelunasan</p>
+                  </div>
+                  <button
+                    onClick={() => onNavigateToService('kkm')}
+                    className="text-xs font-bold text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200 hover:bg-amber-100 transition-colors cursor-pointer"
+                  >
+                    + Buat Pesanan Baru di Portal
+                  </button>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50/75 border-y border-slate-200/80 text-slate-600 font-semibold uppercase tracking-wider">
+                      <tr>
+                        <th className="py-2.5 px-3">Kode Order</th>
+                        <th className="py-2.5 px-3">Nama Pemesan / NIM</th>
+                        <th className="py-2.5 px-3">Item Merchandise</th>
+                        <th className="py-2.5 px-3">Ukuran</th>
+                        <th className="py-2.5 px-3">Total Biaya</th>
+                        <th className="py-2.5 px-3">Status Bayar</th>
+                        <th className="py-2.5 px-3 text-right">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {kkmOrders.map((o) => (
+                        <tr key={o.id} className="hover:bg-slate-50/60 transition-colors">
+                          <td className="py-3 px-3 font-mono font-bold text-slate-700">{o.id}</td>
+                          <td className="py-3 px-3 font-semibold text-slate-900">{o.name}</td>
+                          <td className="py-3 px-3 font-medium text-slate-800">{o.item}</td>
+                          <td className="py-3 px-3 text-slate-600">{o.size}</td>
+                          <td className="py-3 px-3 font-bold text-slate-900">{o.total}</td>
+                          <td className="py-3 px-3">
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${o.statusColor}`}>
+                              {o.status}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3 text-right">
+                            {o.status !== 'Lunas' ? (
+                              <button
+                                onClick={() => handleSetKkmLunas(o.id)}
+                                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-semibold cursor-pointer"
+                              >
+                                Set Lunas
+                              </button>
+                            ) : (
+                              <span className="text-emerald-700 font-semibold text-[11px]">Lunas</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
@@ -1861,10 +2820,19 @@ const AdminDashboardPage = ({
                               {acc.createdAt || '2026-11-03'}
                             </td>
                             <td className="py-3 px-4 text-right">
-                              <div className="flex items-center justify-end gap-2">
+                              <div className="flex items-center justify-end gap-1.5">
+                                <button
+                                  onClick={() => handleOpenEditModal(acc)}
+                                  className="flex items-center gap-1 px-2.5 py-1 bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white rounded-lg text-[11px] font-bold transition-all cursor-pointer border border-blue-200/80 hover:border-blue-600 shadow-2xs"
+                                  title="Edit Data Mahasiswa & Akun"
+                                >
+                                  <Edit2 size={12} />
+                                  <span>Edit Data</span>
+                                </button>
                                 <button
                                   onClick={() => onImpersonate(acc)}
                                   className="px-2.5 py-1 bg-slate-100 hover:bg-slate-900 hover:text-white rounded-lg text-[11px] font-bold text-slate-700 transition-colors cursor-pointer"
+                                  title="Masuk sebagai akun ini"
                                 >
                                   Masuk
                                 </button>
@@ -2229,6 +3197,156 @@ const AdminDashboardPage = ({
                   className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-colors cursor-pointer shadow-xs"
                 >
                   Simpan Mahasiswa
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 4. MODAL: EDIT DATA MAHASISWA & AKUN */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-md w-full p-6 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-xs">
+                  <Edit2 size={15} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 leading-tight">
+                    Edit Data Akun Mahasiswa
+                  </h3>
+                  <p className="text-[11px] text-slate-500">
+                    Perbarui NIM, nama lengkap, divisi, jabatan, atau kata sandi.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsEditModalOpen(false)}
+                className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <form onSubmit={handleEditSubmit} className="space-y-4">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  Nomor Induk Mahasiswa (NIM)
+                </label>
+                <input
+                  type="text"
+                  value={editFormNim}
+                  onChange={(e) => setEditFormNim(e.target.value)}
+                  placeholder="Contoh: 23404053"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono font-medium focus:outline-hidden focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  Nama Lengkap
+                </label>
+                <input
+                  type="text"
+                  value={editFormName}
+                  onChange={(e) => setEditFormName(e.target.value)}
+                  placeholder="Contoh: Alif Fikri"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium focus:outline-hidden focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Divisi
+                  </label>
+                  <select
+                    value={editFormDivision}
+                    onChange={(e) => setEditFormDivision(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium focus:outline-hidden focus:border-blue-600 bg-white"
+                  >
+                    {divisionsList.filter((d) => d !== 'Semua Divisi').map((d) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Jabatan / Peran
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormRole}
+                    onChange={(e) => setEditFormRole(e.target.value)}
+                    placeholder="Contoh: Demisioner Ketua Umum"
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium focus:outline-hidden focus:border-blue-600"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    Kata Sandi (Password)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleGenerateEditPass}
+                    className="text-[11px] text-blue-600 font-bold hover:underline cursor-pointer flex items-center gap-1"
+                  >
+                    <Sparkles size={11} />
+                    <span>Acak Sandi</span>
+                  </button>
+                </div>
+                <div className="relative">
+                  <KeyRound size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type={editFormShowPass ? 'text' : 'password'}
+                    value={editFormPassword}
+                    onChange={(e) => setEditFormPassword(e.target.value)}
+                    className="w-full pl-9 pr-9 py-2.5 rounded-xl border border-slate-200 text-xs font-mono font-medium focus:outline-hidden focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setEditFormShowPass(!editFormShowPass)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                  >
+                    {editFormShowPass ? <EyeOff size={14} /> : <Eye size={14} />}
+                  </button>
+                </div>
+              </div>
+
+              {editFormError && (
+                <p className="text-xs font-semibold text-rose-600 bg-rose-50 p-2.5 rounded-xl border border-rose-100">
+                  {editFormError}
+                </p>
+              )}
+
+              {editFormSuccess && (
+                <p className="text-xs font-semibold text-emerald-600 bg-emerald-50 p-2.5 rounded-xl border border-emerald-100 flex items-center gap-2">
+                  <Check size={14} />
+                  <span>{editFormSuccess}</span>
+                </p>
+              )}
+
+              <div className="pt-2 flex items-center justify-end gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors cursor-pointer shadow-xs"
+                >
+                  Simpan Perubahan
                 </button>
               </div>
             </form>
