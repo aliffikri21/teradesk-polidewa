@@ -1,9 +1,55 @@
-import React, { useState, useEffect } from 'react';
-import { ArrowRight, Bookmark } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { ArrowRight, Bookmark, ChevronLeft, ChevronRight } from 'lucide-react';
+import { initialDefaultProker } from '../data/defaultProker';
 
-const Hero = ({ onOpenContact, onNavigateToPortal }) => {
+const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [] }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState('beranda');
+  const [activeProkerIndex, setActiveProkerIndex] = useState(0);
+  const [isProkerHovered, setIsProkerHovered] = useState(false);
+  const [isFading, setIsFading] = useState(false);
+  const [fadeDirection, setFadeDirection] = useState('next'); // 'next' | 'prev'
+
+  // Filter proker yang diizinkan tampil di hero
+  const effectiveProkers = prokerList && prokerList.length > 0 ? prokerList : initialDefaultProker;
+  const visibleProkers = effectiveProkers.filter((item) => item.isVisible !== false);
+  const displayProkers = visibleProkers.length > 0 ? visibleProkers : initialDefaultProker;
+
+  const safeIndex = displayProkers.length > 0 ? activeProkerIndex % displayProkers.length : 0;
+  const currentProker = displayProkers[safeIndex] || initialDefaultProker[0];
+
+  // Silky smooth cross-slide transition
+  const changeProker = useCallback((newIndex, direction = 'next') => {
+    if (isFading || displayProkers.length <= 1) return;
+    setFadeDirection(direction);
+    setIsFading(true);
+    setTimeout(() => {
+      setActiveProkerIndex(newIndex);
+      setIsFading(false);
+    }, 240);
+  }, [isFading, displayProkers.length]);
+
+  const triggerNext = useCallback(() => {
+    changeProker((safeIndex + 1) % displayProkers.length, 'next');
+  }, [changeProker, safeIndex, displayProkers.length]);
+
+  const triggerPrev = useCallback(() => {
+    changeProker((safeIndex - 1 + displayProkers.length) % displayProkers.length, 'prev');
+  }, [changeProker, safeIndex, displayProkers.length]);
+
+  const handleSelectProker = useCallback((index) => {
+    if (index === safeIndex) return;
+    changeProker(index % displayProkers.length, index > safeIndex ? 'next' : 'prev');
+  }, [changeProker, safeIndex, displayProkers.length]);
+
+  // Auto-cycle every 5 seconds when not hovered and not fading
+  useEffect(() => {
+    if (displayProkers.length <= 1 || isProkerHovered || isFading) return;
+    const interval = setInterval(() => {
+      triggerNext();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [displayProkers.length, isProkerHovered, isFading, triggerNext]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -28,7 +74,7 @@ const Hero = ({ onOpenContact, onNavigateToPortal }) => {
   return (
     <section
       id="beranda"
-      className="w-full relative min-h-screen h-[100vh] lg:h-screen bg-[#04081f] text-white flex flex-col items-center justify-between pt-20 sm:pt-22 lg:pt-20 xl:pt-22 2xl:pt-24 pb-0 overflow-hidden select-none"
+      className="w-full relative min-h-screen h-[100vh] lg:h-screen bg-[#04081f] text-white flex flex-col items-center justify-between pt-16 sm:pt-18 lg:pt-16 xl:pt-20 pb-8 sm:pb-10 lg:pb-8 xl:pb-10 overflow-hidden select-none"
     >
       {/* =========================================================================
           BACKGROUND: 3D Architectural Ribbed Slats (Fluted Wall) + Radial Ambient
@@ -187,37 +233,138 @@ const Hero = ({ onOpenContact, onNavigateToPortal }) => {
       {/* =========================================================================
           HERO DASHBOARD PREVIEW: 3 Substantial Cards filling the frame
           ========================================================================= */}
-      <div className="relative w-full max-w-[1080px] xl:max-w-[1180px] 2xl:max-w-[1340px] px-4 sm:px-6 z-10 shrink-0 mt-auto">
+      <div className="relative w-full max-w-[1080px] xl:max-w-[1180px] 2xl:max-w-[1340px] px-4 sm:px-6 z-10 shrink-0 mt-auto mb-4 sm:mb-6 lg:mb-6 xl:mb-8">
         <div className="relative flex flex-col lg:flex-row items-center lg:items-start justify-between gap-6 lg:gap-6 xl:gap-8 2xl:gap-10 w-full">
 
           {/* -------------------------------------------------------------------
-              COLUMN 1: Left Dark Frosted Card (Update Program Kerja)
+              COLUMN 1: Left Dark Frosted Overlapping Stack (Program Kerja Cards)
               ------------------------------------------------------------------- */}
-          <div className="w-[260px] sm:w-[280px] xl:w-[295px] 2xl:w-[330px] lg:mt-2 bg-[#0c1433]/70 backdrop-blur-md rounded-2xl sm:rounded-3xl p-5 xl:p-6 2xl:p-7 border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.5)] select-none shrink-0">
-            {/* Card Badge */}
-            <div className="flex items-center gap-2 bg-white/10 w-fit px-3 py-1.5 rounded-lg text-xs xl:text-[13px] 2xl:text-sm mb-4 font-medium text-white border border-white/10">
-              <Bookmark size={14} className="text-white fill-white/80" />
-              <span>Update Program Kerja</span>
+          <div
+            className="relative w-[260px] sm:w-[280px] xl:w-[295px] 2xl:w-[330px] min-h-[220px] sm:min-h-[230px] xl:min-h-[240px] 2xl:min-h-[255px] lg:mt-2 select-none shrink-0"
+            onMouseEnter={() => setIsProkerHovered(true)}
+            onMouseLeave={() => setIsProkerHovered(false)}
+          >
+            {/* Layer 3: Deepest overlapping card (terbawah) */}
+            {displayProkers.length >= 3 && (
+              <div
+                onClick={triggerNext}
+                className="absolute inset-0 bg-[#070e28]/60 backdrop-blur-xs rounded-2xl sm:rounded-3xl border border-white/10 shadow-[0_15px_35px_rgba(0,0,0,0.5)] transition-all duration-400 ease-out cursor-pointer hover:border-white/20"
+                style={{
+                  transform: isFading
+                    ? 'translate(11px, 11px) rotate(2.2deg) scale(0.94)'
+                    : 'translate(14px, 14px) rotate(3deg) scale(0.92)',
+                  zIndex: 10,
+                  opacity: isFading ? 0.6 : 0.45,
+                }}
+              />
+            )}
+
+            {/* Layer 2: Middle overlapping card (tengah) */}
+            {displayProkers.length >= 2 && (
+              <div
+                onClick={triggerNext}
+                className="absolute inset-0 bg-[#0a1336]/75 backdrop-blur-sm rounded-2xl sm:rounded-3xl border border-white/15 shadow-[0_18px_40px_rgba(0,0,0,0.6)] transition-all duration-400 ease-out cursor-pointer hover:border-white/25"
+                style={{
+                  transform: isFading
+                    ? 'translate(4px, 4px) rotate(1deg) scale(0.98)'
+                    : 'translate(7px, 7px) rotate(1.5deg) scale(0.96)',
+                  zIndex: 20,
+                  opacity: isFading ? 0.9 : 0.75,
+                }}
+              />
+            )}
+
+            {/* Layer 1: Front Active Card (Kartu Utama di depan) */}
+            <div className="relative z-30 h-full flex flex-col justify-between bg-[#0c1433]/85 backdrop-blur-md rounded-2xl sm:rounded-3xl p-5 xl:p-6 2xl:p-7 border border-white/20 shadow-[0_22px_55px_rgba(0,0,0,0.7)] transition-all duration-300">
+              {/* Animated Content Wrapper (Cross-slide & Smooth Fade) */}
+              <div
+                className="transition-all duration-240 ease-out"
+                style={{
+                  opacity: isFading ? 0 : 1,
+                  transform: isFading
+                    ? (fadeDirection === 'next' ? 'translateY(-6px)' : 'translateY(6px)')
+                    : 'translateY(0)',
+                }}
+              >
+                {/* Card Header: Badge & Stepper Controls */}
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <div className="flex items-center gap-2 bg-white/10 w-fit px-3 py-1.5 rounded-lg text-xs xl:text-[13px] 2xl:text-sm font-medium text-white border border-white/10 shadow-xs">
+                    <Bookmark size={14} className="text-white fill-white/80" />
+                    <span className="truncate max-w-[145px] sm:max-w-[165px]">{currentProker.badge || 'Update Program Kerja'}</span>
+                  </div>
+
+                  {/* Navigation controls when multiple proker exist */}
+                  {displayProkers.length > 1 && (
+                    <div className="flex items-center gap-0.5 bg-white/10 backdrop-blur-sm px-1.5 py-0.5 rounded-full border border-white/15 text-[10px] text-slate-300 shadow-xs">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          triggerPrev();
+                        }}
+                        className="hover:text-white transition-colors cursor-pointer p-0.5"
+                        title="Proker Sebelumnya"
+                      >
+                        <ChevronLeft size={11} />
+                      </button>
+                      <span className="font-mono font-bold px-1 text-white text-[10px]">
+                        {safeIndex + 1}/{displayProkers.length}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          triggerNext();
+                        }}
+                        className="hover:text-white transition-colors cursor-pointer p-0.5"
+                        title="Proker Selanjutnya"
+                      >
+                        <ChevronRight size={11} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Small uppercase label */}
+                <p className="text-[10px] xl:text-[11px] 2xl:text-xs text-gray-400 mb-1.5 lowercase tracking-normal font-normal">
+                  {currentProker.tag || 'update terakhir'}
+                </p>
+
+                {/* Main Title (Italicized per design) */}
+                <p className="text-xs sm:text-[13px] xl:text-sm 2xl:text-[15px] font-normal italic mb-4 leading-relaxed text-white line-clamp-3">
+                  {currentProker.title}
+                </p>
+              </div>
+
+              {/* Bottom Row: Action link + Minimalist Pagination Dots */}
+              <div className="flex items-center justify-between pt-2.5 border-t border-white/10 mt-auto">
+                <button
+                  onClick={() => onNavigateToPortal && onNavigateToPortal(currentProker.actionServiceId || 'par')}
+                  className="text-[11px] xl:text-xs 2xl:text-sm text-slate-300 hover:text-white flex items-center gap-1.5 transition-colors font-normal cursor-pointer group/link"
+                >
+                  <span className="group-hover/link:underline">{currentProker.actionText || 'cek asesmen program kerja'}</span>
+                  <ArrowRight size={13} strokeWidth={2} className="group-hover/link:translate-x-0.5 transition-transform" />
+                </button>
+
+                {displayProkers.length > 1 && (
+                  <div className="flex items-center gap-1">
+                    {displayProkers.map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSelectProker(idx);
+                        }}
+                        className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                          idx === safeIndex ? 'w-3.5 bg-white shadow-xs' : 'w-1 bg-white/30 hover:bg-white/60'
+                        }`}
+                        title={`Buka proker ${idx + 1}`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-
-            {/* Small uppercase label */}
-            <p className="text-[10px] xl:text-[11px] 2xl:text-xs text-gray-400 mb-1.5 lowercase tracking-normal font-normal">
-              update terakhir
-            </p>
-
-            {/* Main Title (Italicized per design) */}
-            <p className="text-xs sm:text-[13px] xl:text-sm 2xl:text-[15px] font-normal italic mb-6 leading-relaxed text-white">
-              Workshop Desain Grafis dengan Audiens Siswa/Siswi SMK Negeri 1 Palopo
-            </p>
-
-            {/* Link action */}
-            <button
-              onClick={() => onNavigateToPortal && onNavigateToPortal('par')}
-              className="text-[11px] xl:text-xs 2xl:text-sm text-slate-300 hover:text-white flex items-center gap-1.5 transition-colors font-normal cursor-pointer"
-            >
-              <span>cek asesmen program kerja</span>
-              <ArrowRight size={13} strokeWidth={2} />
-            </button>
           </div>
 
           {/* -------------------------------------------------------------------
@@ -259,10 +406,10 @@ const Hero = ({ onOpenContact, onNavigateToPortal }) => {
             <div className="w-full h-36 sm:h-40 xl:h-44 2xl:h-48 rounded-2xl overflow-visible relative border border-gray-100 shadow-inner select-none">
               <div className="w-full h-full rounded-2xl overflow-hidden">
                 <img
-                  src="/images/group_pavilion.jpg"
+                  src="/images/img1.JPG"
                   alt="Dokumentasi Mahasiswa TERAMEDIA"
                   draggable="false"
-                  className="w-full h-full object-cover select-none"
+                  className="w-full h-full object-cover object-bottom select-none"
                 />
               </div>
 
@@ -373,26 +520,12 @@ const Hero = ({ onOpenContact, onNavigateToPortal }) => {
           </div>
 
         </div>
-
-        {/* ---------------------------------------------------------------------
-            3D PERSPECTIVE FLOOR / RUNWAY: Positioned directly under center card
-            --------------------------------------------------------------------- */}
-        <div className="hidden lg:flex w-full pointer-events-none justify-center -mt-8 xl:-mt-10 2xl:-mt-12">
-          <div
-            className="w-[580px] sm:w-[640px] xl:w-[720px] 2xl:w-[820px] h-20 sm:h-24 xl:h-28 2xl:h-32"
-            style={{
-              clipPath: 'polygon(0% 100%, 100% 100%, 81% 0%, 19% 0%)',
-              background: 'linear-gradient(180deg, #edf0f5 0%, #e2e7ee 100%)',
-              boxShadow: '0 -15px 35px rgba(0,0,0,0.3)',
-            }}
-          />
-        </div>
       </div>
 
       {/* =========================================================================
           BOTTOM COPYRIGHT: Left-aligned at the bottom-left corner
           ========================================================================= */}
-      <div className="w-full max-w-[1080px] xl:max-w-[1180px] 2xl:max-w-[1340px] text-left mt-auto lg:mt-0 lg:absolute lg:bottom-6 lg:left-12 xl:left-16 z-20 pointer-events-none px-6 pt-6 lg:pt-0 pb-4 lg:pb-0">
+      <div className="w-full max-w-[1080px] xl:max-w-[1180px] 2xl:max-w-[1340px] text-left mt-auto lg:mt-0 lg:absolute lg:bottom-4 lg:left-12 xl:left-16 z-20 pointer-events-none px-6 pt-4 lg:pt-0 pb-2 lg:pb-0">
         <p className="text-[11px] xl:text-xs text-slate-400 font-normal">Copyright TERAMEDIA 2026</p>
       </div>
     </section>

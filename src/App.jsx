@@ -10,6 +10,7 @@ import AdminDashboardPage from './components/admin/AdminDashboardPage';
 import FeaturesPortal from './components/FeaturesPortal';
 import ServiceDispatcher from './components/services/ServiceDispatcher';
 import { initialDefaultAccounts } from './data/defaultAccounts';
+import { initialDefaultProker } from './data/defaultProker';
 
 function App() {
   const [pendingTarget, setPendingTarget] = useState(() => {
@@ -75,6 +76,64 @@ function App() {
       // ignore
     }
   }, [registeredAccounts]);
+
+  // Program Kerja Showcase state (ditampilkan saling overlapping di Hero landing page)
+  const [prokerList, setProkerList] = useState(() => {
+    try {
+      const saved = localStorage.getItem('teradesk_proker_list_v1');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return initialDefaultProker;
+  });
+
+  // Persist prokerList changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('teradesk_proker_list_v1', JSON.stringify(prokerList));
+    } catch {
+      // ignore
+    }
+  }, [prokerList]);
+
+  const handleAddProker = (newProker) => {
+    setProkerList((prev) => [newProker, ...prev]);
+  };
+
+  const handleUpdateProker = (id, updatedFields) => {
+    setProkerList((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, ...updatedFields } : item))
+    );
+  };
+
+  const handleDeleteProker = (id) => {
+    setProkerList((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const handleToggleProkerVisibility = (id) => {
+    setProkerList((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, isVisible: !item.isVisible } : item))
+    );
+  };
+
+  const handleResetProker = () => {
+    setProkerList(initialDefaultProker);
+    try {
+      localStorage.setItem('teradesk_proker_list_v1', JSON.stringify(initialDefaultProker));
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleReorderProker = (newOrderList) => {
+    setProkerList(newOrderList);
+  };
 
   // Synchronize browser history and popstate (back/forward buttons)
   useEffect(() => {
@@ -313,6 +372,7 @@ function App() {
             onNavigateToPortal={(serviceId) =>
               handleNavigate(serviceId ? 'service' : 'portal', serviceId)
             }
+            prokerList={prokerList}
           />
 
           {/* Fitur Unggulan Section (8 Cards Grid on Light Background) */}
@@ -355,6 +415,13 @@ function App() {
           onImpersonate={handleImpersonate}
           onForceDestroySession={handleLogout}
           authUser={authUser}
+          prokerList={prokerList}
+          onAddProker={handleAddProker}
+          onUpdateProker={handleUpdateProker}
+          onDeleteProker={handleDeleteProker}
+          onToggleProkerVisibility={handleToggleProkerVisibility}
+          onResetProker={handleResetProker}
+          onReorderProker={handleReorderProker}
         />
       ) : currentView.page === 'service' ? (
         /* Halaman Layanan Spesifik (PAR, Arsip, Aset, Kas, dsb.) */

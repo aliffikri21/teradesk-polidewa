@@ -6,15 +6,15 @@
     "semantic_hash": ""
   },
   "package.json": {
-    "mtime": 1790972279.284617,
-    "seen": 1793598012.4977372,
-    "ast_hash": "1e66ee9fe7563f502b7ae54f8e61077f",
+    "mtime": 1793809373.8949652,
+    "seen": 1793809527.0327904,
+    "ast_hash": "5c9c07bbae272c197afc4c73ef9b726d",
     "semantic_hash": ""
   },
   "src/App.jsx": {
-    "mtime": 1793803101.6548212,
-    "seen": 1793805415.5721114,
-    "ast_hash": "2b769b55ca9211d5e1df4cac1abea1a5",
+    "mtime": 1793817153.075925,
+    "seen": 1793817741.2910447,
+    "ast_hash": "a47e83ee79bba03630e914e832d20811",
     "semantic_hash": ""
   },
   "src/components/AboutUs.jsx": {
@@ -30,9 +30,9 @@
     "semantic_hash": ""
   },
   "src/components/Features.jsx": {
-    "mtime": 1793675573.223223,
-    "seen": 1793676199.190001,
-    "ast_hash": "ef125901b89af6233ea6e1fd5afa20a2",
+    "mtime": 1793807329.0605748,
+    "seen": 1793809527.0327904,
+    "ast_hash": "d911a2067e9861ff57ca83a823e3465a",
     "semantic_hash": ""
   },
   "src/components/FeaturesPortal.jsx": {
@@ -48,9 +48,9 @@
     "semantic_hash": ""
   },
   "src/components/Hero.jsx": {
-    "mtime": 1793805361.6000268,
-    "seen": 1793805415.5721114,
-    "ast_hash": "32ee02a8c4f57ab53c533c2384bf90e8",
+    "mtime": 1793818941.2546463,
+    "seen": 1793819115.2601204,
+    "ast_hash": "760801c4d5f38095a998cf56cf2c7c35",
     "semantic_hash": ""
   },
   "src/main.jsx": {
@@ -72,9 +72,9 @@
     "semantic_hash": ""
   },
   "index.html": {
-    "mtime": 1793646353.2934964,
-    "seen": 1793646476.7795246,
-    "ast_hash": "8d29be558ad9e3c7a3cf0789a26d163b",
+    "mtime": 1793809626.1399221,
+    "seen": 1793816699.036791,
+    "ast_hash": "6c1c2a7c64e0fe6b28442d8c2f268de4",
     "semantic_hash": ""
   },
   "public/favicon.svg": {
@@ -942,21 +942,9 @@
     "semantic_hash": ""
   },
   "src/components/admin/AdminDashboardPage.jsx": {
-    "mtime": 1793803101.9031594,
-    "seen": 1793805415.5721114,
-    "ast_hash": "f24733c9b094f3088c042f430e253a46",
-    "semantic_hash": ""
-  },
-  "Landing Page.png": {
-    "mtime": 1790971641.2171695,
-    "seen": 1793605680.4950423,
-    "ast_hash": "707587ffa4a8cc54201493ace5eab420",
-    "semantic_hash": ""
-  },
-  "logo-teramedia.png": {
-    "mtime": 1788076321.7120757,
-    "seen": 1793605680.4950423,
-    "ast_hash": "6341e6ab629bdf2f1576b15ebff4864d",
+    "mtime": 1793817769.5137086,
+    "seen": 1793818049.3708553,
+    "ast_hash": "3992b88b65a43d75cba083d9b2784f9d",
     "semantic_hash": ""
   },
   "public/images/logo-teramedia.png": {
@@ -992,6 +980,36 @@
   "img1.JPG": {
     "mtime": 1752312400.0,
     "seen": 1793805415.5721114,
+    "ast_hash": "79f6a9760796942da466409888c8fa5c",
+    "semantic_hash": ""
+  },
+  "Landing Page.png": {
+    "mtime": 1793809546.083231,
+    "seen": 1793816699.036791,
+    "ast_hash": "707587ffa4a8cc54201493ace5eab420",
+    "semantic_hash": ""
+  },
+  "logo-teramedia.png": {
+    "mtime": 1793809546.0852323,
+    "seen": 1793816699.036791,
+    "ast_hash": "6341e6ab629bdf2f1576b15ebff4864d",
+    "semantic_hash": ""
+  },
+  "src/data/defaultProker.js": {
+    "mtime": 1793817753.7694077,
+    "seen": 1793818049.3708553,
+    "ast_hash": "03fd808d2f0ad0df16cf8375b3528a35",
+    "semantic_hash": ""
+  },
+  "public/images/img1.JPG": {
+    "mtime": 1752312400.0,
+    "seen": 1793819115.2601204,
+    "ast_hash": "79f6a9760796942da466409888c8fa5c",
+    "semantic_hash": ""
+  },
+  "public/img1.JPG": {
+    "mtime": 1752312400.0,
+    "seen": 1793819115.2601204,
     "ast_hash": "79f6a9760796942da466409888c8fa5c",
     "semantic_hash": ""
   }

@@ -43,7 +43,11 @@ import {
   Globe,
   ShoppingBag,
   Award,
-  TrendingUp
+  TrendingUp,
+  Bookmark,
+  ArrowUp,
+  ArrowDown,
+  ArrowRight
 } from 'lucide-react';
 
 const divisionsList = [
@@ -185,16 +189,44 @@ const AdminDashboardPage = ({
   onImpersonate,
   onForceDestroySession,
   authUser,
+  prokerList = [],
+  onAddProker,
+  onUpdateProker,
+  onDeleteProker,
+  onToggleProkerVisibility,
+  onResetProker,
+  onReorderProker,
 }) => {
   // Navigation View:
-  // 'dashboard' | 'par' | 'archive' | 'asset' | 'finance' | 'attendance' | 'timeline' | 'hr' | 'helpdesk' |
-  // 'students' | 'session' | 'backup' | 'logs' | 'settings'
+  // 'dashboard' | 'proker' | 'students' | 'par' | 'archive' | 'asset' | 'finance' | 'attendance' | 'timeline' | 'hr' | 'helpdesk' |
+  // 'session' | 'backup' | 'logs' | 'settings'
   const [currentNav, setCurrentNav] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDivision, setSelectedDivision] = useState('Semua Divisi');
   const [accessFilter, setAccessFilter] = useState('Semua Akses');
   const [dateRangeFilter, setDateRangeFilter] = useState('Semester Ganjil 2026/2027');
   const [timeframeFilter, setTimeframeFilter] = useState('Bulan Ini');
+
+  // State for Proker Management Tab
+  const [prokerSearchQuery, setProkerSearchQuery] = useState('');
+  const [prokerFilterDivision, setProkerFilterDivision] = useState('Semua Divisi');
+  const [prokerFilterStatus, setProkerFilterStatus] = useState('Semua Status');
+
+  // Modal State for Add / Edit Proker
+  const [isProkerModalOpen, setIsProkerModalOpen] = useState(false);
+  const [prokerModalMode, setProkerModalMode] = useState('add'); // 'add' | 'edit'
+  const [prokerFormId, setProkerFormId] = useState('');
+  const [prokerFormBadge, setProkerFormBadge] = useState('Update Program Kerja');
+  const [prokerFormTag, setProkerFormTag] = useState('update terakhir');
+  const [prokerFormTitle, setProkerFormTitle] = useState('');
+  const [prokerFormActionText, setProkerFormActionText] = useState('cek asesmen program kerja');
+  const [prokerFormServiceId, setProkerFormServiceId] = useState('par');
+  const [prokerFormDivision, setProkerFormDivision] = useState('Divisi Publikasi dan Dokumentasi');
+  const [prokerFormPeriod, setProkerFormPeriod] = useState('Maret 2026');
+  const [prokerFormStatus, setProkerFormStatus] = useState('Aktif');
+  const [prokerFormIsVisible, setProkerFormIsVisible] = useState(true);
+  const [prokerFormError, setProkerFormError] = useState('');
+  const [prokerFormSuccess, setProkerFormSuccess] = useState('');
 
   // Form State for Adding Student
   const [isAddFormOpen, setIsAddFormOpen] = useState(false);
@@ -874,6 +906,108 @@ const AdminDashboardPage = ({
     }
   };
 
+  // Proker Management Handlers
+  const handleOpenAddProker = () => {
+    setProkerModalMode('add');
+    setProkerFormId('proker-' + Date.now());
+    setProkerFormBadge('Update Program Kerja');
+    setProkerFormTag('update terakhir');
+    setProkerFormTitle('');
+    setProkerFormActionText('cek asesmen program kerja');
+    setProkerFormServiceId('par');
+    setProkerFormDivision('Divisi Publikasi dan Dokumentasi');
+    setProkerFormPeriod('Maret 2026');
+    setProkerFormStatus('Aktif');
+    setProkerFormIsVisible(true);
+    setProkerFormError('');
+    setProkerFormSuccess('');
+    setIsProkerModalOpen(true);
+  };
+
+  const handleOpenEditProker = (item) => {
+    setProkerModalMode('edit');
+    setProkerFormId(item.id);
+    setProkerFormBadge(item.badge || 'Update Program Kerja');
+    setProkerFormTag(item.tag || 'update terakhir');
+    setProkerFormTitle(item.title || '');
+    setProkerFormActionText(item.actionText || 'cek asesmen program kerja');
+    setProkerFormServiceId(item.actionServiceId || 'par');
+    setProkerFormDivision(item.division || 'Divisi Kesekretariatan');
+    setProkerFormPeriod(item.period || 'Periode 2026');
+    setProkerFormStatus(item.status || 'Aktif');
+    setProkerFormIsVisible(item.isVisible !== false);
+    setProkerFormError('');
+    setProkerFormSuccess('');
+    setIsProkerModalOpen(true);
+  };
+
+  const handleSaveProker = (e) => {
+    e.preventDefault();
+    if (!prokerFormTitle.trim()) {
+      setProkerFormError('Judul kegiatan program kerja tidak boleh kosong.');
+      return;
+    }
+
+    const payload = {
+      id: prokerFormId || ('proker-' + Date.now()),
+      badge: prokerFormBadge.trim() || 'Update Program Kerja',
+      tag: prokerFormTag.trim() || 'update terakhir',
+      title: prokerFormTitle.trim(),
+      actionText: prokerFormActionText.trim() || 'cek asesmen program kerja',
+      actionServiceId: prokerFormServiceId || 'par',
+      division: prokerFormDivision,
+      period: prokerFormPeriod.trim() || 'Periode 2026',
+      status: prokerFormStatus,
+      isVisible: prokerFormIsVisible,
+    };
+
+    if (prokerModalMode === 'add') {
+      if (onAddProker) {
+        onAddProker(payload);
+      }
+      addLog(`Program kerja baru ditambahkan: "${payload.title.slice(0, 30)}..."`, 'success');
+      setProkerFormSuccess('Program kerja berhasil ditambahkan ke landing page!');
+    } else {
+      if (onUpdateProker) {
+        onUpdateProker(prokerFormId, payload);
+      }
+      addLog(`Program kerja diperbarui: "${payload.title.slice(0, 30)}..."`, 'info');
+      setProkerFormSuccess('Program kerja berhasil diperbarui!');
+    }
+
+    setTimeout(() => {
+      setProkerFormSuccess('');
+      setIsProkerModalOpen(false);
+    }, 900);
+  };
+
+  const handleDeleteProkerItem = (id, title) => {
+    if (window.confirm(`Hapus program kerja "${title}" dari landing page?`)) {
+      if (onDeleteProker) {
+        onDeleteProker(id);
+      }
+      addLog(`Program kerja dihapus: "${title.slice(0, 30)}..."`, 'warning');
+    }
+  };
+
+  const handleMoveProkerItem = (index, direction) => {
+    if (!onReorderProker) return;
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= prokerList.length) return;
+    const updated = [...prokerList];
+    const [moved] = updated.splice(index, 1);
+    updated.splice(targetIndex, 0, moved);
+    onReorderProker(updated);
+    addLog(`Urutan proker diubah (posisi #${index + 1} ke #${targetIndex + 1})`, 'info');
+  };
+
+  const handleToggleProkerVisibilityItem = (id, currentVis) => {
+    if (onToggleProkerVisibility) {
+      onToggleProkerVisibility(id);
+      addLog(`Status visibilitas proker diubah menjadi ${!currentVis ? 'Tampil' : 'Sembunyi'}`, 'info');
+    }
+  };
+
   const toggleModuleStatus = (modId) => {
     setModuleStatuses((prev) => {
       const updated = !prev[modId];
@@ -982,6 +1116,25 @@ const AdminDashboardPage = ({
                     currentNav === 'students' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600'
                   }`}>
                     {accounts.length}
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => setCurrentNav('proker')}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    currentNav === 'proker'
+                      ? 'bg-slate-900 text-white font-bold shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Bookmark size={16} className={currentNav === 'proker' ? 'text-blue-400' : 'text-slate-400'} />
+                    <span>Program Kerja (Landing)</span>
+                  </div>
+                  <span className={`text-[10px] font-bold font-mono px-2 py-0.5 rounded-full ${
+                    currentNav === 'proker' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600'
+                  }`}>
+                    {prokerList.length}
                   </span>
                 </button>
               </div>
@@ -2675,6 +2828,460 @@ const AdminDashboardPage = ({
             </div>
           )}
 
+          {/* TAB: PROKER (PROGRAM KERJA SHOWCASE & HERO OVERLAPPING STACK) */}
+          {currentNav === 'proker' && (
+            <div className="max-w-7xl mx-auto space-y-6">
+              {/* Header Tab */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                      Hero Section Landing Page
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      Overlapping Stack Cards
+                    </span>
+                  </div>
+                  <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+                    Manajemen Program Kerja (Hero Landing Showcase)
+                  </h1>
+                  <p className="text-xs text-slate-500 font-medium mt-1 max-w-3xl">
+                    Kelola kartu-kartu program kerja yang tampil bertumpuk (overlapping deck) di landing page. Atur urutan tumpukan (kartu paling atas berada di urutan #1), sesuaikan teks & tautan modul, serta aktifkan atau nonaktifkan proker yang ingin ditampilkan.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <button
+                    onClick={handleOpenAddProker}
+                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95"
+                  >
+                    <Plus size={15} />
+                    <span>Tambah Program Kerja</span>
+                  </button>
+                  <button
+                    onClick={onResetProker}
+                    className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 px-3.5 py-2 rounded-xl text-xs font-semibold hover:bg-slate-50 transition-all cursor-pointer shadow-xs"
+                    title="Kembalikan daftar proker ke default"
+                  >
+                    <RefreshCw size={13} />
+                    <span>Reset Default</span>
+                  </button>
+                  <button
+                    onClick={onBackToLanding}
+                    className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-xs"
+                    title="Lihat tampilan di Landing Page"
+                  >
+                    <ExternalLink size={13} />
+                    <span>Lihat di Landing</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 4 Quick Stat Cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                    Total Proker
+                  </span>
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-2xl font-black text-slate-900 font-mono">{prokerList.length}</span>
+                    <span className="text-xs text-blue-600 font-semibold">Proker Tersimpan</span>
+                  </div>
+                </div>
+
+                <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                    Tampil di Hero
+                  </span>
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-2xl font-black text-emerald-600 font-mono">
+                      {prokerList.filter((p) => p.isVisible !== false).length}
+                    </span>
+                    <span className="text-[11px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-bold">
+                      Aktif di Stack
+                    </span>
+                  </div>
+                </div>
+
+                <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                    Status Berjalan
+                  </span>
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-2xl font-black text-indigo-600 font-mono">
+                      {prokerList.filter((p) => p.status === 'Aktif' || p.status === 'Sedang Berjalan').length}
+                    </span>
+                    <span className="text-xs text-slate-500 font-medium">Dalam Pelaksanaan</span>
+                  </div>
+                </div>
+
+                <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                    Tumpukan Layer Depan
+                  </span>
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-sm font-bold text-slate-900 truncate max-w-[150px]">
+                      {prokerList.find((p) => p.isVisible !== false)?.title.split(' ')[0] || 'Tidak ada'}...
+                    </span>
+                    <span className="text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full font-bold">
+                      #1 Front Card
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* LIVE OVERLAPPING PREVIEW MOCKUP */}
+              <div className="bg-gradient-to-r from-[#04081f] via-[#071135] to-[#04081f] rounded-3xl p-6 sm:p-7 border border-slate-800 shadow-xl text-white relative overflow-hidden">
+                <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
+                  <div className="max-w-md">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="text-xs font-bold text-blue-300 uppercase tracking-wider">
+                        Live Preview: Hero Overlapping Cards Deck
+                      </span>
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2">
+                      Visualisasi Tumpukan Kartu Landing Page
+                    </h3>
+                    <p className="text-xs text-slate-300 leading-relaxed mb-4">
+                      Kartu di bawah menunjukkan bagaimana program kerja akan saling bertumpuk (overlapping) di sisi kiri Hero Section. Gunakan tombol panah atas/bawah pada tabel untuk mengubah kartu yang berada di posisi paling depan (#1).
+                    </p>
+                    <div className="flex items-center gap-2 text-[11px] text-slate-400 bg-white/5 border border-white/10 rounded-xl p-2.5">
+                      <Sparkles size={14} className="text-amber-400 shrink-0" />
+                      <span>
+                        Kartu depan (#1) dapat diklik untuk navigasi langsung ke modul layanan terkait.
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Overlapping Preview Visualizer */}
+                  <div className="relative w-[280px] sm:w-[310px] h-[210px] shrink-0 mx-auto lg:mx-0">
+                    {/* Layer 3 Background peeking */}
+                    {prokerList.filter((p) => p.isVisible !== false).length >= 3 && (
+                      <div
+                        className="absolute inset-0 bg-[#070e28]/70 backdrop-blur-xs rounded-2xl p-4 border border-white/10 shadow-lg"
+                        style={{
+                          transform: 'translate(14px, 14px) rotate(3deg) scale(0.92)',
+                          zIndex: 10,
+                          opacity: 0.45,
+                        }}
+                      >
+                        <div className="flex items-center gap-2 bg-white/5 w-fit px-2 py-0.5 rounded text-[10px] text-gray-400">
+                          <Bookmark size={10} />
+                          <span className="truncate max-w-[120px]">
+                            {prokerList.filter((p) => p.isVisible !== false)[2]?.badge}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Layer 2 Middle peeking */}
+                    {prokerList.filter((p) => p.isVisible !== false).length >= 2 && (
+                      <div
+                        className="absolute inset-0 bg-[#0a1336]/80 backdrop-blur-sm rounded-2xl p-4 border border-white/15 shadow-xl"
+                        style={{
+                          transform: 'translate(7px, 7px) rotate(1.5deg) scale(0.96)',
+                          zIndex: 20,
+                          opacity: 0.75,
+                        }}
+                      >
+                        <div className="flex items-center justify-between mb-1.5">
+                          <div className="flex items-center gap-1.5 bg-white/10 px-2 py-0.5 rounded text-[10px] text-slate-200">
+                            <Bookmark size={10} />
+                            <span className="truncate max-w-[120px]">
+                              {prokerList.filter((p) => p.isVisible !== false)[1]?.badge}
+                            </span>
+                          </div>
+                          <span className="text-[9px] font-mono text-slate-400">#2 Layer</span>
+                        </div>
+                        <p className="text-[11px] italic text-slate-300 line-clamp-2">
+                          {prokerList.filter((p) => p.isVisible !== false)[1]?.title}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Layer 1 Front Card */}
+                    <div
+                      className="relative z-30 h-full flex flex-col justify-between bg-[#0c1433]/90 backdrop-blur-md rounded-2xl p-5 border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.7)]"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2 bg-white/10 w-fit px-2.5 py-1 rounded-lg text-xs font-medium text-white border border-white/10">
+                            <Bookmark size={12} className="text-white fill-white/80" />
+                            <span className="truncate max-w-[140px]">
+                              {prokerList.find((p) => p.isVisible !== false)?.badge || 'Update Program Kerja'}
+                            </span>
+                          </div>
+                          <span className="text-[10px] font-mono font-bold text-blue-300 bg-blue-500/20 px-2 py-0.5 rounded-full border border-blue-400/30">
+                            #1 DEPAN
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-gray-400 lowercase mb-1">
+                          {prokerList.find((p) => p.isVisible !== false)?.tag || 'update terakhir'}
+                        </p>
+                        <p className="text-xs italic text-white line-clamp-3 leading-relaxed">
+                          {prokerList.find((p) => p.isVisible !== false)?.title || 'Belum ada program kerja'}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2 border-t border-white/10">
+                        <span className="text-[11px] text-slate-300 flex items-center gap-1">
+                          <span>{prokerList.find((p) => p.isVisible !== false)?.actionText || 'cek asesmen'}</span>
+                          <ArrowRight size={12} />
+                        </span>
+                        <span className="text-[10px] font-bold text-amber-400">
+                          {prokerList.find((p) => p.isVisible !== false)?.period || '2026'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Filter and Search Bar */}
+              <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <div className="relative flex-1">
+                  <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Cari judul proker, badge, atau divisi..."
+                    value={prokerSearchQuery}
+                    onChange={(e) => setProkerSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                  <select
+                    value={prokerFilterDivision}
+                    onChange={(e) => setProkerFilterDivision(e.target.value)}
+                    className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 font-medium focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer"
+                  >
+                    {divisionsList.map((div) => (
+                      <option key={div} value={div}>
+                        {div}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={prokerFilterStatus}
+                    onChange={(e) => setProkerFilterStatus(e.target.value)}
+                    className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 font-medium focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer"
+                  >
+                    <option value="Semua Status">Semua Status</option>
+                    <option value="Aktif">Aktif</option>
+                    <option value="Akan Datang">Akan Datang</option>
+                    <option value="Sedang Berjalan">Sedang Berjalan</option>
+                    <option value="Review">Review</option>
+                    <option value="Selesai">Selesai</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Table / Cards List of Program Kerja */}
+              <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
+                <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
+                    <h2 className="text-sm font-bold text-slate-900">
+                      Daftar Program Kerja & Prioritas Stacking
+                    </h2>
+                    <span className="text-[11px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                      {prokerList.length} total
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-slate-400 hidden sm:inline">
+                    💡 Gunakan tombol panah ↑ ↓ untuk mengatur kartu yang berada di layer depan
+                  </span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50 border-b border-slate-200/80 text-slate-600 font-semibold uppercase tracking-wider">
+                      <tr>
+                        <th className="py-3 px-3 text-center w-16">Urutan</th>
+                        <th className="py-3 px-4">Program Kerja & Badge</th>
+                        <th className="py-3 px-4">Divisi & Periode</th>
+                        <th className="py-3 px-4">Tautan Layanan</th>
+                        <th className="py-3 px-4 text-center">Status</th>
+                        <th className="py-3 px-4 text-center">Tampil di Hero</th>
+                        <th className="py-3 px-4 text-right">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {prokerList
+                        .filter((item) => {
+                          const matchesSearch =
+                            prokerSearchQuery.trim() === '' ||
+                            item.title.toLowerCase().includes(prokerSearchQuery.toLowerCase()) ||
+                            item.badge.toLowerCase().includes(prokerSearchQuery.toLowerCase()) ||
+                            item.tag.toLowerCase().includes(prokerSearchQuery.toLowerCase()) ||
+                            item.division.toLowerCase().includes(prokerSearchQuery.toLowerCase());
+                          const matchesDivision =
+                            prokerFilterDivision === 'Semua Divisi' || item.division === prokerFilterDivision;
+                          const matchesStatus =
+                            prokerFilterStatus === 'Semua Status' || item.status === prokerFilterStatus;
+                          return matchesSearch && matchesDivision && matchesStatus;
+                        })
+                        .map((item, idx) => {
+                          const isFirst = idx === 0;
+                          const isLast = idx === prokerList.length - 1;
+
+                          return (
+                            <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">
+                              {/* Urutan & Reorder buttons */}
+                              <td className="py-3.5 px-3 text-center">
+                                <div className="flex items-center justify-center gap-1">
+                                  <span
+                                    className={`w-6 h-6 rounded-lg flex items-center justify-center font-mono font-bold text-xs ${
+                                      idx === 0
+                                        ? 'bg-blue-600 text-white shadow-xs'
+                                        : idx === 1
+                                        ? 'bg-slate-800 text-white'
+                                        : 'bg-slate-100 text-slate-600'
+                                    }`}
+                                  >
+                                    #{idx + 1}
+                                  </span>
+                                  <div className="flex flex-col">
+                                    <button
+                                      type="button"
+                                      disabled={isFirst}
+                                      onClick={() => handleMoveProkerItem(idx, 'up')}
+                                      className={`p-0.5 rounded hover:bg-slate-200 transition-colors ${
+                                        isFirst ? 'opacity-20 cursor-not-allowed' : 'cursor-pointer text-slate-700'
+                                      }`}
+                                      title="Pindahkan ke atas (Prioritas depan)"
+                                    >
+                                      <ArrowUp size={11} />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      disabled={isLast}
+                                      onClick={() => handleMoveProkerItem(idx, 'down')}
+                                      className={`p-0.5 rounded hover:bg-slate-200 transition-colors ${
+                                        isLast ? 'opacity-20 cursor-not-allowed' : 'cursor-pointer text-slate-700'
+                                      }`}
+                                      title="Pindahkan ke bawah (Tumpukan belakang)"
+                                    >
+                                      <ArrowDown size={11} />
+                                    </button>
+                                  </div>
+                                </div>
+                              </td>
+
+                              {/* Title & Badge */}
+                              <td className="py-3.5 px-4 max-w-md">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                                    <Bookmark size={11} className="text-blue-600" />
+                                    {item.badge}
+                                  </span>
+                                  <span className="text-[10px] text-slate-400 lowercase font-medium">
+                                    {item.tag}
+                                  </span>
+                                  {idx === 0 && (
+                                    <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                                      Layer Depan
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-xs font-semibold text-slate-900 italic leading-snug">
+                                  "{item.title}"
+                                </p>
+                              </td>
+
+                              {/* Divisi & Periode */}
+                              <td className="py-3.5 px-4">
+                                <span className="font-semibold text-slate-800 block text-xs">
+                                  {item.division}
+                                </span>
+                                <span className="text-[11px] text-slate-500 font-medium">
+                                  {item.period}
+                                </span>
+                              </td>
+
+                              {/* Tautan Layanan */}
+                              <td className="py-3.5 px-4">
+                                <div className="space-y-0.5">
+                                  <span className="text-xs font-semibold text-blue-600 hover:underline block cursor-pointer"
+                                    onClick={() => onNavigateToService && onNavigateToService(item.actionServiceId || 'par')}
+                                  >
+                                    {item.actionText || 'cek asesmen'} →
+                                  </span>
+                                  <span className="text-[10px] text-slate-400 uppercase font-mono">
+                                    Modul: {item.actionServiceId || 'par'}
+                                  </span>
+                                </div>
+                              </td>
+
+                              {/* Status Badge */}
+                              <td className="py-3.5 px-4 text-center">
+                                <span
+                                  className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold border ${
+                                    item.status === 'Aktif'
+                                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                      : item.status === 'Sedang Berjalan'
+                                      ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                      : item.status === 'Akan Datang'
+                                      ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                      : item.status === 'Review'
+                                      ? 'bg-purple-50 text-purple-700 border-purple-200'
+                                      : 'bg-slate-100 text-slate-600 border-slate-200'
+                                  }`}
+                                >
+                                  {item.status}
+                                </span>
+                              </td>
+
+                              {/* Toggle Tampil di Hero */}
+                              <td className="py-3.5 px-4 text-center">
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleProkerVisibilityItem(item.id, item.isVisible !== false)}
+                                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden ${
+                                    item.isVisible !== false ? 'bg-emerald-600' : 'bg-slate-300'
+                                  }`}
+                                  title={item.isVisible !== false ? 'Sembunyikan dari hero' : 'Tampilkan di hero'}
+                                >
+                                  <span
+                                    className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
+                                      item.isVisible !== false ? 'translate-x-4' : 'translate-x-0'
+                                    }`}
+                                  />
+                                </button>
+                              </td>
+
+                              {/* Actions: Edit, Delete */}
+                              <td className="py-3.5 px-4 text-right">
+                                <div className="flex items-center justify-end gap-1.5">
+                                  <button
+                                    onClick={() => handleOpenEditProker(item)}
+                                    className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                                    title="Edit Program Kerja"
+                                  >
+                                    <Edit2 size={14} />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteProkerItem(item.id, item.title)}
+                                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                                    title="Hapus Program Kerja"
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* TAB: STUDENTS (DATA MAHASISWA & KREDENSIAL) */}
           {currentNav === 'students' && (
             <div className="max-w-7xl mx-auto space-y-6">
@@ -3507,6 +4114,223 @@ const AdminDashboardPage = ({
                   className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors cursor-pointer shadow-xs"
                 >
                   Simpan Perubahan
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 5. MODAL: ADD / EDIT PROGRAM KERJA */}
+      {isProkerModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-lg w-full p-6 animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-xs">
+                  <Bookmark size={15} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 leading-tight">
+                    {prokerModalMode === 'add' ? 'Tambah Program Kerja Baru' : 'Edit Program Kerja'}
+                  </h3>
+                  <p className="text-[11px] text-slate-500">
+                    Kartu ini akan ditampilkan pada tumpukan hero landing page.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsProkerModalOpen(false)}
+                className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveProker} className="space-y-4">
+              {/* Judul Kegiatan */}
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  Judul Kegiatan / Nama Program Kerja <span className="text-rose-500">*</span>
+                </label>
+                <textarea
+                  rows={2}
+                  value={prokerFormTitle}
+                  onChange={(e) => setProkerFormTitle(e.target.value)}
+                  placeholder="Contoh: Workshop Desain Grafis dengan Audiens Siswa/Siswi SMK Negeri 1 Palopo"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 font-medium placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none italic"
+                  required
+                />
+              </div>
+
+              {/* Grid 2 Cols: Badge & Tag */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Badge Kartu
+                  </label>
+                  <input
+                    type="text"
+                    value={prokerFormBadge}
+                    onChange={(e) => setProkerFormBadge(e.target.value)}
+                    placeholder="Contoh: Update Program Kerja"
+                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 font-medium focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Label Subtitle / Tag
+                  </label>
+                  <input
+                    type="text"
+                    value={prokerFormTag}
+                    onChange={(e) => setProkerFormTag(e.target.value)}
+                    placeholder="Contoh: update terakhir"
+                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 font-medium lowercase focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Grid 2 Cols: Tombol Aksi & Target Layanan */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Teks Tombol Aksi
+                  </label>
+                  <input
+                    type="text"
+                    value={prokerFormActionText}
+                    onChange={(e) => setProkerFormActionText(e.target.value)}
+                    placeholder="Contoh: cek asesmen program kerja"
+                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 font-medium focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Tautan Modul Layanan
+                  </label>
+                  <select
+                    value={prokerFormServiceId}
+                    onChange={(e) => setProkerFormServiceId(e.target.value)}
+                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 font-medium focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer"
+                  >
+                    <option value="par">PAR (Program Approval Request)</option>
+                    <option value="archive">Digitalisasi E-Arsip & Persuratan</option>
+                    <option value="asset">Digitalisasi Aset & Inventaris</option>
+                    <option value="finance">Kas & Reimbursement Anggaran</option>
+                    <option value="attendance">Presensi Digital & Notula Rapat</option>
+                    <option value="timeline">Master Timeline & Kalender Proker</option>
+                    <option value="hr">Database Anggota & Kaderisasi</option>
+                    <option value="helpdesk">Tiket Desain Pubdok</option>
+                    <option value="humas">Humas & Media Partner Gateway</option>
+                    <option value="kkm">Kreativitas & Kewirausahaan (KKM)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Grid 3 Cols: Divisi, Periode, Status */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Divisi Pelaksana
+                  </label>
+                  <select
+                    value={prokerFormDivision}
+                    onChange={(e) => setProkerFormDivision(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 font-medium focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer"
+                  >
+                    {divisionsList.filter(d => d !== 'Semua Divisi').map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Periode Kegiatan
+                  </label>
+                  <input
+                    type="text"
+                    value={prokerFormPeriod}
+                    onChange={(e) => setProkerFormPeriod(e.target.value)}
+                    placeholder="Contoh: Maret 2026"
+                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 font-medium focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Status
+                  </label>
+                  <select
+                    value={prokerFormStatus}
+                    onChange={(e) => setProkerFormStatus(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 font-medium focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer"
+                  >
+                    <option value="Aktif">Aktif</option>
+                    <option value="Akan Datang">Akan Datang</option>
+                    <option value="Sedang Berjalan">Sedang Berjalan</option>
+                    <option value="Review">Review</option>
+                    <option value="Selesai">Selesai</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Tampilkan di Hero Landing Page Checkbox Toggle */}
+              <div className="bg-slate-50 rounded-2xl p-3.5 border border-slate-200/80 flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-bold text-slate-900 block">
+                    Tampilkan di Hero Landing Page
+                  </span>
+                  <span className="text-[11px] text-slate-500">
+                    Kartu akan ikut dalam tumpukan kartu yang saling overlapping di landing page.
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setProkerFormIsVisible(!prokerFormIsVisible)}
+                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden ${
+                    prokerFormIsVisible ? 'bg-emerald-600' : 'bg-slate-300'
+                  }`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
+                      prokerFormIsVisible ? 'translate-x-4' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {prokerFormError && (
+                <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 font-medium">
+                  {prokerFormError}
+                </div>
+              )}
+
+              {prokerFormSuccess && (
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-700 font-medium">
+                  {prokerFormSuccess}
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsProkerModalOpen(false)}
+                  className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors cursor-pointer shadow-xs"
+                >
+                  {prokerModalMode === 'add' ? 'Tambah Program Kerja' : 'Simpan Perubahan'}
                 </button>
               </div>
             </form>
