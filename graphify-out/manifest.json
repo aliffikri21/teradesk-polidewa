@@ -42,15 +42,15 @@
     "semantic_hash": ""
   },
   "src/components/Footer.jsx": {
-    "mtime": 1793675573.2786772,
-    "seen": 1793676199.190001,
-    "ast_hash": "479519bd880ef69d293d3df2466b20a0",
+    "mtime": 1793820704.2668402,
+    "seen": 1793821150.8433685,
+    "ast_hash": "b73530ab85fe73290f1e736e723c40b6",
     "semantic_hash": ""
   },
   "src/components/Hero.jsx": {
-    "mtime": 1793819636.4326072,
-    "seen": 1793819954.666257,
-    "ast_hash": "7bc04faa2e21eca1a1e8570e9efab325",
+    "mtime": 1793820694.8871624,
+    "seen": 1793821150.8433685,
+    "ast_hash": "23240a41735b2dfbe7d96e6c3269b406",
     "semantic_hash": ""
   },
   "src/main.jsx": {

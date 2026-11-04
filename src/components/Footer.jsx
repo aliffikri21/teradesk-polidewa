@@ -39,7 +39,7 @@ const Footer = ({ onOpenDevDashboard }) => {
             <p className="text-xs text-gray-300 mb-3 leading-relaxed">
               Subscribe to stay tuned for new web design and latest updates. Let&apos;s do it!
             </p>
-            <form onSubmit={handleSubscribe} className="flex items-center gap-2 max-w-md">
+            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 max-w-md">
               <input
                 type="email"
                 required

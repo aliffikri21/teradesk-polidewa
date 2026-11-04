@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ArrowRight, Bookmark, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, Bookmark, ChevronLeft, ChevronRight, Menu, X } from 'lucide-react';
 import { initialDefaultProker } from '../data/defaultProker';
 
 const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [] }) => {
@@ -9,6 +9,7 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [] }) => {
   const [isProkerHovered, setIsProkerHovered] = useState(false);
   const [isFading, setIsFading] = useState(false);
   const [fadeDirection, setFadeDirection] = useState('next'); // 'next' | 'prev'
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Filter proker yang diizinkan tampil di hero
   const effectiveProkers = prokerList && prokerList.length > 0 ? prokerList : initialDefaultProker;
@@ -74,7 +75,7 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [] }) => {
   return (
     <section
       id="beranda"
-      className="w-full relative min-h-screen h-[100vh] lg:h-screen bg-[#04081f] text-white flex flex-col items-center justify-between pt-16 sm:pt-18 lg:pt-16 xl:pt-20 pb-8 sm:pb-10 lg:pb-8 xl:pb-10 overflow-hidden select-none"
+      className="w-full relative min-h-screen h-auto lg:h-screen lg:max-h-screen bg-[#04081f] text-white flex flex-col items-center justify-between pt-24 sm:pt-28 lg:pt-16 xl:pt-20 pb-12 sm:pb-14 lg:pb-8 xl:pb-10 overflow-x-hidden lg:overflow-hidden select-none"
     >
       {/* =========================================================================
           BACKGROUND: 3D Architectural Ribbed Slats (Fluted Wall) + Radial Ambient
@@ -111,10 +112,10 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [] }) => {
       </div>
 
       {/* =========================================================================
-          NAVBAR: Floating Glassmorphism Sticky Navbar
+          NAVBAR: Floating Glassmorphism Sticky Navbar + Responsive Mobile Drawer
           - Tampil konsisten dengan frosted glass putih beropasitas rendah
           ========================================================================= */}
-      <div className="fixed top-0 left-0 right-0 h-16 z-50 pointer-events-auto">
+      <div className="fixed top-0 left-0 right-0 z-50 pointer-events-auto">
         <nav
           className={`mx-auto w-[calc(100%-2rem)] max-w-6xl mt-3 sm:mt-4 transition-all duration-300 rounded-2xl sm:rounded-full px-4 sm:px-6 py-2.5 sm:py-3 flex justify-between items-center opacity-100 translate-y-0 ${
             activeSection === 'beranda'
@@ -127,15 +128,19 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [] }) => {
           }`}
         >
           {/* Brand Logo */}
-          <a href="#beranda" className="flex items-center gap-3 group cursor-pointer">
+          <a
+            href="#beranda"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="flex items-center gap-2.5 sm:gap-3 group cursor-pointer"
+          >
             <img
               src="/logo-teramedia.png"
               alt="Logo TERAMEDIA"
               draggable="false"
-              className="w-8 h-8 object-contain drop-shadow-sm group-hover:scale-105 transition-transform shrink-0 select-none"
+              className="w-7 h-7 sm:w-8 sm:h-8 object-contain drop-shadow-sm group-hover:scale-105 transition-transform shrink-0 select-none"
             />
             <span
-              className={`text-lg font-semibold tracking-wide transition-colors ${
+              className={`text-base sm:text-lg font-semibold tracking-wide transition-colors ${
                 activeSection === 'beranda' ? 'text-white' : 'text-slate-900'
               }`}
             >
@@ -143,7 +148,7 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [] }) => {
             </span>
           </a>
 
-          {/* Center Nav Links */}
+          {/* Center Nav Links (Hidden on mobile, visible on md+) */}
           <div className="hidden md:flex items-center gap-8 text-sm font-medium">
             <a
               href="#beranda"
@@ -181,39 +186,91 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [] }) => {
             </a>
           </div>
 
-          {/* CTA Button */}
-          <div className="flex items-center gap-3">
+          {/* Right Action: CTA Button & Mobile Hamburger Toggle */}
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={onOpenContact}
-              className="bg-[#FFA000] hover:bg-[#ffaa1a] text-slate-950 font-bold px-5 sm:px-6 py-2 rounded-full text-xs sm:text-sm transition-all shadow-md active:scale-95 cursor-pointer min-h-[40px] flex items-center justify-center"
+              className="bg-[#FFA000] hover:bg-[#ffaa1a] text-slate-950 font-bold px-4 sm:px-6 py-2 rounded-full text-xs sm:text-sm transition-all shadow-md active:scale-95 cursor-pointer min-h-[38px] sm:min-h-[40px] flex items-center justify-center shrink-0"
             >
               Kontak Kami
             </button>
+
+            {/* Mobile Hamburger Button */}
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+              aria-label={isMobileMenuOpen ? 'Tutup menu navigasi' : 'Buka menu navigasi'}
+              className={`md:hidden w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer active:scale-95 border ${
+                activeSection === 'beranda'
+                  ? 'bg-white/10 hover:bg-white/20 text-white border-white/20'
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300/80'
+              }`}
+            >
+              {isMobileMenuOpen ? <X size={17} /> : <Menu size={17} />}
+            </button>
           </div>
         </nav>
+
+        {/* Mobile Dropdown Menu Drawer */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden mx-auto w-[calc(100%-2rem)] max-w-6xl mt-2 p-3 bg-[#080f29]/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-[0_20px_45px_rgba(0,0,0,0.65)] animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="flex flex-col gap-1">
+              <a
+                href="#beranda"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-colors flex items-center justify-between ${
+                  activeSection === 'beranda' ? 'bg-white/15 text-white' : 'text-slate-300 hover:bg-white/10 hover:text-white'
+                }`}
+              >
+                <span>Beranda</span>
+                {activeSection === 'beranda' && <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />}
+              </a>
+              <a
+                href="#fitur"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-colors flex items-center justify-between ${
+                  activeSection === 'fitur' ? 'bg-white/15 text-white' : 'text-slate-300 hover:bg-white/10 hover:text-white'
+                }`}
+              >
+                <span>Fitur Layanan</span>
+                {activeSection === 'fitur' && <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />}
+              </a>
+              <a
+                href="#tentang-kami"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-colors flex items-center justify-between ${
+                  activeSection === 'tentang-kami' ? 'bg-white/15 text-white' : 'text-slate-300 hover:bg-white/10 hover:text-white'
+                }`}
+              >
+                <span>Tentang Kami</span>
+                {activeSection === 'tentang-kami' && <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />}
+              </a>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* =========================================================================
           HERO HEADER: Capsule Badge, Headline, Subtitle, CTA Button (Larger & Impactful)
           ========================================================================= */}
-      <div className="w-full max-w-4xl 2xl:max-w-5xl text-center flex flex-col items-center px-4 z-10 shrink-0 mt-2 lg:mt-3 2xl:mt-4">
+      <div className="w-full max-w-4xl 2xl:max-w-5xl text-center flex flex-col items-center px-4 z-10 shrink-0 mt-3 sm:mt-4 lg:mt-3 2xl:mt-4">
         {/* Top Capsule Badge: TERAMEDIA Prototype */}
-        <div className="bg-[#182042]/85 border border-white/20 text-gray-200 text-xs sm:text-[13px] 2xl:text-sm px-5 sm:px-6 py-1.5 rounded-full mb-3.5 sm:mb-4 font-medium inline-flex items-center gap-1.5 shadow-[0_4px_16px_rgba(0,0,0,0.3)] backdrop-blur-sm">
+        <div className="bg-[#182042]/85 border border-white/20 text-gray-200 text-[11px] sm:text-xs md:text-[13px] 2xl:text-sm px-4 sm:px-6 py-1.5 rounded-full mb-3 sm:mb-4 font-medium inline-flex items-center gap-1.5 shadow-[0_4px_16px_rgba(0,0,0,0.3)] backdrop-blur-sm">
           <span className="font-semibold tracking-wider text-white">TERAMEDIA</span>
           <span className="font-normal italic text-slate-300">Prototype</span>
         </div>
 
         {/* Main Headline */}
-        <h1 className="text-3xl sm:text-5xl md:text-5xl lg:text-[54px] xl:text-[60px] 2xl:text-[66px] font-bold leading-[1.12] mb-3.5 sm:mb-4 tracking-tight text-white max-w-4xl 2xl:max-w-5xl">
+        <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-[54px] xl:text-[60px] 2xl:text-[66px] font-bold leading-[1.18] sm:leading-[1.12] mb-3 sm:mb-4 tracking-tight text-white max-w-4xl 2xl:max-w-5xl">
           Kelola Organisasi Lebih Mudah <br />
           dalam{' '}
-          <span className="italic underline decoration-white decoration-[3px] sm:decoration-[4px] underline-offset-[8px] sm:underline-offset-[10px]">
+          <span className="italic underline decoration-white decoration-[2.5px] sm:decoration-[4px] underline-offset-[6px] sm:underline-offset-[10px]">
             Satu Platform
           </span>
         </h1>
 
         {/* Subtitle */}
-        <p className="text-slate-300 max-w-xl 2xl:max-w-2xl text-xs sm:text-sm md:text-[15px] lg:text-base 2xl:text-lg mb-4 sm:mb-5 leading-relaxed font-normal">
+        <p className="text-slate-300 max-w-xl 2xl:max-w-2xl text-xs sm:text-sm md:text-[15px] lg:text-base 2xl:text-lg mb-4 sm:mb-5 leading-relaxed font-normal px-2">
           Kelola program kerja, proses persetujuan, dan administrasi organisasi dalam satu platform
           yang terintegrasi dan efisien.
         </p>
@@ -245,14 +302,14 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [] }) => {
       {/* =========================================================================
           HERO DASHBOARD PREVIEW: 3 Substantial Cards filling the frame
           ========================================================================= */}
-      <div className="relative w-full max-w-[1080px] xl:max-w-[1180px] 2xl:max-w-[1340px] px-4 sm:px-6 z-10 shrink-0 mt-auto mb-4 sm:mb-6 lg:mb-6 xl:mb-8">
-        <div className="relative flex flex-col lg:flex-row items-center lg:items-start justify-between gap-6 lg:gap-6 xl:gap-8 2xl:gap-10 w-full">
+      <div className="relative w-full max-w-[1080px] xl:max-w-[1180px] 2xl:max-w-[1340px] px-3 sm:px-6 z-10 shrink-0 mt-8 sm:mt-10 lg:mt-auto mb-4 sm:mb-6 lg:mb-6 xl:mb-8">
+        <div className="relative flex flex-col md:flex-row md:flex-wrap lg:flex-nowrap items-center justify-center lg:items-start lg:justify-between gap-6 sm:gap-7 md:gap-8 lg:gap-6 xl:gap-8 2xl:gap-10 w-full">
 
           {/* -------------------------------------------------------------------
               COLUMN 1: Left Dark Frosted Overlapping Stack (Program Kerja Cards)
               ------------------------------------------------------------------- */}
           <div
-            className="relative w-[260px] sm:w-[280px] xl:w-[295px] 2xl:w-[330px] min-h-[220px] sm:min-h-[230px] xl:min-h-[240px] 2xl:min-h-[255px] lg:mt-2 select-none shrink-0"
+            className="relative w-full max-w-[270px] sm:max-w-[285px] xl:w-[295px] 2xl:w-[330px] min-h-[225px] sm:min-h-[235px] xl:min-h-[240px] 2xl:min-h-[255px] lg:mt-2 select-none shrink-0"
             onMouseEnter={() => setIsProkerHovered(true)}
             onMouseLeave={() => setIsProkerHovered(false)}
           >
@@ -263,8 +320,8 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [] }) => {
                 className="absolute inset-0 bg-[#070e28]/60 backdrop-blur-xs rounded-2xl sm:rounded-3xl border border-white/10 shadow-[0_15px_35px_rgba(0,0,0,0.5)] transition-all duration-400 ease-out cursor-pointer hover:border-white/20"
                 style={{
                   transform: isFading
-                    ? 'translate(11px, 11px) rotate(2.2deg) scale(0.94)'
-                    : 'translate(14px, 14px) rotate(3deg) scale(0.92)',
+                    ? 'translate(8px, 8px) rotate(2deg) scale(0.95)'
+                    : 'translate(10px, 10px) rotate(2.5deg) scale(0.94)',
                   zIndex: 10,
                   opacity: isFading ? 0.6 : 0.45,
                 }}
@@ -279,7 +336,7 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [] }) => {
                 style={{
                   transform: isFading
                     ? 'translate(4px, 4px) rotate(1deg) scale(0.98)'
-                    : 'translate(7px, 7px) rotate(1.5deg) scale(0.96)',
+                    : 'translate(6px, 6px) rotate(1.4deg) scale(0.97)',
                   zIndex: 20,
                   opacity: isFading ? 0.9 : 0.75,
                 }}
@@ -382,7 +439,7 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [] }) => {
           {/* -------------------------------------------------------------------
               COLUMN 2: Center Showcase Card (Arsip Administrasi)
               ------------------------------------------------------------------- */}
-          <div className="w-[350px] sm:w-[380px] xl:w-[410px] 2xl:w-[460px] lg:mt-8 bg-white text-slate-900 rounded-[2rem] sm:rounded-[2.5rem] 2xl:rounded-[3rem] p-6 xl:p-7 2xl:p-8 shadow-[0_25px_60px_rgba(0,0,0,0.6)] border border-gray-100 relative z-20 select-none shrink-0">
+          <div className="w-full max-w-[340px] sm:max-w-[380px] xl:w-[410px] 2xl:w-[460px] lg:mt-8 bg-white text-slate-900 rounded-[1.75rem] sm:rounded-[2.5rem] 2xl:rounded-[3rem] p-5 sm:p-6 xl:p-7 2xl:p-8 shadow-[0_25px_60px_rgba(0,0,0,0.6)] border border-gray-100 relative z-20 select-none shrink-0">
             {/* Top Capsule inside card */}
             <div className="text-center mb-2.5">
               <span className="bg-gray-100 text-gray-600 px-4 py-1 rounded-full border border-gray-200/80 text-xs xl:text-[13px] 2xl:text-sm font-medium inline-block">
@@ -426,7 +483,7 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [] }) => {
               </div>
 
               {/* 4-Point Blue Sparkle Star Floating at Top-Right Edge of Photo */}
-              <div className="absolute -top-4 -right-3 z-30 pointer-events-none drop-shadow-[0_4px_12px_rgba(37,99,235,0.45)]">
+              <div className="absolute -top-3 sm:-top-4 -right-2 sm:-right-3 z-30 pointer-events-none drop-shadow-[0_4px_12px_rgba(37,99,235,0.45)]">
                 <svg
                   viewBox="0 0 24 24"
                   className="w-7 h-7 sm:w-8 sm:h-8 2xl:w-9 2xl:h-9 fill-[#2563EB]"
@@ -442,9 +499,9 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [] }) => {
               COLUMN 3: Right Stack (Pembina, Ketua Umum, Jumlah Kader Metric)
               Staggered layout matching target design exactly
               ------------------------------------------------------------------- */}
-          <div className="w-[270px] sm:w-[290px] xl:w-[310px] 2xl:w-[340px] flex flex-col gap-3 2xl:gap-4 select-none shrink-0">
+          <div className="w-full max-w-[280px] sm:max-w-[300px] xl:w-[310px] 2xl:w-[340px] flex flex-col gap-3 2xl:gap-4 select-none shrink-0">
             {/* Card 1: Pembina TERAMEDIA (Shifted right) */}
-            <div className="w-[230px] sm:w-[250px] xl:w-[265px] 2xl:w-[290px] self-center lg:self-end bg-white text-slate-900 rounded-2xl px-4 py-3 2xl:py-3.5 flex items-center gap-3.5 shadow-xl border border-gray-100">
+            <div className="w-full max-w-[245px] sm:max-w-[260px] xl:w-[265px] 2xl:w-[290px] self-center lg:self-end bg-white text-slate-900 rounded-2xl px-4 py-3 2xl:py-3.5 flex items-center gap-3.5 shadow-xl border border-gray-100">
               <div className="w-10 h-10 xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 rounded-full bg-[#26282d] shrink-0 flex items-center justify-center text-white shadow-inner" />
               <div>
                 <p className="text-[13px] xl:text-sm 2xl:text-[15px] font-bold leading-tight mb-0.5 text-slate-900">
@@ -455,7 +512,7 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [] }) => {
             </div>
 
             {/* Card 2: Ketua Umum TERAMEDIA (Slightly shifted) */}
-            <div className="w-[225px] sm:w-[245px] xl:w-[260px] 2xl:w-[285px] self-center lg:self-end lg:mr-4 bg-white text-slate-900 rounded-2xl px-4 py-3 2xl:py-3.5 flex items-center gap-3.5 shadow-xl border border-gray-100">
+            <div className="w-full max-w-[240px] sm:max-w-[255px] xl:w-[260px] 2xl:w-[285px] self-center lg:self-end lg:mr-4 bg-white text-slate-900 rounded-2xl px-4 py-3 2xl:py-3.5 flex items-center gap-3.5 shadow-xl border border-gray-100">
               <div className="w-10 h-10 xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 rounded-full bg-[#26282d] shrink-0 flex items-center justify-center text-white shadow-inner" />
               <div>
                 <p className="text-[13px] xl:text-sm 2xl:text-[15px] font-bold leading-tight mb-0.5 text-slate-900">
@@ -535,9 +592,9 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [] }) => {
       </div>
 
       {/* =========================================================================
-          BOTTOM COPYRIGHT: Left-aligned at the bottom-left corner
+          BOTTOM COPYRIGHT: Left-aligned on desktop, centered on mobile/tablet
           ========================================================================= */}
-      <div className="w-full max-w-[1080px] xl:max-w-[1180px] 2xl:max-w-[1340px] text-left mt-auto lg:mt-0 lg:absolute lg:bottom-4 lg:left-12 xl:left-16 z-20 pointer-events-none px-6 pt-4 lg:pt-0 pb-2 lg:pb-0">
+      <div className="w-full max-w-[1080px] xl:max-w-[1180px] 2xl:max-w-[1340px] text-center lg:text-left mt-8 lg:mt-0 lg:absolute lg:bottom-4 lg:left-12 xl:left-16 z-20 pointer-events-none px-6 pt-2 lg:pt-0 pb-4 lg:pb-0">
         <p className="text-[11px] xl:text-xs text-slate-400 font-normal">Copyright TERAMEDIA 2026</p>
       </div>
     </section>
