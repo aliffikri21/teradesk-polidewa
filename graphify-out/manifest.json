@@ -113,30 +113,6 @@
     "ast_hash": "29743b7b8d65295becbe69a700fa0119",
     "semantic_hash": ""
   },
-  "public/images/workshop_preview.jpg": {
-    "mtime": 1790972338.997263,
-    "seen": 1793598012.4977372,
-    "ast_hash": "4af9add556a3f520efc22e2c57824f07",
-    "semantic_hash": ""
-  },
-  "src/assets/hero.png": {
-    "mtime": 1790972210.3298378,
-    "seen": 1793598012.4977372,
-    "ast_hash": "aead493361b27e7510691c5d7072dfc1",
-    "semantic_hash": ""
-  },
-  "src/assets/react.svg": {
-    "mtime": 1790972210.3313434,
-    "seen": 1793598012.4977372,
-    "ast_hash": "f0402b67b6ce880f65666bb49e841696",
-    "semantic_hash": ""
-  },
-  "src/assets/vite.svg": {
-    "mtime": 1790972210.3323555,
-    "seen": 1793598012.4977372,
-    "ast_hash": "9960a24288958394ac50e57ff638b036",
-    "semantic_hash": ""
-  },
   "anti-slop/audit-001-2026-11-02.md": {
     "mtime": 1793598105.5011737,
     "seen": 1793598470.0522377,
@@ -923,12 +899,6 @@
     "ast_hash": "73d08c810dd7043a3f450f95090fe633",
     "semantic_hash": ""
   },
-  "src/components/LoginModal.jsx": {
-    "mtime": 1793646353.8682122,
-    "seen": 1793646476.7795246,
-    "ast_hash": "a4970c3189a5bcd116a8c1509d1b2c1f",
-    "semantic_hash": ""
-  },
   "src/data/defaultAccounts.js": {
     "mtime": 1793803101.9438052,
     "seen": 1793805415.5721114,
@@ -939,12 +909,6 @@
     "mtime": 1793817769.5137086,
     "seen": 1793818049.3708553,
     "ast_hash": "3992b88b65a43d75cba083d9b2784f9d",
-    "semantic_hash": ""
-  },
-  "public/images/logo-teramedia.png": {
-    "mtime": 1788076321.7120757,
-    "seen": 1793646329.4030185,
-    "ast_hash": "6341e6ab629bdf2f1576b15ebff4864d",
     "semantic_hash": ""
   },
   "public/logo-teramedia.png": {
@@ -971,24 +935,6 @@
     "ast_hash": "aafea908dbf2c833f1de83f67370bd7b",
     "semantic_hash": ""
   },
-  "img1.JPG": {
-    "mtime": 1752312400.0,
-    "seen": 1793805415.5721114,
-    "ast_hash": "79f6a9760796942da466409888c8fa5c",
-    "semantic_hash": ""
-  },
-  "Landing Page.png": {
-    "mtime": 1793809546.083231,
-    "seen": 1793816699.036791,
-    "ast_hash": "707587ffa4a8cc54201493ace5eab420",
-    "semantic_hash": ""
-  },
-  "logo-teramedia.png": {
-    "mtime": 1793809546.0852323,
-    "seen": 1793816699.036791,
-    "ast_hash": "6341e6ab629bdf2f1576b15ebff4864d",
-    "semantic_hash": ""
-  },
   "src/data/defaultProker.js": {
     "mtime": 1793817753.7694077,
     "seen": 1793818049.3708553,
@@ -1001,16 +947,16 @@
     "ast_hash": "79f6a9760796942da466409888c8fa5c",
     "semantic_hash": ""
   },
-  "public/img1.JPG": {
-    "mtime": 1752312400.0,
-    "seen": 1793819115.2601204,
-    "ast_hash": "79f6a9760796942da466409888c8fa5c",
+  "src/index.html": {
+    "mtime": 1793819962.9918485,
+    "seen": 1793820258.612819,
+    "ast_hash": "f6d7923a58a52bca112434e6b995b670",
     "semantic_hash": ""
   },
-  "src/index.html": {
-    "mtime": 1793819869.3369942,
-    "seen": 1793819954.6672568,
-    "ast_hash": "c784df9c60235e2ad9d062db36855536",
+  "docs/reference/Landing Page.png": {
+    "mtime": 1793809546.083231,
+    "seen": 1793820258.612819,
+    "ast_hash": "707587ffa4a8cc54201493ace5eab420",
     "semantic_hash": ""
   }
 }
