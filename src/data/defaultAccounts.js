@@ -7,6 +7,6 @@ export const initialDefaultAccounts = [
     password: 'admin',
     createdAt: '2026-11-03',
     isDefault: true,
+    canAccessAdmin: true,
   },
 ];
-

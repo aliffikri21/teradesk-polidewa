@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "src/App.jsx": {
-    "mtime": 1793675786.8249226,
-    "seen": 1793676199.190001,
-    "ast_hash": "7c8781d859cdca9efe4adc578cbf0d79",
+    "mtime": 1793803101.6548212,
+    "seen": 1793805415.5721114,
+    "ast_hash": "2b769b55ca9211d5e1df4cac1abea1a5",
     "semantic_hash": ""
   },
   "src/components/AboutUs.jsx": {
@@ -48,9 +48,9 @@
     "semantic_hash": ""
   },
   "src/components/Hero.jsx": {
-    "mtime": 1793681562.777828,
-    "seen": 1793681614.8936012,
-    "ast_hash": "0fc227b9e4e18fd7d35fe9579e9a2145",
+    "mtime": 1793805361.6000268,
+    "seen": 1793805415.5721114,
+    "ast_hash": "32ee02a8c4f57ab53c533c2384bf90e8",
     "semantic_hash": ""
   },
   "src/main.jsx": {
@@ -936,15 +936,15 @@
     "semantic_hash": ""
   },
   "src/data/defaultAccounts.js": {
-    "mtime": 1793647398.7463648,
-    "seen": 1793647994.1857057,
-    "ast_hash": "893696df974f4322d57073cf90e60513",
+    "mtime": 1793803101.9438052,
+    "seen": 1793805415.5721114,
+    "ast_hash": "4408d1a924840bdd0bd2f04c1c57d685",
     "semantic_hash": ""
   },
   "src/components/admin/AdminDashboardPage.jsx": {
-    "mtime": 1793676440.66707,
-    "seen": 1793677597.088457,
-    "ast_hash": "2ecde00ba496f7993a1d0bd3f0429cb0",
+    "mtime": 1793803101.9031594,
+    "seen": 1793805415.5721114,
+    "ast_hash": "f24733c9b094f3088c042f430e253a46",
     "semantic_hash": ""
   },
   "Landing Page.png": {
@@ -987,6 +987,12 @@
     "mtime": 1793674417.8793674,
     "seen": 1793675318.1041253,
     "ast_hash": "aafea908dbf2c833f1de83f67370bd7b",
+    "semantic_hash": ""
+  },
+  "img1.JPG": {
+    "mtime": 1752312400.0,
+    "seen": 1793805415.5721114,
+    "ast_hash": "79f6a9760796942da466409888c8fa5c",
     "semantic_hash": ""
   }
 }

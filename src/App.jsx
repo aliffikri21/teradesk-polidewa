@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ShieldAlert } from 'lucide-react';
 import Hero from './components/Hero';
 import Features from './components/Features';
 import AboutUs from './components/AboutUs';
@@ -43,6 +44,7 @@ function App() {
 
   const [authUser, setAuthUser] = useState(null); // null = Guest, object = Authenticated pengurus
   const [isContactOpen, setIsContactOpen] = useState(false);
+  const [accessDeniedInfo, setAccessDeniedInfo] = useState(null);
 
   // Registered accounts state dengan pembersihan data lama agar hanya akun Alif Fikri yang aktif
   const [registeredAccounts, setRegisteredAccounts] = useState(() => {
@@ -52,7 +54,12 @@ function App() {
       const saved = localStorage.getItem('teradesk_dev_accounts_v3');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((acc) => ({
+            ...acc,
+            canAccessAdmin: acc.canAccessAdmin ?? (acc.nim === '23404053' || acc.isDefault === true),
+          }));
+        }
       }
     } catch {
       // ignore
@@ -73,7 +80,16 @@ function App() {
   useEffect(() => {
     const handlePopState = () => {
       if (window.location.pathname === '/admin') {
-        setCurrentView({ page: 'admin', serviceId: null });
+        if (authUser && !authUser.canAccessAdmin) {
+          setAccessDeniedInfo({
+            nim: authUser.nim,
+            name: authUser.name,
+            role: authUser.role,
+          });
+          setCurrentView({ page: 'landing', serviceId: null });
+        } else {
+          setCurrentView({ page: 'admin', serviceId: null });
+        }
       } else if (window.location.pathname === '/login') {
         setCurrentView({ page: 'login', serviceId: null });
       } else {
@@ -82,7 +98,7 @@ function App() {
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
+  }, [authUser]);
 
   // Global keyboard shortcut (Ctrl + Shift + D) to toggle Admin Dashboard page
   useEffect(() => {
@@ -94,6 +110,19 @@ function App() {
             if (window.location.pathname !== '/') window.history.pushState(null, '', '/');
             return { page: 'landing', serviceId: null };
           } else {
+            if (!authUser) {
+              setPendingTarget({ page: 'admin', serviceId: null });
+              if (window.location.pathname !== '/login') window.history.pushState(null, '', '/login');
+              return { page: 'login', serviceId: null };
+            }
+            if (!authUser.canAccessAdmin) {
+              setAccessDeniedInfo({
+                nim: authUser.nim,
+                name: authUser.name,
+                role: authUser.role,
+              });
+              return prev;
+            }
             if (window.location.pathname !== '/admin') window.history.pushState(null, '', '/admin');
             return { page: 'admin', serviceId: null };
           }
@@ -103,7 +132,7 @@ function App() {
     };
     window.addEventListener('keydown', handleGlobalKey);
     return () => window.removeEventListener('keydown', handleGlobalKey);
-  }, []);
+  }, [authUser]);
 
   // Guarantee that on page refresh (initial mount), session is completely destroyed
   useEffect(() => {
@@ -128,6 +157,16 @@ function App() {
         }
         setCurrentView({ page: 'login', serviceId: null });
         window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      // Validasi izin akses panel admin
+      if (!authUser.canAccessAdmin) {
+        setAccessDeniedInfo({
+          nim: authUser.nim,
+          name: authUser.name,
+          role: authUser.role,
+        });
         return;
       }
 
@@ -169,7 +208,18 @@ function App() {
 
   const handleLoginSuccess = (userProfile) => {
     setAuthUser(userProfile);
-    const target = pendingTarget || { page: 'portal', serviceId: null };
+    let target = pendingTarget || { page: 'portal', serviceId: null };
+
+    // Jika target login adalah dashboard admin tetapi akun tidak memiliki izin admin:
+    if (target.page === 'admin' && !userProfile.canAccessAdmin) {
+      setAccessDeniedInfo({
+        nim: userProfile.nim,
+        name: userProfile.name,
+        role: userProfile.role,
+      });
+      target = { page: 'portal', serviceId: null };
+    }
+
     setCurrentView(target);
     setPendingTarget(null);
     const targetPath = target.page === 'admin' ? '/admin' : '/';
@@ -325,6 +375,40 @@ function App() {
           authUser={authUser}
           onLogout={handleLogout}
         />
+      )}
+
+      {/* Access Denied Modal (Role Restriction) */}
+      {accessDeniedInfo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-md w-full border border-slate-100 shadow-2xl text-center animate-in zoom-in-95 duration-150">
+            <div className="w-14 h-14 rounded-2xl bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center mx-auto mb-4 shadow-xs">
+              <ShieldAlert size={28} />
+            </div>
+            <span className="inline-block px-3 py-1 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200 mb-2">
+              Akses Dibatasi • Hak Akses Non-Admin
+            </span>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">
+              Akses Dashboard Admin Ditolak
+            </h3>
+            <p className="text-xs text-slate-600 leading-relaxed mb-4">
+              Akun atas nama <strong className="text-slate-900">{accessDeniedInfo.name}</strong> (NIM: <span className="font-mono font-bold text-slate-900">{accessDeniedInfo.nim}</span>) terdaftar dengan hak akses <strong className="text-rose-600">Anggota Biasa</strong> dan tidak memiliki izin Administrator untuk mengelola Dashboard Admin.
+            </p>
+            <div className="bg-slate-50 rounded-2xl p-3.5 border border-slate-200/80 text-[11px] text-slate-500 mb-5 text-left space-y-1">
+              <p className="font-bold text-slate-700">
+                💡 Hak Akses Anda Saat Ini:
+              </p>
+              <p>
+                Anda tetap memiliki akses penuh ke seluruh modul Portal Layanan Mahasiswa (PAR, E-Arsip, Digitalisasi Aset, Presensi, dsb.). Hubungi Ketua Umum atau Administrator jika Anda membutuhkan hak akses panel admin.
+              </p>
+            </div>
+            <button
+              onClick={() => setAccessDeniedInfo(null)}
+              className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-[0.99]"
+            >
+              Mengerti & Lanjut ke Portal Layanan
+            </button>
+          </div>
+        </div>
       )}
 
       {/* Contact Modal */}

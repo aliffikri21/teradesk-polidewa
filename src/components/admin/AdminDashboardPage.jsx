@@ -35,6 +35,7 @@ import {
   X,
   Upload,
   ShieldCheck,
+  Lock,
   Clock,
   Database,
   SlidersHorizontal,
@@ -191,6 +192,7 @@ const AdminDashboardPage = ({
   const [currentNav, setCurrentNav] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDivision, setSelectedDivision] = useState('Semua Divisi');
+  const [accessFilter, setAccessFilter] = useState('Semua Akses');
   const [dateRangeFilter, setDateRangeFilter] = useState('Semester Ganjil 2026/2027');
   const [timeframeFilter, setTimeframeFilter] = useState('Bulan Ini');
 
@@ -201,6 +203,7 @@ const AdminDashboardPage = ({
   const [formDivision, setFormDivision] = useState('Divisi Kesekretariatan');
   const [formRole, setFormRole] = useState('Anggota Aktif');
   const [formPassword, setFormPassword] = useState('password123');
+  const [formCanAccessAdmin, setFormCanAccessAdmin] = useState(false);
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
 
@@ -212,6 +215,7 @@ const AdminDashboardPage = ({
   const [editFormDivision, setEditFormDivision] = useState('Divisi Kesekretariatan');
   const [editFormRole, setEditFormRole] = useState('Anggota Aktif');
   const [editFormPassword, setEditFormPassword] = useState('');
+  const [editFormCanAccessAdmin, setEditFormCanAccessAdmin] = useState(false);
   const [editFormShowPass, setEditFormShowPass] = useState(false);
   const [editFormError, setEditFormError] = useState('');
   const [editFormSuccess, setEditFormSuccess] = useState('');
@@ -656,15 +660,17 @@ const AdminDashboardPage = ({
       password: cleanPass,
       createdAt: getDateStamp(),
       isDefault: false,
+      canAccessAdmin: Boolean(formCanAccessAdmin),
     };
 
     onAddAccount(newAccount);
-    addLog(`Akun mahasiswa baru ditambahkan: ${cleanName} (${cleanNim})`, 'success');
+    addLog(`Akun mahasiswa baru ditambahkan: ${cleanName} (${cleanNim}) [${formCanAccessAdmin ? 'Akses Admin' : 'Non-Admin'}]`, 'success');
 
     setFormSuccess(`Akun ${cleanName} (${cleanNim}) berhasil didaftarkan!`);
     setFormNim('');
     setFormName('');
     setFormPassword('password123');
+    setFormCanAccessAdmin(false);
 
     setTimeout(() => {
       setFormSuccess('');
@@ -679,6 +685,7 @@ const AdminDashboardPage = ({
     setEditFormDivision(acc.division || 'Divisi Kesekretariatan');
     setEditFormRole(acc.role || 'Anggota Aktif');
     setEditFormPassword(acc.password || '');
+    setEditFormCanAccessAdmin(acc.canAccessAdmin ?? (acc.nim === '23404053' || acc.isDefault));
     setEditFormShowPass(false);
     setEditFormError('');
     setEditFormSuccess('');
@@ -719,12 +726,16 @@ const AdminDashboardPage = ({
       return;
     }
 
+    // NIM 23404053 is primary Master Administrator
+    const finalCanAccessAdmin = cleanNim === '23404053' ? true : Boolean(editFormCanAccessAdmin);
+
     const updatedAccount = {
       nim: cleanNim,
       name: cleanName,
       division: editFormDivision,
       role: cleanRole || 'Anggota Aktif',
       password: cleanPass,
+      canAccessAdmin: finalCanAccessAdmin,
     };
 
     if (onUpdateAccount) {
@@ -733,13 +744,32 @@ const AdminDashboardPage = ({
       onUpdatePassword(editingTargetNim, cleanPass);
     }
 
-    addLog(`Data akun diperbarui: ${cleanName} (NIM: ${cleanNim})`, 'success');
+    addLog(`Data akun diperbarui: ${cleanName} (NIM: ${cleanNim}) [${finalCanAccessAdmin ? 'Bisa Akses Admin' : 'Non-Admin'}]`, 'success');
     setEditFormSuccess(`Data akun ${cleanName} berhasil diperbarui!`);
 
     setTimeout(() => {
       setEditFormSuccess('');
       setIsEditModalOpen(false);
     }, 1200);
+  };
+
+  const handleToggleAdminAccess = (acc) => {
+    if (acc.nim === '23404053') {
+      alert('NIM 23404053 adalah akun Master Administrator dan izin akses admin tidak dapat dinonaktifkan.');
+      return;
+    }
+    const nextStatus = !acc.canAccessAdmin;
+    const updatedAccount = {
+      ...acc,
+      canAccessAdmin: nextStatus,
+    };
+    if (onUpdateAccount) {
+      onUpdateAccount(acc.nim, updatedAccount);
+    }
+    addLog(
+      `Hak akses admin ${acc.name} (${acc.nim}) diubah: ${nextStatus ? 'BISA AKSES ADMIN' : 'HANYA PORTAL (NON-ADMIN)'}`,
+      nextStatus ? 'success' : 'info'
+    );
   };
 
   const handleStartEditPassword = (acc) => {
@@ -863,10 +893,14 @@ const AdminDashboardPage = ({
     addLog(`Proposal ${id} disetujui oleh Administrator Alif Fikri`, 'success');
   };
 
-  // Filtered accounts based on search query and division
+  // Filtered accounts based on search query, division, and access rights
   const filteredAccounts = accounts.filter((acc) => {
     const matchDivision =
       selectedDivision === 'Semua Divisi' || acc.division === selectedDivision;
+    const matchAccess =
+      accessFilter === 'Semua Akses' ||
+      (accessFilter === 'Bisa Akses Admin' && Boolean(acc.canAccessAdmin)) ||
+      (accessFilter === 'Hanya Portal (Non-Admin)' && !acc.canAccessAdmin);
     const q = searchQuery.toLowerCase().trim();
     const matchSearch =
       !q ||
@@ -874,7 +908,7 @@ const AdminDashboardPage = ({
       acc.name.toLowerCase().includes(q) ||
       acc.role.toLowerCase().includes(q) ||
       acc.division.toLowerCase().includes(q);
-    return matchDivision && matchSearch;
+    return matchDivision && matchAccess && matchSearch;
   });
 
   return (
@@ -2695,6 +2729,15 @@ const AdminDashboardPage = ({
                         <option key={div} value={div}>{div}</option>
                       ))}
                     </select>
+                    <select
+                      value={accessFilter}
+                      onChange={(e) => setAccessFilter(e.target.value)}
+                      className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-700 cursor-pointer focus:outline-hidden"
+                    >
+                      <option value="Semua Akses">Semua Hak Akses</option>
+                      <option value="Bisa Akses Admin">Bisa Akses Admin</option>
+                      <option value="Hanya Portal (Non-Admin)">Hanya Portal (Non-Admin)</option>
+                    </select>
                   </div>
 
                   {selectedRows.length > 0 && (
@@ -2722,6 +2765,7 @@ const AdminDashboardPage = ({
                         </th>
                         <th className="py-3 px-4">MAHASISWA (NIM & NAMA)</th>
                         <th className="py-3 px-4">DIVISI & JABATAN</th>
+                        <th className="py-3 px-4">HAK AKSES ADMIN</th>
                         <th className="py-3 px-4">KATA SANDI</th>
                         <th className="py-3 px-4">TERDAFTAR</th>
                         <th className="py-3 px-4 text-right">AKSI</th>
@@ -2771,6 +2815,36 @@ const AdminDashboardPage = ({
                                 {acc.division}
                               </span>
                               <p className="text-[11px] text-slate-500">{acc.role}</p>
+                            </td>
+                            <td className="py-3 px-4">
+                              <button
+                                type="button"
+                                onClick={() => handleToggleAdminAccess(acc)}
+                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all cursor-pointer ${
+                                  acc.canAccessAdmin
+                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                                    : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
+                                }`}
+                                title={
+                                  acc.nim === '23404053'
+                                    ? 'Akun Master Admin (Permanen)'
+                                    : acc.canAccessAdmin
+                                    ? 'Klik untuk cabut hak akses admin'
+                                    : 'Klik untuk berikan hak akses admin'
+                                }
+                              >
+                                {acc.canAccessAdmin ? (
+                                  <>
+                                    <ShieldCheck size={12} className="text-emerald-600" />
+                                    <span>Bisa Akses Admin</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Lock size={12} className="text-slate-400" />
+                                    <span>Hanya Portal Layanan</span>
+                                  </>
+                                )}
+                              </button>
                             </td>
                             <td className="py-3 px-4">
                               {isEditingThis ? (
@@ -3172,6 +3246,43 @@ const AdminDashboardPage = ({
                 </div>
               </div>
 
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                  Hak Akses Dashboard Admin
+                </label>
+                <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl border border-slate-200">
+                  <button
+                    type="button"
+                    onClick={() => setFormCanAccessAdmin(false)}
+                    className={`py-2 px-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                      !formCanAccessAdmin
+                        ? 'bg-white text-slate-800 shadow-xs border border-slate-200/60'
+                        : 'text-slate-500 hover:text-slate-700'
+                    }`}
+                  >
+                    <Lock size={13} />
+                    <span>Hanya Portal Layanan</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormCanAccessAdmin(true)}
+                    className={`py-2 px-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                      formCanAccessAdmin
+                        ? 'bg-emerald-600 text-white shadow-xs'
+                        : 'text-slate-500 hover:text-slate-700'
+                    }`}
+                  >
+                    <ShieldCheck size={13} />
+                    <span>Bisa Akses Admin</span>
+                  </button>
+                </div>
+                <p className="text-[10px] text-slate-500 mt-1">
+                  {formCanAccessAdmin
+                    ? '✓ Mahasiswa ini diizinkan membuka dashboard admin & mengelola data akun.'
+                    : 'ℹ Mahasiswa ini hanya dapat membuka portal kerja layanan divisi (non-admin).'}
+                </p>
+              </div>
+
               {formError && (
                 <p className="text-xs font-semibold text-rose-600 bg-rose-50 p-2.5 rounded-xl border border-rose-100">
                   {formError}
@@ -3319,6 +3430,55 @@ const AdminDashboardPage = ({
                     {editFormShowPass ? <EyeOff size={14} /> : <Eye size={14} />}
                   </button>
                 </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    Hak Akses Dashboard Admin
+                  </label>
+                  {editingTargetNim === '23404053' && (
+                    <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                      Master Admin (Terkunci)
+                    </span>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl border border-slate-200">
+                  <button
+                    type="button"
+                    disabled={editingTargetNim === '23404053'}
+                    onClick={() => setEditFormCanAccessAdmin(false)}
+                    className={`py-2 px-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                      editingTargetNim === '23404053'
+                        ? 'opacity-40 cursor-not-allowed text-slate-400'
+                        : !editFormCanAccessAdmin
+                        ? 'bg-white text-slate-800 shadow-xs border border-slate-200/60'
+                        : 'text-slate-500 hover:text-slate-700'
+                    }`}
+                  >
+                    <Lock size={13} />
+                    <span>Hanya Portal Layanan</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditFormCanAccessAdmin(true)}
+                    className={`py-2 px-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                      editFormCanAccessAdmin
+                        ? 'bg-emerald-600 text-white shadow-xs'
+                        : 'text-slate-500 hover:text-slate-700'
+                    }`}
+                  >
+                    <ShieldCheck size={13} />
+                    <span>Bisa Akses Admin</span>
+                  </button>
+                </div>
+                <p className="text-[10px] text-slate-500 mt-1">
+                  {editingTargetNim === '23404053'
+                    ? 'NIM 23404053 adalah akun Master Admin UKM TERAMEDIA dan hak akses panel admin tidak dapat dinonaktifkan.'
+                    : editFormCanAccessAdmin
+                    ? '✓ Akun ini memiliki izin penuh untuk masuk ke Dashboard Admin.'
+                    : 'ℹ Akun ini dibatasi hanya dapat mengakses portal kerja/layanan divisi.'}
+                </p>
               </div>
 
               {editFormError && (

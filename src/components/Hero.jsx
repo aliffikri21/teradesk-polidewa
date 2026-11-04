@@ -3,7 +3,6 @@ import { ArrowRight, Bookmark } from 'lucide-react';
 
 const Hero = ({ onOpenContact, onNavigateToPortal }) => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isNavHovered, setIsNavHovered] = useState(false);
   const [activeSection, setActiveSection] = useState('beranda');
 
   useEffect(() => {
@@ -29,7 +28,7 @@ const Hero = ({ onOpenContact, onNavigateToPortal }) => {
   return (
     <section
       id="beranda"
-      className="w-full relative min-h-screen h-[100vh] lg:h-screen bg-[#04081f] text-white flex flex-col items-center justify-between pt-8 sm:pt-10 lg:pt-8 xl:pt-10 2xl:pt-14 pb-0 overflow-hidden select-none"
+      className="w-full relative min-h-screen h-[100vh] lg:h-screen bg-[#04081f] text-white flex flex-col items-center justify-between pt-20 sm:pt-22 lg:pt-20 xl:pt-22 2xl:pt-24 pb-0 overflow-hidden select-none"
     >
       {/* =========================================================================
           BACKGROUND: 3D Architectural Ribbed Slats (Fluted Wall) + Radial Ambient
@@ -67,18 +66,18 @@ const Hero = ({ onOpenContact, onNavigateToPortal }) => {
 
       {/* =========================================================================
           NAVBAR: Floating Glassmorphism Sticky Navbar
-          - Tampil halus saat scroll atau saat cursor mengarah ke bagian paling atas
+          - Tampil konsisten dengan frosted glass putih beropasitas rendah
           ========================================================================= */}
-      <div
-        className="fixed top-0 left-0 right-0 h-16 z-50 pointer-events-auto"
-        onMouseEnter={() => setIsNavHovered(true)}
-        onMouseLeave={() => setIsNavHovered(false)}
-      >
+      <div className="fixed top-0 left-0 right-0 h-16 z-50 pointer-events-auto">
         <nav
-          className={`mx-auto w-[calc(100%-2rem)] max-w-6xl mt-3 sm:mt-4 transition-all duration-300 rounded-2xl sm:rounded-full px-4 sm:px-6 py-2.5 sm:py-3 flex justify-between items-center ${
-            isScrolled || isNavHovered
-              ? 'opacity-100 translate-y-0 bg-[#060D25]/85 backdrop-blur-md border border-white/20 shadow-[0_12px_40px_rgba(0,0,0,0.5)] pointer-events-auto'
-              : 'opacity-0 -translate-y-4 pointer-events-none'
+          className={`mx-auto w-[calc(100%-2rem)] max-w-6xl mt-3 sm:mt-4 transition-all duration-300 rounded-2xl sm:rounded-full px-4 sm:px-6 py-2.5 sm:py-3 flex justify-between items-center opacity-100 translate-y-0 ${
+            activeSection === 'beranda'
+              ? `bg-white/15 backdrop-blur-md border border-white/25 text-white ${
+                  isScrolled
+                    ? 'shadow-[0_12px_40px_0_rgba(0,0,0,0.45)] bg-white/[0.18]'
+                    : 'shadow-[0_8px_32px_0_rgba(0,0,0,0.32)]'
+                }`
+              : 'bg-white/75 backdrop-blur-md border border-slate-200/70 shadow-[0_12px_36px_rgba(0,0,0,0.08)] text-slate-800'
           }`}
         >
           {/* Brand Logo */}
@@ -89,7 +88,13 @@ const Hero = ({ onOpenContact, onNavigateToPortal }) => {
               draggable="false"
               className="w-8 h-8 object-contain drop-shadow-sm group-hover:scale-105 transition-transform shrink-0 select-none"
             />
-            <span className="text-lg font-semibold tracking-wide text-white">TeraDesk</span>
+            <span
+              className={`text-lg font-semibold tracking-wide transition-colors ${
+                activeSection === 'beranda' ? 'text-white' : 'text-slate-900'
+              }`}
+            >
+              TeraDesk
+            </span>
           </a>
 
           {/* Center Nav Links */}
@@ -99,7 +104,7 @@ const Hero = ({ onOpenContact, onNavigateToPortal }) => {
               className={`pb-0.5 transition-all cursor-pointer ${
                 activeSection === 'beranda'
                   ? 'text-white border-b-2 border-white font-semibold'
-                  : 'text-gray-300 hover:text-white font-medium border-b-2 border-transparent'
+                  : 'text-slate-600 hover:text-slate-900 font-medium border-b-2 border-transparent'
               }`}
             >
               Beranda
@@ -108,8 +113,10 @@ const Hero = ({ onOpenContact, onNavigateToPortal }) => {
               href="#fitur"
               className={`pb-0.5 transition-all cursor-pointer ${
                 activeSection === 'fitur'
-                  ? 'text-white border-b-2 border-white font-semibold'
-                  : 'text-gray-300 hover:text-white font-medium border-b-2 border-transparent'
+                  ? 'text-slate-900 border-b-2 border-slate-900 font-bold'
+                  : activeSection === 'beranda'
+                  ? 'text-gray-300 hover:text-white font-medium border-b-2 border-transparent'
+                  : 'text-slate-600 hover:text-slate-900 font-medium border-b-2 border-transparent'
               }`}
             >
               Fitur
@@ -118,8 +125,10 @@ const Hero = ({ onOpenContact, onNavigateToPortal }) => {
               href="#tentang-kami"
               className={`pb-0.5 transition-all cursor-pointer ${
                 activeSection === 'tentang-kami'
-                  ? 'text-white border-b-2 border-white font-semibold'
-                  : 'text-gray-300 hover:text-white font-medium border-b-2 border-transparent'
+                  ? 'text-slate-900 border-b-2 border-slate-900 font-bold'
+                  : activeSection === 'beranda'
+                  ? 'text-gray-300 hover:text-white font-medium border-b-2 border-transparent'
+                  : 'text-slate-600 hover:text-slate-900 font-medium border-b-2 border-transparent'
               }`}
             >
               Tentang Kami
