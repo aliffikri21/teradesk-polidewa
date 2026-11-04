@@ -48,9 +48,9 @@
     "semantic_hash": ""
   },
   "src/components/Hero.jsx": {
-    "mtime": 1793818941.2546463,
-    "seen": 1793819115.2601204,
-    "ast_hash": "760801c4d5f38095a998cf56cf2c7c35",
+    "mtime": 1793819636.4326072,
+    "seen": 1793819954.666257,
+    "ast_hash": "7bc04faa2e21eca1a1e8570e9efab325",
     "semantic_hash": ""
   },
   "src/main.jsx": {
@@ -60,21 +60,15 @@
     "semantic_hash": ""
   },
   "vite.config.js": {
-    "mtime": 1790972285.381106,
-    "seen": 1793598012.4977372,
-    "ast_hash": "ec0d9c9c11ddc0c4b5153c6bbf3d39dd",
+    "mtime": 1793819879.0898914,
+    "seen": 1793819954.666257,
+    "ast_hash": "e1ce46d2f8589d45e9b15ecb0f52b852",
     "semantic_hash": ""
   },
   "README.md": {
     "mtime": 1790972932.9736426,
     "seen": 1793598012.4977372,
     "ast_hash": "9dce96c2d8b8bf677710fc17a7e76b66",
-    "semantic_hash": ""
-  },
-  "index.html": {
-    "mtime": 1793809626.1399221,
-    "seen": 1793816699.036791,
-    "ast_hash": "6c1c2a7c64e0fe6b28442d8c2f268de4",
     "semantic_hash": ""
   },
   "public/favicon.svg": {
@@ -1011,6 +1005,12 @@
     "mtime": 1752312400.0,
     "seen": 1793819115.2601204,
     "ast_hash": "79f6a9760796942da466409888c8fa5c",
+    "semantic_hash": ""
+  },
+  "src/index.html": {
+    "mtime": 1793819869.3369942,
+    "seen": 1793819954.6672568,
+    "ast_hash": "c784df9c60235e2ad9d062db36855536",
     "semantic_hash": ""
   }
 }

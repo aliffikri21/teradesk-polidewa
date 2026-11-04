@@ -218,14 +218,26 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [] }) => {
           yang terintegrasi dan efisien.
         </p>
 
-        {/* CTA Button: Jelajahi Lebih Banyak Fitur */}
+        {/* CTA Button: Jelajahi Lebih Banyak Fitur (High-End Micro-Interactions & Shimmer) */}
         <button
           onClick={() => onNavigateToPortal && onNavigateToPortal()}
-          className="bg-[#ea9804] hover:bg-[#f59e0b] text-white pl-6 sm:pl-7 pr-2 sm:pr-2.5 py-2 sm:py-2.5 2xl:py-3 rounded-full text-xs sm:text-sm md:text-[15px] 2xl:text-base font-semibold transition-all shadow-[0_8px_25px_rgba(234,152,4,0.4)] active:scale-95 cursor-pointer flex items-center gap-3.5 min-h-[42px] sm:min-h-[46px] 2xl:min-h-[50px]"
+          className="group relative overflow-hidden bg-gradient-to-r from-[#e58f00] via-[#ea9804] to-[#f59e0b] hover:from-[#ea9804] hover:via-[#f59e0b] hover:to-[#fbbf24] text-white pl-6 sm:pl-7 pr-2 sm:pr-2.5 py-2 sm:py-2.5 2xl:py-3 rounded-full text-xs sm:text-sm md:text-[15px] 2xl:text-base font-semibold transition-all duration-300 shadow-[0_8px_25px_rgba(234,152,4,0.4)] hover:shadow-[0_16px_38px_rgba(234,152,4,0.6)] hover:ring-4 hover:ring-amber-400/25 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.97] cursor-pointer flex items-center gap-3.5 min-h-[42px] sm:min-h-[46px] 2xl:min-h-[50px]"
         >
-          <span className="tracking-wide">Jelajahi Lebih Banyak Fitur</span>
-          <span className="w-7 h-7 sm:w-8 sm:h-8 2xl:w-9 2xl:h-9 rounded-full bg-white flex items-center justify-center text-[#ea9804] shadow-sm shrink-0">
-            <ArrowRight size={15} strokeWidth={2.8} />
+          {/* Animated Light Sweep / Shimmer Flare */}
+          <span className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/35 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-[350%] transition-transform duration-1000 ease-out pointer-events-none" />
+
+          {/* Button Text */}
+          <span className="tracking-wide relative z-10 transition-transform duration-300 group-hover:translate-x-0.5">
+            Jelajahi Lebih Banyak Fitur
+          </span>
+
+          {/* Circular Badge with Arrow */}
+          <span className="relative z-10 w-7 h-7 sm:w-8 sm:h-8 2xl:w-9 2xl:h-9 rounded-full bg-white flex items-center justify-center text-[#ea9804] shadow-sm shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:bg-white group-hover:shadow-[0_4px_14px_rgba(0,0,0,0.18)]">
+            <ArrowRight
+              size={15}
+              strokeWidth={2.8}
+              className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:scale-105"
+            />
           </span>
         </button>
       </div>
