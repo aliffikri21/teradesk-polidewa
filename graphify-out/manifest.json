@@ -66,9 +66,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1793866297.2217603,
-    "seen": 1793866976.7817352,
-    "ast_hash": "207928224bbbad605b0a4dae0a28bf1c",
+    "mtime": 1793869872.356555,
+    "seen": 1793869910.6589584,
+    "ast_hash": "0ed49c88528159d36012021d223d4f1d",
     "semantic_hash": ""
   },
   "anti-slop/audit-001-2026-11-02.md": {
@@ -948,9 +948,9 @@
     "semantic_hash": ""
   },
   "agents.md": {
-    "mtime": 1793866954.009539,
-    "seen": 1793866976.7817352,
-    "ast_hash": "6501c635b9827d08dfc840556de42df0",
+    "mtime": 1793866991.2946825,
+    "seen": 1793869910.6589584,
+    "ast_hash": "d989b92132ea2383eaa382c6440530b6",
     "semantic_hash": ""
   }
 }

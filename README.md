@@ -74,7 +74,7 @@ teradesk-ui-slicing/
 │   │   ├── Hero.jsx        # Responsive Hero section & dynamic showcase
 │   │   └── LoginPage.jsx   # Form autentikasi pengurus
 │   ├── data/
-│   │   ├── defaultAccounts.js # Akun pengurus & kredensial awal
+│   │   ├── defaultAccounts.js # Master data akun pengurus awal
 │   │   └── defaultProker.js   # Master data program kerja terintegrasi
 │   ├── App.jsx             # Router aplikasi & state autentikasi terpusat
 │   ├── index.css           # Konfigurasi Tailwind v4 & font SF Pro
@@ -109,15 +109,6 @@ npm run lint
 npm run build
 ```
 Hasil build produksi siap deploy akan tersimpan pada direktori `dist/`.
-
----
-
-## 🔐 Kredensial Login Default
-
-Untuk mengakses panel workspace atau admin console:
-- **NIM**: `23404053`
-- **Kata Sandi**: `admin`
-- **Role**: Demisioner Ketua Umum (Akses Penuh Admin)
 
 ---
 
