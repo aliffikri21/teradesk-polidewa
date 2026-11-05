@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { Sparkles, Code2, GraduationCap, Building2, IdCard, X } from 'lucide-react';
 
 const Footer = ({ onOpenDevDashboard }) => {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const [isCreditModalOpen, setIsCreditModalOpen] = useState(false);
 
   const handleSubscribe = (e) => {
     e.preventDefault();
@@ -14,7 +16,7 @@ const Footer = ({ onOpenDevDashboard }) => {
   };
 
   return (
-    <footer className="w-full bg-[#121318] text-white pt-16 pb-8 border-t border-white/5 select-none">
+    <footer className="w-full bg-[#121318] text-white pt-16 pb-8 border-t border-white/5 select-none relative">
       <div className="max-w-6xl mx-auto px-6 md:px-12">
         {/* Main Footer Row */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 pb-14">
@@ -98,24 +100,152 @@ const Footer = ({ onOpenDevDashboard }) => {
           </div>
         </div>
 
-        {/* Bottom Horizontal Divider, Copyright & Dev Console */}
+        {/* Bottom Horizontal Divider, Copyright, Developer Credits & Admin Login */}
         <div className="pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
-          <p className="text-gray-500 font-medium">
-            © 2026 All Rights Reserved
-          </p>
+          <div className="flex items-center gap-2 text-gray-500 font-medium">
+            <span>© 2026 All Rights Reserved</span>
+            <span>•</span>
+            <span className="text-gray-400">TERAMEDIA</span>
+          </div>
 
-          {onOpenDevDashboard && (
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-center">
+            {/* Developer Credit Button */}
             <button
-              onClick={onOpenDevDashboard}
-              className="flex items-center gap-2 text-gray-400 hover:text-amber-400 font-medium transition-colors cursor-pointer py-1.5 px-3 rounded-lg hover:bg-white/5 border border-transparent hover:border-white/10"
-              title="Buka Panel Admin Dashboard (Kelola NIM, Password, dan Sesi)"
+              type="button"
+              onClick={() => setIsCreditModalOpen(true)}
+              className="flex items-center gap-1.5 text-gray-300 hover:text-white font-medium transition-all cursor-pointer py-1.5 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-400/40 active:scale-95 group"
+              title="Lihat informasi pengembang TeraDesk"
             >
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-              <span>Login Admin</span>
+              <Sparkles size={13} className="text-amber-400 group-hover:rotate-12 transition-transform" />
+              <span>Developer Credits</span>
             </button>
-          )}
+
+            {/* Admin Login Button */}
+            {onOpenDevDashboard && (
+              <button
+                type="button"
+                onClick={onOpenDevDashboard}
+                className="flex items-center gap-2 text-gray-400 hover:text-amber-400 font-medium transition-colors cursor-pointer py-1.5 px-3 rounded-lg hover:bg-white/5 border border-transparent hover:border-white/10 active:scale-95"
+                title="Buka Panel Admin Dashboard (Kelola NIM, Password, dan Sesi)"
+              >
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                <span>Login Admin</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* =========================================================================
+          DEVELOPER CREDITS MODAL (White Dashboard SaaS Theme)
+          ========================================================================= */}
+      {isCreditModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/65 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={() => setIsCreditModalOpen(false)}
+        >
+          <div
+            className="relative w-full max-w-md bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-7 shadow-[0_25px_70px_rgba(0,0,0,0.35)] text-slate-900 animate-in zoom-in-95 duration-200 select-none overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Ambient Top Corner Accent */}
+            <div className="absolute top-0 right-0 w-36 h-36 bg-blue-50 rounded-bl-full pointer-events-none -z-0" />
+
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => setIsCreditModalOpen(false)}
+              aria-label="Tutup modal developer credit"
+              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer z-10"
+            >
+              <X size={16} />
+            </button>
+
+            {/* Header Tag */}
+            <div className="flex items-center gap-2 mb-5 relative z-10">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/80 text-blue-700 text-[11px] font-semibold tracking-wide">
+                <Sparkles size={12} className="text-blue-600" />
+                DEVELOPER CREDITS
+              </span>
+            </div>
+
+            {/* Developer Identity Card with Real Profile Picture */}
+            <div className="flex items-center gap-4 mb-6 relative z-10">
+              <div className="relative shrink-0">
+                <img
+                  src="/images/alip-credit.png"
+                  alt="Foto Profil Alif Fikri Haykal"
+                  className="w-18 h-18 sm:w-20 sm:h-20 rounded-2xl object-cover object-center shadow-md border-2 border-white ring-2 ring-blue-500/25"
+                />
+                <span
+                  className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-white flex items-center justify-center shadow-xs"
+                  title="Developer Aktif"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                </span>
+              </div>
+
+              <div>
+                <h3 className="text-xl sm:text-[22px] font-bold text-slate-900 tracking-tight leading-tight">
+                  Alif Fikri Haykal
+                </h3>
+                <p className="text-xs sm:text-sm font-semibold text-blue-600 mt-1 flex items-center gap-1.5">
+                  <Code2 size={14} />
+                  <span>Solo Developer</span>
+                </p>
+              </div>
+            </div>
+
+            {/* Details Info Table (White / Slate Dashboard Theme) */}
+            <div className="space-y-3 bg-slate-50/90 border border-slate-200/80 rounded-2xl p-4 mb-5 text-xs text-slate-700 relative z-10">
+              <div className="flex items-center justify-between pb-2.5 border-b border-slate-200/70">
+                <span className="text-slate-500 flex items-center gap-2 font-medium">
+                  <IdCard size={14} className="text-blue-600" />
+                  NIM
+                </span>
+                <span className="font-mono font-bold text-slate-900 bg-white border border-slate-200/90 px-2.5 py-0.5 rounded-md text-[13px] tracking-wider shadow-2xs">
+                  23404053
+                </span>
+              </div>
+
+              <div className="flex items-start justify-between py-1 border-b border-slate-200/70 gap-3">
+                <span className="text-slate-500 flex items-center gap-2 shrink-0 font-medium">
+                  <GraduationCap size={14} className="text-indigo-600" />
+                  Program Studi
+                </span>
+                <span className="font-semibold text-slate-900 text-right leading-snug">
+                  Teknologi Rekayasa Multimedia
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-slate-500 flex items-center gap-2 font-medium">
+                  <Building2 size={14} className="text-amber-600" />
+                  Organisasi
+                </span>
+                <span className="font-bold text-blue-700 bg-blue-50 border border-blue-200/60 px-2.5 py-0.5 rounded-md text-[11px]">
+                  UKM Teramedia
+                </span>
+              </div>
+            </div>
+
+            {/* Project Note */}
+            <p className="text-[11px] text-slate-500 leading-relaxed mb-6 font-normal relative z-10">
+              Dirancang dan dibangun secara mandiri untuk digitalisasi alur persetujuan kegiatan, arsip,
+              inventaris aset, dan sistem kerja organisasi UKM TERAMEDIA Politeknik Dewantara.
+            </p>
+
+            {/* Close Action Button */}
+            <button
+              type="button"
+              onClick={() => setIsCreditModalOpen(false)}
+              className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-xs transition-colors cursor-pointer active:scale-95 shadow-md flex items-center justify-center gap-2 relative z-10"
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      )}
     </footer>
   );
 };

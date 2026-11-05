@@ -1372,7 +1372,7 @@ const AdminDashboardPage = ({
                     Dashboard Eksekutif Organisasi
                   </h1>
                   <p className="text-xs text-slate-500 font-medium mt-1">
-                    Monitoring terpusat aktivitas 8 modul digitalisasi TeraDesk TERAMEDIA.
+                    Monitoring terpusat aktivitas 10 modul digitalisasi TeraDesk TERAMEDIA.
                   </p>
                 </div>
 
@@ -1766,7 +1766,7 @@ const AdminDashboardPage = ({
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2 text-xs font-semibold text-slate-600">
                         <Boxes size={16} className="text-blue-500" />
-                        <span>Status 8 Modul Layanan Terintegrasi</span>
+                        <span>Status 10 Modul Layanan Terintegrasi</span>
                       </div>
                       <button
                         onClick={onNavigateToPortal}

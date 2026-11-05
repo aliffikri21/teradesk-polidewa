@@ -375,7 +375,7 @@ function App() {
             prokerList={prokerList}
           />
 
-          {/* Fitur Unggulan Section (8 Cards Grid on Light Background) */}
+          {/* Fitur Unggulan Section (10 Cards Grid on Light Background) */}
           <Features
             onNavigateToPortal={(serviceId) =>
               handleNavigate(serviceId ? 'service' : 'portal', serviceId)

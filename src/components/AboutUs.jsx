@@ -1,16 +1,44 @@
 import React from 'react';
 
+const aboutImages = [
+  {
+    src: '/images/about/img1.webp',
+    alt: 'Kegiatan Pengurus TERAMEDIA di Gazebo Bersama Anggota',
+  },
+  {
+    src: '/images/about/img2.webp',
+    alt: 'Outbound dan Kebersamaan Mahasiswa TERAMEDIA di Pantai Membawa Bendera',
+  },
+  {
+    src: '/images/about/img3.webp',
+    alt: 'Dokumentasi Kebersamaan dan Dinamika Organisasi TERAMEDIA',
+  },
+  {
+    src: '/images/about/img4.webp',
+    alt: 'Pelatihan dan Kaderisasi Anggota Baru TERAMEDIA',
+  },
+];
+
 const AboutUs = () => {
+  // Duplikasi 3x (12 gambar) untuk memastikan perputaran infinite marquee mulus 100% tanpa jeda
+  const marqueeList = [...aboutImages, ...aboutImages, ...aboutImages];
+
   return (
-    <section id="tentang-kami" className="w-full bg-white text-slate-900 pt-20 pb-0 scroll-mt-20 select-none">
-      <div className="max-w-3xl mx-auto px-6 text-center mb-16">
-        {/* Section Heading - Centered */}
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight mb-8 text-center">
+    <section
+      id="tentang-kami"
+      className="w-full bg-white text-slate-900 pt-20 sm:pt-24 lg:pt-28 pb-0 scroll-mt-20 select-none overflow-hidden"
+    >
+      {/* =========================================================================
+          TEXT CONTENT: Left-aligned clean editorial layout matching design reference
+          ========================================================================= */}
+      <div className="w-full max-w-6xl mx-auto px-6 sm:px-10 lg:px-14 mb-10 sm:mb-14">
+        {/* Section Heading - Left-Aligned */}
+        <h2 className="text-3xl sm:text-4xl md:text-[42px] lg:text-[46px] font-bold text-slate-950 tracking-tight mb-6 sm:mb-7 text-left">
           Tentang Kami
         </h2>
 
-        {/* Text Paragraphs - Centered */}
-        <div className="space-y-6 text-slate-700 text-sm sm:text-base leading-relaxed text-center">
+        {/* Text Paragraphs - Left-Aligned, 3 distinct blocks with natural line-height */}
+        <div className="space-y-4 sm:space-y-5 text-slate-800 text-sm sm:text-base md:text-[16px] lg:text-[17px] leading-relaxed max-w-4xl text-left font-normal">
           <p>
             TERAMEDIA merupakan suatu organisasi Program Studi Teknologi Rekayasa Multimedia yang dinaungi oleh kampus Politeknik Dewantara. Didirikan pada tahun 14 Februari 2020 hingga saat ini telah aktif selama 6 tahun.
           </p>
@@ -25,31 +53,31 @@ const AboutUs = () => {
         </div>
       </div>
 
-      {/* 3 Photos Gallery Row */}
-      <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-0 overflow-hidden border-t border-gray-100 select-none">
-        <div className="h-64 sm:h-72 md:h-80 overflow-hidden group">
-          <img
-            src="/images/group_pavilion.jpg"
-            alt="Kegiatan Pengurus TERAMEDIA di Gazebo Alam"
-            draggable="false"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 select-none"
-          />
-        </div>
-        <div className="h-64 sm:h-72 md:h-80 overflow-hidden group border-x border-white/20">
-          <img
-            src="/images/group_water.jpg"
-            alt="Kegiatan Outbound Kebersamaan TERAMEDIA"
-            draggable="false"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 select-none"
-          />
-        </div>
-        <div className="h-64 sm:h-72 md:h-80 overflow-hidden group">
-          <img
-            src="/images/group_nature.jpg"
-            alt="Anggota dan Kader Aktif TERAMEDIA"
-            draggable="false"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 select-none"
-          />
+      {/* =========================================================================
+          AUTO-MOVING CAROUSEL: Full-bleed seamless infinite continuous photo ribbon
+          - Bergerak otomatis secara halus (GPU accelerated)
+          - Pause otomatis saat di-hover / disentuh
+          ========================================================================= */}
+      <div
+        className="w-full relative overflow-hidden select-none border-t border-gray-100 bg-gray-50"
+        title="Galeri Dokumentasi TERAMEDIA (Hover untuk menjeda animasi)"
+      >
+        <div className="animate-marquee-infinite flex gap-0">
+          {marqueeList.map((item, index) => (
+            <div
+              key={index}
+              className="w-[340px] sm:w-[460px] md:w-[560px] lg:w-[640px] xl:w-[720px] h-64 sm:h-72 md:h-84 lg:h-[390px] xl:h-[430px] shrink-0 overflow-hidden relative group cursor-pointer"
+            >
+              <img
+                src={item.src}
+                alt={item.alt}
+                draggable="false"
+                className="w-full h-full object-cover select-none transition-transform duration-700 ease-out group-hover:scale-105"
+                loading={index < 4 ? 'eager' : 'lazy'}
+              />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 pointer-events-none" />
+            </div>
+          ))}
         </div>
       </div>
     </section>

@@ -344,7 +344,7 @@ const FeaturesPortal = ({ onBackToLanding, onOpenContact, onSelectService, authU
           </span>
 
           <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 mb-3 leading-tight">
-            Katalog 8 Layanan & Solusi Digital <br className="hidden sm:inline" />
+            Katalog {featuresData.length} Layanan & Solusi Digital <br className="hidden sm:inline" />
             <span className="text-blue-600">
               TeraDesk TERAMEDIA
             </span>
@@ -357,7 +357,7 @@ const FeaturesPortal = ({ onBackToLanding, onOpenContact, onSelectService, authU
           {/* Key Stat Cards - SaaS Clean White */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full max-w-3xl">
             <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 text-center">
-              <div className="text-xl sm:text-2xl font-black text-slate-900">8 Modul</div>
+              <div className="text-xl sm:text-2xl font-black text-slate-900">{featuresData.length} Modul</div>
               <div className="text-[11px] text-slate-500 mt-0.5 font-medium">Siap Digunakan</div>
             </div>
             <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 text-center">

@@ -146,3 +146,27 @@
 .saas-service-content textarea::placeholder {
   color: #94a3b8 !important;
 }
+
+/* ==========================================================================
+   Continuous Seamless Marquee Carousel (Tentang Kami Gallery)
+   ========================================================================== */
+@keyframes marquee-infinite {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-33.333333%, 0, 0);
+  }
+}
+
+.animate-marquee-infinite {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: marquee-infinite 36s linear infinite;
+}
+
+.animate-marquee-infinite:hover,
+.animate-marquee-infinite:active {
+  animation-play-state: paused;
+}
