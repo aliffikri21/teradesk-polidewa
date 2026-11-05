@@ -12,8 +12,8 @@
     "semantic_hash": ""
   },
   "src/App.jsx": {
-    "mtime": 1793864557.9800415,
-    "seen": 1793864785.4810524,
+    "mtime": 1793864805.362623,
+    "seen": 1793865043.439813,
     "ast_hash": "5396eabe6a7033b98048df161d2bf090",
     "semantic_hash": ""
   },
@@ -36,8 +36,8 @@
     "semantic_hash": ""
   },
   "src/components/FeaturesPortal.jsx": {
-    "mtime": 1793864508.1548135,
-    "seen": 1793864785.4810524,
+    "mtime": 1793864805.5039072,
+    "seen": 1793865043.439813,
     "ast_hash": "d6c0f4051345ddec18c10a3cf2749dee",
     "semantic_hash": ""
   },
@@ -69,48 +69,6 @@
     "mtime": 1790972932.9736426,
     "seen": 1793598012.4977372,
     "ast_hash": "9dce96c2d8b8bf677710fc17a7e76b66",
-    "semantic_hash": ""
-  },
-  "public/favicon.svg": {
-    "mtime": 1790972210.3258343,
-    "seen": 1793598012.4977372,
-    "ast_hash": "7e840862161341271697daa99a40d76b",
-    "semantic_hash": ""
-  },
-  "public/icons.svg": {
-    "mtime": 1790972210.32683,
-    "seen": 1793598012.4977372,
-    "ast_hash": "3b4fcfcf393eca4d264dca4a4663bc37",
-    "semantic_hash": ""
-  },
-  "public/images/group_nature.jpg": {
-    "mtime": 1790973046.6171582,
-    "seen": 1793598012.4977372,
-    "ast_hash": "3966e24d73b633197012ed838426a332",
-    "semantic_hash": ""
-  },
-  "public/images/group_pavilion.jpg": {
-    "mtime": 1790973008.2775624,
-    "seen": 1793598012.4977372,
-    "ast_hash": "63af7c4595a1c278b30288627f0976c1",
-    "semantic_hash": ""
-  },
-  "public/images/group_water.jpg": {
-    "mtime": 1790973025.288125,
-    "seen": 1793598012.4977372,
-    "ast_hash": "df92fd751b7a28d74f4fac490c540fac",
-    "semantic_hash": ""
-  },
-  "public/images/ketua.jpg": {
-    "mtime": 1790972413.6017556,
-    "seen": 1793598012.4977372,
-    "ast_hash": "a49914d3344ed2973c307cf3023d2d37",
-    "semantic_hash": ""
-  },
-  "public/images/pembina.jpg": {
-    "mtime": 1790972394.6244268,
-    "seen": 1793598012.4977372,
-    "ast_hash": "29743b7b8d65295becbe69a700fa0119",
     "semantic_hash": ""
   },
   "anti-slop/audit-001-2026-11-02.md": {
@@ -888,8 +846,8 @@
     "semantic_hash": ""
   },
   "src/components/services/ServicePageLayout.jsx": {
-    "mtime": 1793864553.7021194,
-    "seen": 1793864785.4810524,
+    "mtime": 1793864806.107579,
+    "seen": 1793865043.439813,
     "ast_hash": "8e416b9c082c804dd79c3e2d48a14711",
     "semantic_hash": ""
   },
@@ -906,8 +864,8 @@
     "semantic_hash": ""
   },
   "src/components/admin/AdminDashboardPage.jsx": {
-    "mtime": 1793864524.765028,
-    "seen": 1793864785.4810524,
+    "mtime": 1793864806.0315175,
+    "seen": 1793865043.439813,
     "ast_hash": "e0084a15d558f4148d47ede21c598a0f",
     "semantic_hash": ""
   },
@@ -959,22 +917,10 @@
     "ast_hash": "707587ffa4a8cc54201493ace5eab420",
     "semantic_hash": ""
   },
-  "public/images/about/img1.jpg": {
-    "mtime": 1793862464.4573054,
-    "seen": 1793862773.2906845,
-    "ast_hash": "f52106917e031ba3d431bff090bf22f7",
-    "semantic_hash": ""
-  },
   "public/images/about/img1.webp": {
     "mtime": 1793862464.433298,
     "seen": 1793862773.2906845,
     "ast_hash": "283d95d3aeab69ca7e6811fe854e1682",
-    "semantic_hash": ""
-  },
-  "public/images/about/img2.jpg": {
-    "mtime": 1793862465.2191765,
-    "seen": 1793862773.2906845,
-    "ast_hash": "03745afdd49a246b19330b4b0640906b",
     "semantic_hash": ""
   },
   "public/images/about/img2.webp": {
@@ -983,22 +929,10 @@
     "ast_hash": "4563289764fb350dd55e3ee690acd028",
     "semantic_hash": ""
   },
-  "public/images/about/img3.jpg": {
-    "mtime": 1793862466.1280348,
-    "seen": 1793862773.2906845,
-    "ast_hash": "1ee7d3c4df9813d50e014ba7fd8e2cd4",
-    "semantic_hash": ""
-  },
   "public/images/about/img3.webp": {
     "mtime": 1793862466.093505,
     "seen": 1793862773.2906845,
     "ast_hash": "5a49429f67e63272069d7076e40a5cd1",
-    "semantic_hash": ""
-  },
-  "public/images/about/img4.jpg": {
-    "mtime": 1793862467.083603,
-    "seen": 1793862773.2906845,
-    "ast_hash": "aa6ee48a3d9228e54e0fa02597a6a413",
     "semantic_hash": ""
   },
   "public/images/about/img4.webp": {
@@ -1007,52 +941,10 @@
     "ast_hash": "8017fa12c474a90f75c2862e9ac1210e",
     "semantic_hash": ""
   },
-  "public/images/alif-credit-avatar.jpg": {
-    "mtime": 1793863819.701171,
-    "seen": 1793863939.5052881,
-    "ast_hash": "9940a480a9e843f6c627cdea302937fd",
-    "semantic_hash": ""
-  },
-  "public/images/alif-credit-avatar.webp": {
-    "mtime": 1793863819.699169,
-    "seen": 1793863939.5052881,
-    "ast_hash": "9ebb0d3a706b25a9e8d340022d2eec4e",
-    "semantic_hash": ""
-  },
-  "public/images/alif-credit.jpeg": {
-    "mtime": 1793863819.701171,
-    "seen": 1793863939.5052881,
-    "ast_hash": "9940a480a9e843f6c627cdea302937fd",
-    "semantic_hash": ""
-  },
-  "public/images/alif-credit.jpg": {
-    "mtime": 1793863740.6631436,
-    "seen": 1793863939.5052881,
-    "ast_hash": "ff3d99abe2cabe31cf41d7d19c52c206",
-    "semantic_hash": ""
-  },
-  "public/images/alif-credit.webp": {
-    "mtime": 1793863740.6585667,
-    "seen": 1793863939.5052881,
-    "ast_hash": "f4d880a610f3c01524cfb1d014cd35f2",
-    "semantic_hash": ""
-  },
-  "public/alip-credit.png": {
-    "mtime": 1793864082.6263623,
-    "seen": 1793864242.9030797,
-    "ast_hash": "2a5a07ff6993a4980217631157c8d811",
-    "semantic_hash": ""
-  },
   "public/images/alip-credit.png": {
     "mtime": 1793864082.5135791,
     "seen": 1793864242.9030797,
     "ast_hash": "2a5a07ff6993a4980217631157c8d811",
-    "semantic_hash": ""
-  },
-  "public/images/alip-credit.webp": {
-    "mtime": 1793864082.7523758,
-    "seen": 1793864242.9030797,
-    "ast_hash": "4a5edb5a5655f49551b0e2a9267736c7",
     "semantic_hash": ""
   }
 }
