@@ -9,6 +9,7 @@ import HrServicePage from './HrServicePage';
 import HelpdeskServicePage from './HelpdeskServicePage';
 import HumasServicePage from './HumasServicePage';
 import KkmServicePage from './KkmServicePage';
+import ActivityArchiveServicePage from './ActivityArchiveServicePage';
 
 const ServiceDispatcher = ({
   serviceId,
@@ -64,6 +65,10 @@ const ServiceDispatcher = ({
     case 'merch':
     case 'usaha':
       return <KkmServicePage {...commonProps} />;
+    case 'activity':
+    case 'kegiatan':
+    case 'arsip-kegiatan':
+      return <ActivityArchiveServicePage {...commonProps} />;
     default:
       return <ParServicePage {...commonProps} />;
   }

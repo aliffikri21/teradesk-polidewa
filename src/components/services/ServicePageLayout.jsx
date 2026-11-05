@@ -17,7 +17,8 @@ import {
   LogOut,
   Search,
   ShieldCheck,
-  CheckCircle2
+  CheckCircle2,
+  CalendarCheck
 } from 'lucide-react';
 
 const allServices = [
@@ -101,6 +102,14 @@ const allServices = [
     icon: ShoppingBag,
     color: 'text-amber-600 bg-amber-50 border-amber-200/80',
   },
+  {
+    id: 'activity',
+    title: 'Arsip Kegiatan & Dokumentasi',
+    category: 'Dokumentasi & Arsip',
+    badge: 'Semua Divisi',
+    icon: CalendarCheck,
+    color: 'text-emerald-600 bg-emerald-50 border-emerald-200/80',
+  },
 ];
 
 const ServicePageLayout = ({
@@ -172,10 +181,10 @@ const ServicePageLayout = ({
               </div>
             </div>
 
-            {/* SECTION 2: 10 AVAILABLE SERVICES */}
+            {/* SECTION 2: AVAILABLE SERVICES */}
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-3">
-                MODUL TERSEDIA (10 MODUL)
+                MODUL TERSEDIA ({allServices.length} MODUL)
               </p>
               <div className="space-y-1">
                 {allServices.map((svc) => {

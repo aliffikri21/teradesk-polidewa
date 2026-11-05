@@ -47,7 +47,12 @@ import {
   Bookmark,
   ArrowUp,
   ArrowDown,
-  ArrowRight
+  ArrowRight,
+  CalendarCheck,
+  Inbox,
+  Mail,
+  MessageSquare,
+  CheckCircle2
 } from 'lucide-react';
 
 const divisionsList = [
@@ -171,6 +176,17 @@ const availableServices = [
     pic: 'Ketua Umum & BPH',
     activeCount: '16 Agenda',
   },
+  {
+    id: 'activity',
+    title: 'Arsip Kegiatan & Dokumentasi',
+    category: 'Dokumentasi & Kegiatan',
+    badge: 'Semua Divisi',
+    icon: CalendarCheck,
+    color: 'text-emerald-600 bg-emerald-50 border-emerald-200/80',
+    description: 'Repositori detail kegiatan yang telah dilaksanakan seluruh divisi, dokumentasi foto, dan arsip LPJ resmi.',
+    pic: 'Semua Divisi',
+    activeCount: '6 Kegiatan',
+  },
 ];
 
 const getTimestamp = () => new Date().toLocaleTimeString('id-ID');
@@ -196,9 +212,15 @@ const AdminDashboardPage = ({
   onToggleProkerVisibility,
   onResetProker,
   onReorderProker,
+  consultationMessages = [],
+  onUpdateConsultationStatus,
+  onMarkConsultationRead,
+  onMarkAllConsultationsRead,
+  onDeleteConsultation,
+  onResetConsultations,
 }) => {
   // Navigation View:
-  // 'dashboard' | 'proker' | 'students' | 'par' | 'archive' | 'asset' | 'finance' | 'attendance' | 'timeline' | 'hr' | 'helpdesk' |
+  // 'dashboard' | 'proker' | 'students' | 'inbox' | 'par' | 'archive' | 'asset' | 'finance' | 'attendance' | 'timeline' | 'hr' | 'helpdesk' |
   // 'session' | 'backup' | 'logs' | 'settings'
   const [currentNav, setCurrentNav] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
@@ -206,6 +228,12 @@ const AdminDashboardPage = ({
   const [accessFilter, setAccessFilter] = useState('Semua Akses');
   const [dateRangeFilter, setDateRangeFilter] = useState('Semester Ganjil 2026/2027');
   const [timeframeFilter, setTimeframeFilter] = useState('Bulan Ini');
+
+  // State for Kotak Masuk Konsultasi (Inbox Kontak)
+  const [inboxSearchQuery, setInboxSearchQuery] = useState('');
+  const [inboxFilterStatus, setInboxFilterStatus] = useState('Semua Status'); // 'Semua Status' | 'Baru' | 'Diproses' | 'Selesai'
+  const [selectedMessage, setSelectedMessage] = useState(null);
+  const unreadConsultationsCount = consultationMessages.filter((m) => !m.isRead).length;
 
   // State for Proker Management Tab
   const [prokerSearchQuery, setProkerSearchQuery] = useState('');
@@ -1137,13 +1165,39 @@ const AdminDashboardPage = ({
                     {prokerList.length}
                   </span>
                 </button>
+
+                {/* Kotak Masuk Konsultasi (Inbox Kontak Landing Page) */}
+                <button
+                  onClick={() => setCurrentNav('inbox')}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    currentNav === 'inbox'
+                      ? 'bg-slate-900 text-white font-bold shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Inbox size={16} className={currentNav === 'inbox' ? 'text-blue-400' : 'text-slate-400'} />
+                    <span>Inbox Kontak Konsultasi</span>
+                  </div>
+                  {unreadConsultationsCount > 0 ? (
+                    <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded-full bg-blue-600 text-white shadow-xs animate-pulse">
+                      {unreadConsultationsCount} Baru
+                    </span>
+                  ) : (
+                    <span className={`text-[10px] font-bold font-mono px-2 py-0.5 rounded-full ${
+                      currentNav === 'inbox' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600'
+                    }`}>
+                      {consultationMessages.length}
+                    </span>
+                  )}
+                </button>
               </div>
             </div>
 
             {/* SECTION 2: TAB LAYANAN ASLI TERADESK */}
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-3">
-                LAYANAN WORKSPACE (10 MODUL)
+                LAYANAN WORKSPACE ({availableServices.length} MODUL)
               </p>
               <div className="space-y-1">
                 {availableServices.map((svc) => {
@@ -1372,7 +1426,7 @@ const AdminDashboardPage = ({
                     Dashboard Eksekutif Organisasi
                   </h1>
                   <p className="text-xs text-slate-500 font-medium mt-1">
-                    Monitoring terpusat aktivitas 10 modul digitalisasi TeraDesk TERAMEDIA.
+                    Monitoring terpusat aktivitas {availableServices.length} modul digitalisasi TeraDesk TERAMEDIA.
                   </p>
                 </div>
 
@@ -1406,6 +1460,42 @@ const AdminDashboardPage = ({
                     <span>Ekspor JSON</span>
                   </button>
                 </div>
+              </div>
+
+              {/* Quick Consultation Inflow Banner (End-to-End Landing Page Integration) */}
+              <div className="bg-gradient-to-r from-blue-50/90 via-indigo-50/70 to-white border border-blue-200/80 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <Inbox size={20} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-xs sm:text-sm font-bold text-slate-900">
+                        Kotak Masuk Konsultasi (Inbox Kontak Landing)
+                      </h4>
+                      {unreadConsultationsCount > 0 ? (
+                        <span className="text-[10px] font-bold bg-blue-600 text-white px-2 py-0.5 rounded-full shadow-xs">
+                          {unreadConsultationsCount} Pesan Baru
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full border border-slate-200">
+                          Semua Terbaca
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      {consultationMessages.length} permohonan konsultasi dari publik & ormawa telah tersinkronisasi end-to-end.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setCurrentNav('inbox')}
+                  className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer shrink-0"
+                >
+                  <span>Buka Kotak Masuk</span>
+                  <ArrowRight size={13} />
+                </button>
               </div>
 
               {/* ROW 1: 3 KPI CARDS (Real TeraDesk Project Data) */}
@@ -1766,7 +1856,7 @@ const AdminDashboardPage = ({
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2 text-xs font-semibold text-slate-600">
                         <Boxes size={16} className="text-blue-500" />
-                        <span>Status 10 Modul Layanan Terintegrasi</span>
+                        <span>Status {availableServices.length} Modul Layanan Terintegrasi</span>
                       </div>
                       <button
                         onClick={onNavigateToPortal}
@@ -2821,6 +2911,425 @@ const AdminDashboardPage = ({
                           </td>
                         </tr>
                       ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB: ARSIP KEGIATAN & DOKUMENTASI TERLAKSANA */}
+          {currentNav === 'activity' && (
+            <div className="max-w-7xl mx-auto space-y-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">
+                      Akses Terbuka Semua Divisi
+                    </span>
+                    <span className="text-xs text-slate-400 font-mono">Modul 11</span>
+                  </div>
+                  <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+                    Arsip Kegiatan & Dokumentasi Terlaksana
+                  </h2>
+                  <p className="text-xs text-slate-500 font-medium">
+                    Monitoring detail kegiatan, partisipan, dan berkas LPJ yang telah disahkan seluruh divisi.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      if (onNavigateToService) onNavigateToService('activity');
+                      else onNavigateToPortal();
+                    }}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <span>Buka Halaman Modul Lengkap</span>
+                    <ExternalLink size={13} />
+                  </button>
+                </div>
+              </div>
+
+              {/* 4 Metrik Ringkas */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
+                  <span className="text-[11px] text-slate-500 block mb-1">Total Kegiatan Terlaksana</span>
+                  <div className="text-2xl font-black text-slate-900">6 Agenda</div>
+                  <span className="text-[10px] text-emerald-600 font-semibold">100% Selesai Sesuai Jadwal</span>
+                </div>
+                <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
+                  <span className="text-[11px] text-slate-500 block mb-1">Total Partisipan Terdata</span>
+                  <div className="text-2xl font-black text-cyan-600">540+ Orang</div>
+                  <span className="text-[10px] text-slate-400">Mahasiswa, siswa, & alumni</span>
+                </div>
+                <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
+                  <span className="text-[11px] text-slate-500 block mb-1">LPJ Resmi Disahkan</span>
+                  <div className="text-2xl font-black text-blue-600">6 / 6 Berkas</div>
+                  <span className="text-[10px] text-emerald-600 font-semibold">Tuntas 100% Tanpa Tunggakan</span>
+                </div>
+                <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
+                  <span className="text-[11px] text-slate-500 block mb-1">Realisasi Total Anggaran</span>
+                  <div className="text-2xl font-black text-slate-900">Rp 19.350.000</div>
+                  <span className="text-[10px] text-slate-400">Tercatat di mutasi kas BPH</span>
+                </div>
+              </div>
+
+              {/* Tabel Ringkasan Kegiatan Terlaksana */}
+              <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-bold text-slate-900">Daftar Arsip Kegiatan Terbaru</h3>
+                  <span className="text-xs text-slate-400">Semua divisi memiliki hak melihat</span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="text-[10px] uppercase font-bold text-slate-400 border-b border-slate-100">
+                        <th className="py-2 px-3">KODE</th>
+                        <th className="py-2 px-3">NAMA KEGIATAN</th>
+                        <th className="py-2 px-3">DIVISI</th>
+                        <th className="py-2 px-3">TANGGAL</th>
+                        <th className="py-2 px-3">PARTISIPAN</th>
+                        <th className="py-2 px-3">STATUS LPJ</th>
+                        <th className="py-2 px-3 text-right">AKSI</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-xs">
+                      {[
+                        { id: 'ACT-001', name: 'Workshop Desain Grafis & UI/UX SMKN 1 Palopo', div: 'Publikasi & Dokumentasi', date: '18 Feb 2026', part: '85 Orang', status: 'Disahkan BPH' },
+                        { id: 'ACT-002', name: 'Latihan Dasar Kepemimpinan (LDK) Angkatan VI', div: 'Kaderisasi & SDM', date: '25 Jan 2026', part: '124 Orang', status: 'Disahkan BPH' },
+                        { id: 'ACT-003', name: 'Musyawarah Besar (MUBES) V TERAMEDIA', div: 'BPH & Presidium', date: '10 Jan 2026', part: '156 Orang', status: 'Disahkan Pembina' },
+                        { id: 'ACT-004', name: 'Media Visit & Audiensi Humas TVRI Sulsel', div: 'Hubungan Masyarakat', date: '04 Mar 2026', part: '35 Orang', status: 'Disahkan BPH' },
+                        { id: 'ACT-005', name: 'Pre-Order Official Merchandise & Jaket Angkatan', div: 'Kewirausahaan (KKM)', date: '14 Feb 2026', part: '92 Orang', status: 'Disahkan BPH' },
+                        { id: 'ACT-006', name: 'Rapat Kerja Tahunan (Raker) Master Timeline', div: 'BPH & Kesekretariatan', date: '20 Jan 2026', part: '48 Orang', status: 'Disahkan BPH' },
+                      ].map((act) => (
+                        <tr key={act.id} className="hover:bg-slate-50/70 transition-colors">
+                          <td className="py-3 px-3 font-mono font-bold text-slate-700">{act.id}</td>
+                          <td className="py-3 px-3 font-semibold text-slate-900">{act.name}</td>
+                          <td className="py-3 px-3 text-slate-600">{act.div}</td>
+                          <td className="py-3 px-3 text-slate-500 font-mono text-[11px]">{act.date}</td>
+                          <td className="py-3 px-3 font-bold text-cyan-700">{act.part}</td>
+                          <td className="py-3 px-3">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                              {act.status}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3 text-right">
+                            <button
+                              onClick={() => {
+                                if (onNavigateToService) onNavigateToService('activity');
+                                else onNavigateToPortal();
+                              }}
+                              className="px-2.5 py-1 bg-slate-900 hover:bg-blue-600 text-white rounded text-[11px] font-semibold transition-colors cursor-pointer"
+                            >
+                              Detail
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB: KOTAK MASUK KONSULTASI (INBOX KONTAK FORM LANDING PAGE) */}
+          {currentNav === 'inbox' && (
+            <div className="max-w-7xl mx-auto space-y-6">
+              {/* Header Tab */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                      Integrasi Landing Page
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      Sinkronisasi End-to-End
+                    </span>
+                  </div>
+                  <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+                    Kotak Masuk Konsultasi (Inbox Kontak)
+                  </h1>
+                  <p className="text-xs text-slate-500 font-medium">
+                    Pesan, permohonan kemitraan, dan konsultasi dari formulir landing page publik yang terhubung langsung.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  {unreadConsultationsCount > 0 && (
+                    <button
+                      onClick={onMarkAllConsultationsRead}
+                      className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 rounded-xl border border-slate-200 text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Check size={14} className="text-blue-600" />
+                      <span>Tandai Semua Dibaca</span>
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      if (confirm('Reset daftar kotak masuk kembali ke data simulasi default?')) {
+                        onResetConsultations();
+                      }
+                    }}
+                    className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-600 rounded-xl border border-slate-200 text-xs font-semibold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                    title="Reset data konsultasi"
+                  >
+                    <RefreshCw size={13} className="text-slate-400" />
+                    <span>Reset Data</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* KPI Summary Cards */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+                  <div className="flex items-center justify-between text-slate-500 mb-2">
+                    <span className="text-xs font-semibold">Total Pesan Masuk</span>
+                    <Inbox size={16} className="text-slate-400" />
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                    {consultationMessages.length}
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1">Permohonan tercatat</p>
+                </div>
+
+                <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+                  <div className="flex items-center justify-between text-slate-500 mb-2">
+                    <span className="text-xs font-semibold">Belum Dibaca (Baru)</span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-ping" />
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-extrabold text-blue-600 tracking-tight">
+                    {unreadConsultationsCount}
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1">Perlu ditindaklanjuti</p>
+                </div>
+
+                <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+                  <div className="flex items-center justify-between text-slate-500 mb-2">
+                    <span className="text-xs font-semibold">Sedang Diproses</span>
+                    <Clock size={16} className="text-amber-500" />
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-extrabold text-amber-600 tracking-tight">
+                    {consultationMessages.filter((m) => m.status === 'Diproses').length}
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1">Dalam follow-up tim</p>
+                </div>
+
+                <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+                  <div className="flex items-center justify-between text-slate-500 mb-2">
+                    <span className="text-xs font-semibold">Selesai / Terjawab</span>
+                    <CheckCircle2 size={16} className="text-emerald-500" />
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-extrabold text-emerald-600 tracking-tight">
+                    {consultationMessages.filter((m) => m.status === 'Selesai').length}
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1">Konsultasi rampung</p>
+                </div>
+              </div>
+
+              {/* Search & Filter Controls */}
+              <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  {/* Search bar */}
+                  <div className="relative flex-1">
+                    <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="text"
+                      value={inboxSearchQuery}
+                      onChange={(e) => setInboxSearchQuery(e.target.value)}
+                      placeholder="Cari nama pengirim, organisasi, email, atau cuplikan isi pesan..."
+                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 hover:bg-slate-100/70 focus:bg-white rounded-xl border border-slate-200/80 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all placeholder:text-slate-400"
+                    />
+                  </div>
+
+                  {/* Filter Pills */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-[11px] font-bold text-slate-400 flex items-center gap-1.5 mr-1">
+                      <Filter size={13} />
+                      <span>Status:</span>
+                    </span>
+                    {['Semua Status', 'Baru', 'Diproses', 'Selesai'].map((status) => {
+                      const count =
+                        status === 'Semua Status'
+                          ? consultationMessages.length
+                          : consultationMessages.filter((m) => m.status === status).length;
+                      const isActive = inboxFilterStatus === status;
+
+                      return (
+                        <button
+                          key={status}
+                          onClick={() => setInboxFilterStatus(status)}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                            isActive
+                              ? 'bg-slate-900 text-white shadow-xs'
+                              : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                          }`}
+                        >
+                          <span>{status}</span>
+                          <span
+                            className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
+                              isActive ? 'bg-slate-800 text-white' : 'bg-slate-200 text-slate-700'
+                            }`}
+                          >
+                            {count}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Messages Table / List */}
+              <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="text-[10px] uppercase font-bold text-slate-400 bg-slate-50/70 border-b border-slate-100">
+                        <th className="py-3 px-4">KODE / STATUS</th>
+                        <th className="py-3 px-4">PENGIRIM & LEMBAGA</th>
+                        <th className="py-3 px-4">WAKTU MASUK</th>
+                        <th className="py-3 px-4">CUPLIKAN PESAN</th>
+                        <th className="py-3 px-4 text-right">TINDAKAN</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-xs">
+                      {consultationMessages
+                        .filter((msg) => {
+                          const matchSearch =
+                            msg.name.toLowerCase().includes(inboxSearchQuery.toLowerCase()) ||
+                            msg.email.toLowerCase().includes(inboxSearchQuery.toLowerCase()) ||
+                            msg.organization.toLowerCase().includes(inboxSearchQuery.toLowerCase()) ||
+                            msg.message.toLowerCase().includes(inboxSearchQuery.toLowerCase());
+                          const matchStatus =
+                            inboxFilterStatus === 'Semua Status' || msg.status === inboxFilterStatus;
+                          return matchSearch && matchStatus;
+                        })
+                        .map((msg) => {
+                          return (
+                            <tr
+                              key={msg.id}
+                              className={`transition-colors hover:bg-slate-50/70 cursor-pointer ${
+                                !msg.isRead ? 'bg-blue-50/30' : ''
+                              }`}
+                              onClick={() => {
+                                onMarkConsultationRead(msg.id);
+                                setSelectedMessage(msg);
+                              }}
+                            >
+                              <td className="py-4 px-4 whitespace-nowrap">
+                                <div className="flex items-center gap-2">
+                                  {!msg.isRead && (
+                                    <span
+                                      className="w-2 h-2 rounded-full bg-blue-600 shrink-0 shadow-xs"
+                                      title="Pesan baru belum dibuka"
+                                    />
+                                  )}
+                                  <span className="font-mono font-bold text-slate-700 text-[11px]">
+                                    {msg.id}
+                                  </span>
+                                  <span
+                                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                                      msg.status === 'Baru'
+                                        ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                        : msg.status === 'Diproses'
+                                        ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                        : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                    }`}
+                                  >
+                                    {msg.status}
+                                  </span>
+                                </div>
+                              </td>
+
+                              <td className="py-4 px-4">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center shrink-0">
+                                    {msg.name ? msg.name.charAt(0).toUpperCase() : 'U'}
+                                  </div>
+                                  <div className="min-w-0">
+                                    <p className="font-bold text-slate-900 truncate">{msg.name}</p>
+                                    <p className="text-[11px] text-slate-500 truncate">
+                                      {msg.organization}
+                                    </p>
+                                  </div>
+                                </div>
+                              </td>
+
+                              <td className="py-4 px-4 whitespace-nowrap text-slate-500 font-mono text-[11px]">
+                                {msg.date}
+                              </td>
+
+                              <td className="py-4 px-4 max-w-md">
+                                <p className="text-slate-600 line-clamp-1 leading-snug">
+                                  {msg.message}
+                                </p>
+                              </td>
+
+                              <td className="py-4 px-4 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                                <div className="flex items-center justify-end gap-1.5">
+                                  <button
+                                    onClick={() => {
+                                      onMarkConsultationRead(msg.id);
+                                      setSelectedMessage(msg);
+                                    }}
+                                    className="px-2.5 py-1 bg-slate-900 hover:bg-blue-600 text-white rounded-lg text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1 shadow-xs"
+                                  >
+                                    <Eye size={12} />
+                                    <span>Buka</span>
+                                  </button>
+
+                                  <a
+                                    href={`mailto:${msg.email}?subject=${encodeURIComponent(
+                                      'Tanggapan Konsultasi TeraDesk - ' + msg.organization
+                                    )}`}
+                                    className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                                    title={`Balas ke ${msg.email}`}
+                                  >
+                                    <Mail size={14} />
+                                  </a>
+
+                                  <button
+                                    onClick={() => {
+                                      if (confirm(`Hapus pesan dari ${msg.name}?`)) {
+                                        onDeleteConsultation(msg.id);
+                                      }
+                                    }}
+                                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                                    title="Hapus pesan"
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+
+                      {consultationMessages.filter((msg) => {
+                        const matchSearch =
+                          msg.name.toLowerCase().includes(inboxSearchQuery.toLowerCase()) ||
+                          msg.email.toLowerCase().includes(inboxSearchQuery.toLowerCase()) ||
+                          msg.organization.toLowerCase().includes(inboxSearchQuery.toLowerCase()) ||
+                          msg.message.toLowerCase().includes(inboxSearchQuery.toLowerCase());
+                        const matchStatus =
+                          inboxFilterStatus === 'Semua Status' || msg.status === inboxFilterStatus;
+                        return matchSearch && matchStatus;
+                      }).length === 0 && (
+                        <tr>
+                          <td colSpan={5} className="py-12 text-center text-slate-400">
+                            <Inbox size={36} className="mx-auto mb-2 text-slate-300" />
+                            <p className="text-sm font-semibold text-slate-700">
+                              Tidak Ada Pesan yang Sesuai Filter
+                            </p>
+                            <p className="text-xs text-slate-400 mt-0.5">
+                              Coba ubah kata kunci pencarian atau ubah tab status filter.
+                            </p>
+                          </td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -4334,6 +4843,154 @@ const AdminDashboardPage = ({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          MODAL DETAIL PESAN KONSULTASI (INBOX DETAIL & RESPONSE)
+          ========================================================================= */}
+      {selectedMessage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/65 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={() => setSelectedMessage(null)}
+        >
+          <div
+            className="relative w-full max-w-xl bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-[0_25px_70px_rgba(0,0,0,0.25)] text-slate-900 select-none max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setSelectedMessage(null)}
+              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer"
+              aria-label="Tutup detail pesan"
+            >
+              <X size={16} />
+            </button>
+
+            {/* Header */}
+            <div className="mb-5">
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                  {selectedMessage.id}
+                </span>
+                <span
+                  className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
+                    selectedMessage.status === 'Baru'
+                      ? 'bg-blue-50 text-blue-700 border-blue-200'
+                      : selectedMessage.status === 'Diproses'
+                      ? 'bg-amber-50 text-amber-700 border-amber-200'
+                      : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  }`}
+                >
+                  {selectedMessage.status}
+                </span>
+              </div>
+              <h3 className="text-xl font-black text-slate-900">Detail Pesan Konsultasi</h3>
+              <p className="text-xs text-slate-500 mt-0.5">Diterima pada {selectedMessage.date}</p>
+            </div>
+
+            {/* Metadata Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-slate-50 border border-slate-200/80 rounded-2xl text-xs mb-5">
+              <div>
+                <span className="text-[11px] text-slate-400 font-semibold block mb-0.5">Nama Pengirim</span>
+                <span className="font-bold text-slate-900">{selectedMessage.name}</span>
+              </div>
+              <div>
+                <span className="text-[11px] text-slate-400 font-semibold block mb-0.5">Email Aktif</span>
+                <a
+                  href={`mailto:${selectedMessage.email}`}
+                  className="font-bold text-blue-600 hover:underline break-all"
+                >
+                  {selectedMessage.email}
+                </a>
+              </div>
+              <div className="sm:col-span-2">
+                <span className="text-[11px] text-slate-400 font-semibold block mb-0.5">Organisasi / Lembaga</span>
+                <span className="font-bold text-slate-800">{selectedMessage.organization}</span>
+              </div>
+            </div>
+
+            {/* Message Body */}
+            <div className="mb-6">
+              <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <MessageSquare size={14} className="text-blue-600" />
+                <span>Isi Pesan / Kebutuhan Khusus</span>
+              </h4>
+              <div className="bg-slate-50 border border-slate-200/80 p-4 rounded-2xl text-xs sm:text-sm text-slate-700 leading-relaxed font-normal whitespace-pre-wrap">
+                {selectedMessage.message}
+              </div>
+            </div>
+
+            {/* Status Changer */}
+            <div className="mb-6 p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl">
+              <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-2">
+                Ubah Status Tindak Lanjut:
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {['Baru', 'Diproses', 'Selesai'].map((st) => (
+                  <button
+                    key={st}
+                    type="button"
+                    onClick={() => {
+                      if (onUpdateConsultationStatus) {
+                        onUpdateConsultationStatus(selectedMessage.id, st);
+                      }
+                      setSelectedMessage((prev) => (prev ? { ...prev, status: st, isRead: true } : null));
+                    }}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      selectedMessage.status === st
+                        ? st === 'Baru'
+                          ? 'bg-blue-600 text-white shadow-xs'
+                          : st === 'Diproses'
+                          ? 'bg-amber-500 text-white shadow-xs'
+                          : 'bg-emerald-600 text-white shadow-xs'
+                        : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+                    }`}
+                  >
+                    {st}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Footer Buttons */}
+            <div className="pt-4 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm('Hapus pesan ini dari arsip kotak masuk?')) {
+                    if (onDeleteConsultation) {
+                      onDeleteConsultation(selectedMessage.id);
+                    }
+                    setSelectedMessage(null);
+                  }
+                }}
+                className="text-xs font-bold text-rose-600 hover:text-rose-700 py-2 px-3 rounded-xl hover:bg-rose-50 transition-colors cursor-pointer flex items-center gap-1.5"
+              >
+                <Trash2 size={14} />
+                <span>Hapus Pesan</span>
+              </button>
+
+              <div className="flex items-center gap-2">
+                <a
+                  href={`mailto:${selectedMessage.email}?subject=${encodeURIComponent(
+                    'Tanggapan Konsultasi TeraDesk - ' + selectedMessage.organization
+                  )}`}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-2 cursor-pointer active:scale-95"
+                >
+                  <Mail size={14} />
+                  <span>Balas via Email</span>
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setSelectedMessage(null)}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                >
+                  Tutup
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

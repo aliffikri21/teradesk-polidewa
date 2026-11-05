@@ -37,7 +37,7 @@ export default defineConfig({
 
 Routing dikelola melalui state React terpusat di `src/App.jsx` (`currentView: { page, serviceId }`):
 1. `'landing'`: Landing page utama (`Hero.jsx`, `Features.jsx`, `AboutUs.jsx`, `Footer.jsx`).
-2. `'portal'`: Portal pencarian dan katalog 10 modul layanan (`FeaturesPortal.jsx`).
+2. `'portal'`: Portal pencarian dan katalog 11 modul layanan (`FeaturesPortal.jsx`).
 3. `'login'`: Halaman autentikasi pengurus (`LoginPage.jsx`).
 4. `'admin'`: Dashboard eksekutif (`AdminDashboardPage.jsx`). Pintasan akses: `Ctrl + Shift + D` atau path `/admin`.
 5. `'service'`: Halaman detail modul layanan spesifik (`ServiceDispatcher.jsx` + `ServicePageLayout.jsx`).
@@ -46,12 +46,13 @@ Routing dikelola melalui state React terpusat di `src/App.jsx` (`currentView: { 
 - Tamu yang mengakses `/admin`, `/portal`, atau `/service/:id` otomatis diarahkan ke halaman login.
 - Sesi login aman bersifat ephemeral (disimpan di state memori). `sessionStorage.clear()` otomatis dieksekusi saat inisialisasi aplikasi untuk menjaga integritas demo.
 - Kredensial default: **NIM**: `23404053` | **Password**: `admin` (Role: Demisioner Ketua Umum, `canAccessAdmin: true`).
+- **Integrasi Landing ke Admin**: Formulir Kontak Kami di landing page terhubung 100% end-to-end ke tab 'Kotak Masuk Konsultasi' di Admin Dashboard via state `consultationMessages` dan localStorage (`teradesk_consultations_v1`).
 
 ---
 
-## 📦 Katalog 10 Modul Layanan (Wajib Konsisten)
+## 📦 Katalog 11 Modul Layanan (Wajib Konsisten)
 
-TeraDesk memiliki tepat **10 modul aktif**. Hindari hardcode angka "8 Layanan / 8 Modul":
+TeraDesk memiliki tepat **11 modul aktif**:
 | ID Modul | Nama Layanan | Divisi Penanggung Jawab | File Komponen |
 | :--- | :--- | :--- | :--- |
 | `par` | Persetujuan Program Kerja (PAR) | BPH & Kesekretariatan | `src/components/services/ParServicePage.jsx` |
@@ -64,6 +65,7 @@ TeraDesk memiliki tepat **10 modul aktif**. Hindari hardcode angka "8 Layanan / 
 | `helpdesk` | TeraHelpdesk Layanan Internal | Teknisi & Support Media | `src/components/services/HelpdeskServicePage.jsx` |
 | `humas` | Humas & Hubungan Eksternal | Divisi Humas & Media | `src/components/services/HumasServicePage.jsx` |
 | `kkm` | KKM (Kewirausahaan & Merchandise) | Divisi Dana Usaha (KKM) | `src/components/services/KkmServicePage.jsx` |
+| `activity` | Arsip Kegiatan & Dokumentasi | Semua Divisi (Lintas Organisasi) | `src/components/services/ActivityArchiveServicePage.jsx` |
 
 *Gunakan `featuresData.length` atau `allServices.length` untuk perhitungan jumlah modul secara dinamis.*
 

@@ -8,12 +8,13 @@ Platform manajemen, administrasi, dan koordinasi digital terintegrasi untuk **TE
 
 ### 1. Landing Page Modern & Responsif
 - **Hero Section**: Preview interaktif kartu program kerja, arsip administrasi, metrik performa, dan profil pimpinan organisasi (responsif untuk Smartphone, Tablet, hingga Desktop).
-- **Fitur Unggulan**: Grid 10 modul layanan organisasi dengan akses langsung ke workspace masing-masing.
+- **Fitur Unggulan**: Grid 11 modul layanan organisasi dengan akses langsung ke workspace masing-masing.
 - **Tentang Kami**: Profil organisasi TERAMEDIA dilengkapi *auto-scrolling marquee carousel* dokumentasi kegiatan terkompresi WebP.
 - **Footer & Developer Credits**: Navigasi lengkap, newsletter, call-to-action, serta modal interaktif **Developer Credit** bergaya *clean white dashboard*.
+- **Formulir Kontak & Konsultasi**: Form interaktif modal kontak yang tersinkronisasi langsung secara end-to-end ke panel admin dashboard.
 
-### 2. Portal Katalog 10 Layanan Organisasi
-Satu ekosistem kerja digital terpusat mencakup 10 modul siap pakai:
+### 2. Portal Katalog 11 Layanan Organisasi
+Satu ekosistem kerja digital terpusat mencakup 11 modul siap pakai:
 1. **PAR (Program Approval Request)**: Alur persetujuan proposal berjenjang (Panitia ➔ Kadiv ➔ BPH ➔ Pembina) dengan live tracking SLA dan barcode digital.
 2. **Digitalisasi Arsip & E-Surat**: Penyimpanan cloud surat masuk/keluar, SK, LPJ, dan generator nomor surat otomatis anti-bentrok.
 3. **Digitalisasi Aset & Inventaris**: Katalog alat multimedia (kamera, lighting, mic, proyektor) dengan peminjaman dan tracking ketersediaan.
@@ -24,9 +25,11 @@ Satu ekosistem kerja digital terpusat mencakup 10 modul siap pakai:
 8. **TeraHelpdesk & Layanan Internal**: Sistem tiket pengaduan teknis alat, konsultasi divisi, dan bantuan operasional.
 9. **Humas & Kemitraan Eksternal**: Pengelolaan database media partner, sponsorship, relasi stakeholder, dan surat audiensi.
 10. **KKM (Kewirausahaan & Merchandise)**: Etalase merchandise resmi organisasi, pemesanan jaket/kaos proker, dan pencatatan laba usaha mahasiswa.
+11. **Arsip Kegiatan & Dokumentasi**: Repositori arsip kegiatan terlaksana seluruh divisi (tanggal, lokasi, jumlah partisipan, foto dokumentasi, dan unduh berkas LPJ resmi).
 
 ### 3. Dashboard Admin Eksekutif & Manajemen Data (`/admin`)
 - Pintasan keyboard cepat: `Ctrl + Shift + D` untuk akses instan admin console.
+- **Kotak Masuk Konsultasi (Inbox Kontak)**: Integrasi end-to-end formulir konsultasi landing page publik, counter unread real-time, filter status (Baru, Diproses, Selesai), detail pesan interaktif, dan aksi balas email langsung.
 - **Manajemen Program Kerja**: Input proker baru, edit data, filter kategori per divisi, dan toggle pin ke Hero showcase.
 - **Manajemen Akun Pengurus**: Tambah akun, reset password, atur hak akses admin (`canAccessAdmin`), dan ekspor data akun JSON.
 - **Status Modul Layanan**: Kontrol operasional real-time status modul (*Online* / *Maintenance*).

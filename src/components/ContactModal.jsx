@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Send, CheckCircle2, Building, Mail, User, MessageSquare } from 'lucide-react';
 
-const ContactModal = ({ isOpen, onClose }) => {
+const ContactModal = ({ isOpen, onClose, onSubmitMessage }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -14,10 +14,15 @@ const ContactModal = ({ isOpen, onClose }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (onSubmitMessage) {
+      onSubmitMessage({
+        name: formData.name,
+        email: formData.email,
+        organization: formData.organization,
+        message: formData.message,
+      });
+    }
     setSubmitted(true);
-    setTimeout(() => {
-      // simulated success reset
-    }, 2000);
   };
 
   const handleReset = () => {
@@ -85,6 +90,7 @@ const ContactModal = ({ isOpen, onClose }) => {
                 <div className="relative">
                   <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input
+                    id="contact-name"
                     type="text"
                     required
                     value={formData.name}
@@ -102,6 +108,7 @@ const ContactModal = ({ isOpen, onClose }) => {
                 <div className="relative">
                   <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input
+                    id="contact-email"
                     type="email"
                     required
                     value={formData.email}
@@ -119,6 +126,7 @@ const ContactModal = ({ isOpen, onClose }) => {
                 <div className="relative">
                   <Building size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input
+                    id="contact-org"
                     type="text"
                     required
                     value={formData.organization}
@@ -136,6 +144,7 @@ const ContactModal = ({ isOpen, onClose }) => {
                 <div className="relative">
                   <MessageSquare size={16} className="absolute left-3.5 top-3 text-slate-400" />
                   <textarea
+                    id="contact-message"
                     rows={3}
                     required
                     value={formData.message}

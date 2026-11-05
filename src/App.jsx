@@ -11,6 +11,7 @@ import FeaturesPortal from './components/FeaturesPortal';
 import ServiceDispatcher from './components/services/ServiceDispatcher';
 import { initialDefaultAccounts } from './data/defaultAccounts';
 import { initialDefaultProker } from './data/defaultProker';
+import { initialDefaultConsultations } from './data/defaultConsultations';
 
 function App() {
   const [pendingTarget, setPendingTarget] = useState(() => {
@@ -133,6 +134,80 @@ function App() {
 
   const handleReorderProker = (newOrderList) => {
     setProkerList(newOrderList);
+  };
+
+  // Kotak Masuk Konsultasi (Inbox Kontak) state terintegrasi
+  const [consultationMessages, setConsultationMessages] = useState(() => {
+    try {
+      const saved = localStorage.getItem('teradesk_consultations_v1');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return initialDefaultConsultations;
+  });
+
+  // Persist consultation messages
+  useEffect(() => {
+    try {
+      localStorage.setItem('teradesk_consultations_v1', JSON.stringify(consultationMessages));
+    } catch {
+      // ignore
+    }
+  }, [consultationMessages]);
+
+  const handleSendConsultation = (newMessage) => {
+    const now = new Date();
+    const dateFormatted =
+      now.toLocaleDateString('id-ID', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      }) +
+      ', ' +
+      now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
+
+    const created = {
+      id: `MSG-2026-00${consultationMessages.length + 1}`,
+      name: newMessage.name,
+      email: newMessage.email,
+      organization: newMessage.organization || 'Umum / Eksternal',
+      message: newMessage.message,
+      date: dateFormatted,
+      status: 'Baru',
+      isRead: false,
+    };
+
+    setConsultationMessages((prev) => [created, ...prev]);
+  };
+
+  const handleUpdateConsultationStatus = (id, newStatus) => {
+    setConsultationMessages((prev) =>
+      prev.map((msg) => (msg.id === id ? { ...msg, status: newStatus, isRead: true } : msg))
+    );
+  };
+
+  const handleMarkConsultationRead = (id) => {
+    setConsultationMessages((prev) =>
+      prev.map((msg) => (msg.id === id ? { ...msg, isRead: true } : msg))
+    );
+  };
+
+  const handleMarkAllConsultationsRead = () => {
+    setConsultationMessages((prev) => prev.map((msg) => ({ ...msg, isRead: true })));
+  };
+
+  const handleDeleteConsultation = (id) => {
+    setConsultationMessages((prev) => prev.filter((msg) => msg.id !== id));
+  };
+
+  const handleResetConsultations = () => {
+    setConsultationMessages(initialDefaultConsultations);
   };
 
   // Synchronize browser history and popstate (back/forward buttons)
@@ -375,7 +450,7 @@ function App() {
             prokerList={prokerList}
           />
 
-          {/* Fitur Unggulan Section (10 Cards Grid on Light Background) */}
+          {/* Fitur Unggulan Section (11 Cards Grid on Light Background) */}
           <Features
             onNavigateToPortal={(serviceId) =>
               handleNavigate(serviceId ? 'service' : 'portal', serviceId)
@@ -422,6 +497,12 @@ function App() {
           onToggleProkerVisibility={handleToggleProkerVisibility}
           onResetProker={handleResetProker}
           onReorderProker={handleReorderProker}
+          consultationMessages={consultationMessages}
+          onUpdateConsultationStatus={handleUpdateConsultationStatus}
+          onMarkConsultationRead={handleMarkConsultationRead}
+          onMarkAllConsultationsRead={handleMarkAllConsultationsRead}
+          onDeleteConsultation={handleDeleteConsultation}
+          onResetConsultations={handleResetConsultations}
         />
       ) : currentView.page === 'service' ? (
         /* Halaman Layanan Spesifik (PAR, Arsip, Aset, Kas, dsb.) */
@@ -438,6 +519,7 @@ function App() {
         <FeaturesPortal
           onBackToLanding={() => handleNavigate('landing')}
           onOpenContact={() => setIsContactOpen(true)}
+          onOpenDevDashboard={() => handleNavigate('admin')}
           onSelectService={(serviceId) => handleNavigate('service', serviceId)}
           authUser={authUser}
           onLogout={handleLogout}
@@ -482,6 +564,7 @@ function App() {
       <ContactModal
         isOpen={isContactOpen}
         onClose={() => setIsContactOpen(false)}
+        onSubmitMessage={handleSendConsultation}
       />
     </div>
   );

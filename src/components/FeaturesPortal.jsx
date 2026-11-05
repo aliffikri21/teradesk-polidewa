@@ -16,7 +16,9 @@ import {
   ShoppingBag,
   Hash,
   X,
-  LogOut
+  LogOut,
+  CalendarCheck,
+  ShieldCheck
 } from 'lucide-react';
 
 const featuresData = [
@@ -220,9 +222,36 @@ const featuresData = [
     ],
     primaryAction: 'Buka Portal KKM',
   },
+  {
+    id: 'activity',
+    title: 'Arsip Kegiatan & Dokumentasi',
+    category: 'Dokumentasi & Kegiatan',
+    badge: 'Semua Divisi',
+    badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    icon: CalendarCheck,
+    iconColor: 'bg-emerald-50 text-emerald-600 border-emerald-200',
+    description:
+      'Repositori arsip kegiatan yang telah dilaksanakan oleh seluruh divisi organisasi, lengkap dengan tanggal pelaksanaan, lokasi, jumlah partisipan, foto dokumentasi, dan berkas LPJ resmi.',
+    longDescription:
+      'Modul kolaboratif terbuka bagi semua pengurus untuk mencatat, meninjau, dan mendokumentasikan setiap kegiatan organisasi yang telah sukses diselenggarakan. Menjadi bukti rekam jejak historis keorganisasian yang terstruktur dan transparan.',
+    benefits: [
+      'Detail lengkap kegiatan: nama kegiatan, tanggal, divisi, tempat, dan PIC pelaksana',
+      'Galeri dokumentasi visual dan arsip berkas LPJ resmi yang telah disahkan',
+      'Metrik total partisipan dan realisasi anggaran per kegiatan',
+      'Akses terbuka bagi seluruh divisi untuk transparansi dan evaluasi program kerja',
+    ],
+    primaryAction: 'Buka Arsip Kegiatan',
+  },
 ];
 
-const FeaturesPortal = ({ onBackToLanding, onOpenContact, onSelectService, authUser, onLogout }) => {
+const FeaturesPortal = ({
+  onBackToLanding,
+  onOpenContact,
+  onOpenDevDashboard,
+  onSelectService,
+  authUser,
+  onLogout,
+}) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Semua');
 
@@ -234,6 +263,7 @@ const FeaturesPortal = ({ onBackToLanding, onOpenContact, onSelectService, authU
     { label: 'Tata Kelola SDM', count: featuresData.filter(f => f.category === 'Tata Kelola SDM').length },
     { label: 'Hubungan Masyarakat', count: featuresData.filter(f => f.category === 'Hubungan Masyarakat').length },
     { label: 'Kewirausahaan Mahasiswa', count: featuresData.filter(f => f.category === 'Kewirausahaan Mahasiswa').length },
+    { label: 'Dokumentasi & Kegiatan', count: featuresData.filter(f => f.category === 'Dokumentasi & Kegiatan').length },
   ];
 
   const filteredFeatures = featuresData.filter((feat) => {
@@ -302,6 +332,16 @@ const FeaturesPortal = ({ onBackToLanding, onOpenContact, onSelectService, authU
                   </p>
                 </div>
               </div>
+            )}
+
+            {authUser?.canAccessAdmin && onOpenDevDashboard && (
+              <button
+                onClick={onOpenDevDashboard}
+                className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold px-3.5 py-2 rounded-xl text-xs sm:text-sm transition-all duration-150 shadow-xs cursor-pointer"
+              >
+                <ShieldCheck size={14} className="text-blue-400" />
+                <span>Panel Admin</span>
+              </button>
             )}
 
             <button

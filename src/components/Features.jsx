@@ -10,7 +10,8 @@ import {
   Headphones,
   Globe,
   ShoppingBag,
-  ArrowRight
+  ArrowRight,
+  CalendarCheck
 } from 'lucide-react';
 
 const featuresData = [
@@ -94,6 +95,14 @@ const featuresData = [
     description:
       'Manajemen pre-order merchandise resmi UKM (hoodie, lanyard), persewaan alat multimedia, dan pembukuan laba-rugi divisi usaha.',
   },
+  {
+    serviceId: 'activity',
+    icon: CalendarCheck,
+    division: 'Semua Divisi',
+    title: 'Arsip Kegiatan & Dokumentasi',
+    description:
+      'Repositori kegiatan terlaksana lintas divisi: tanggal, lokasi, jumlah partisipan, foto dokumentasi, dan arsip LPJ resmi.',
+  },
 ];
 
 const Features = ({ onNavigateToPortal }) => {
@@ -115,8 +124,8 @@ const Features = ({ onNavigateToPortal }) => {
           </p>
         </div>
 
-        {/* 10 Feature Cards Grid (5 columns on xl, 3 on lg, 2 on sm, 1 on xs) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5 sm:gap-6 w-full">
+        {/* 11 Feature Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6 w-full">
           {featuresData.map((item, index) => {
             const Icon = item.icon;
             return (
