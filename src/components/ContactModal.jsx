@@ -34,7 +34,7 @@ const ContactModal = ({ isOpen, onClose, onSubmitMessage }) => {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/65 backdrop-blur-sm animate-in fade-in duration-200"
-      onClick={onClose}
+      onClick={handleReset}
     >
       <div
         className="relative w-full max-w-lg bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-[0_25px_70px_rgba(0,0,0,0.35)] text-slate-900 animate-in zoom-in-95 duration-200 select-none overflow-hidden"
@@ -46,7 +46,7 @@ const ContactModal = ({ isOpen, onClose, onSubmitMessage }) => {
         {/* Close Button */}
         <button
           type="button"
-          onClick={onClose}
+          onClick={handleReset}
           className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer z-10"
           aria-label="Tutup form kontak"
         >
@@ -60,7 +60,7 @@ const ContactModal = ({ isOpen, onClose, onSubmitMessage }) => {
             </div>
             <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-2">Pesan Anda Terkirim!</h3>
             <p className="text-xs sm:text-sm text-slate-500 mb-6 max-w-sm mx-auto leading-relaxed">
-              Terima kasih telah menghubungi TERAMEDIA. Tim kami akan segera menindaklanjuti permintaan konsultasi atau demo platform untuk organisasi Anda.
+              Terima kasih telah menghubungi TERAMEDIA. Pesan dan permohonan konsultasi Anda telah tersimpan dan terkirim langsung ke Kotak Masuk Dashboard Admin.
             </p>
             <button
               type="button"

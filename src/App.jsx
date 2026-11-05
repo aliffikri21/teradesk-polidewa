@@ -152,6 +152,44 @@ function App() {
     return initialDefaultConsultations;
   });
 
+  // Sinkronisasi otomatis antar-tab browser dan saat window fokus
+  useEffect(() => {
+    const syncFromStorage = () => {
+      try {
+        const saved = localStorage.getItem('teradesk_consultations_v1');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setConsultationMessages(parsed);
+          }
+        }
+      } catch {
+        // ignore
+      }
+    };
+
+    const handleStorageChange = (e) => {
+      if (e.key === 'teradesk_consultations_v1') {
+        syncFromStorage();
+      }
+    };
+
+    const handleCustomSync = (e) => {
+      if (Array.isArray(e.detail)) {
+        setConsultationMessages(e.detail);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('focus', syncFromStorage);
+    window.addEventListener('teradesk-consultation-updated', handleCustomSync);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('focus', syncFromStorage);
+      window.removeEventListener('teradesk-consultation-updated', handleCustomSync);
+    };
+  }, []);
+
   // Persist consultation messages
   useEffect(() => {
     try {
@@ -172,18 +210,45 @@ function App() {
       ', ' +
       now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
 
+    // Selalu baca data terbaru dari storage agar tidak tertimpa state lama di memori
+    let currentList = [];
+    try {
+      const saved = localStorage.getItem('teradesk_consultations_v1');
+      if (saved) {
+        currentList = JSON.parse(saved);
+      }
+    } catch {
+      // ignore
+    }
+    if (!Array.isArray(currentList) || currentList.length === 0) {
+      currentList = consultationMessages;
+    }
+
     const created = {
-      id: `MSG-2026-00${consultationMessages.length + 1}`,
-      name: newMessage.name,
-      email: newMessage.email,
-      organization: newMessage.organization || 'Umum / Eksternal',
-      message: newMessage.message,
+      id: `MSG-2026-${String(currentList.length + 1).padStart(3, '0')}`,
+      name: newMessage.name?.trim() || 'Tamu Organisasi',
+      email: newMessage.email?.trim() || 'tamu@dewantara.ac.id',
+      organization: newMessage.organization?.trim() || 'Umum / Eksternal',
+      message: newMessage.message?.trim() || '(Tanpa pesan khusus)',
       date: dateFormatted,
       status: 'Baru',
       isRead: false,
     };
 
-    setConsultationMessages((prev) => [created, ...prev]);
+    const nextList = [created, ...currentList.filter((m) => m.id !== created.id)];
+    try {
+      localStorage.setItem('teradesk_consultations_v1', JSON.stringify(nextList));
+    } catch {
+      // ignore
+    }
+    setConsultationMessages(nextList);
+
+    // Broadcast ke event bus lokal
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('teradesk-consultation-updated', { detail: nextList })
+      );
+    }
   };
 
   const handleUpdateConsultationStatus = (id, newStatus) => {
@@ -222,7 +287,20 @@ function App() {
           });
           setCurrentView({ page: 'landing', serviceId: null });
         } else {
-          setCurrentView({ page: 'admin', serviceId: null });
+          // Pastikan data kotak masuk konsultasi terbaru tersinkronisasi saat masuk admin
+      try {
+        const saved = localStorage.getItem('teradesk_consultations_v1');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setConsultationMessages(parsed);
+          }
+        }
+      } catch {
+        // ignore
+      }
+
+      setCurrentView({ page: 'admin', serviceId: null });
         }
       } else if (window.location.pathname === '/login') {
         setCurrentView({ page: 'login', serviceId: null });
@@ -258,6 +336,17 @@ function App() {
               return prev;
             }
             if (window.location.pathname !== '/admin') window.history.pushState(null, '', '/admin');
+            try {
+              const saved = localStorage.getItem('teradesk_consultations_v1');
+              if (saved) {
+                const parsed = JSON.parse(saved);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                  setConsultationMessages(parsed);
+                }
+              }
+            } catch {
+              // ignore
+            }
             return { page: 'admin', serviceId: null };
           }
         });
@@ -304,6 +393,19 @@ function App() {
         return;
       }
 
+      // Pastikan data kotak masuk konsultasi terbaru tersinkronisasi saat masuk admin
+      try {
+        const saved = localStorage.getItem('teradesk_consultations_v1');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setConsultationMessages(parsed);
+          }
+        }
+      } catch {
+        // ignore
+      }
+
       setCurrentView({ page: 'admin', serviceId: null });
       if (pushHistory && window.location.pathname !== '/admin') {
         window.history.pushState(null, '', '/admin');
@@ -342,6 +444,17 @@ function App() {
 
   const handleLoginSuccess = (userProfile) => {
     setAuthUser(userProfile);
+    try {
+      const saved = localStorage.getItem('teradesk_consultations_v1');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setConsultationMessages(parsed);
+        }
+      }
+    } catch {
+      // ignore
+    }
     let target = pendingTarget || { page: 'portal', serviceId: null };
 
     // Jika target login adalah dashboard admin tetapi akun tidak memiliki izin admin:

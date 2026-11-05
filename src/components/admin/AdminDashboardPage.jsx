@@ -1177,7 +1177,7 @@ const AdminDashboardPage = ({
                 >
                   <div className="flex items-center gap-3">
                     <Inbox size={16} className={currentNav === 'inbox' ? 'text-blue-400' : 'text-slate-400'} />
-                    <span>Inbox Kontak Konsultasi</span>
+                    <span>Kotak Masuk Konsultasi</span>
                   </div>
                   {unreadConsultationsCount > 0 ? (
                     <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded-full bg-blue-600 text-white shadow-xs animate-pulse">
@@ -1362,21 +1362,77 @@ const AdminDashboardPage = ({
               <button
                 onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
                 className="text-slate-400 hover:text-slate-700 p-2 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer relative"
-                title="Notifikasi Audit"
+                title="Notifikasi & Inbox"
               >
                 <Bell size={18} />
-                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-blue-600"></span>
+                {unreadConsultationsCount > 0 ? (
+                  <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-blue-600 ring-2 ring-white animate-pulse"></span>
+                ) : (
+                  <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-slate-300"></span>
+                )}
               </button>
 
               {isNotificationsOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-200 p-4 z-50">
+                <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-xl border border-slate-200 p-4 z-50">
                   <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-2">
-                    <p className="text-xs font-bold text-slate-900">Jejak Audit Real-Time</p>
-                    <span className="text-[10px] text-blue-600 font-semibold cursor-pointer">Tandai Dibaca</span>
+                    <p className="text-xs font-bold text-slate-900">Notifikasi & Pesan Masuk</p>
+                    {unreadConsultationsCount > 0 && (
+                      <button
+                        onClick={onMarkAllConsultationsRead}
+                        className="text-[10px] text-blue-600 font-semibold hover:underline cursor-pointer"
+                      >
+                        Tandai Semua Dibaca
+                      </button>
+                    )}
                   </div>
-                  <div className="space-y-2">
-                    {logs.slice(0, 3).map((l) => (
-                      <div key={l.id} className="p-2.5 rounded-xl bg-slate-50 text-[11px] text-slate-700">
+
+                  {/* Consultation Inflow section */}
+                  {consultationMessages.length > 0 && (
+                    <div className="mb-3 pb-3 border-b border-slate-100">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                          Konsultasi Masuk ({unreadConsultationsCount} Baru)
+                        </span>
+                        <button
+                          onClick={() => {
+                            setCurrentNav('inbox');
+                            setIsNotificationsOpen(false);
+                          }}
+                          className="text-[10px] font-bold text-blue-600 hover:underline cursor-pointer"
+                        >
+                          Lihat Tab Inbox →
+                        </button>
+                      </div>
+                      <div className="space-y-1.5">
+                        {consultationMessages.slice(0, 2).map((m) => (
+                          <div
+                            key={m.id}
+                            onClick={() => {
+                              if (onMarkConsultationRead) onMarkConsultationRead(m.id);
+                              setSelectedMessage(m);
+                              setIsNotificationsOpen(false);
+                            }}
+                            className={`p-2 rounded-xl text-[11px] cursor-pointer transition-colors ${
+                              !m.isRead ? 'bg-blue-50/70 border border-blue-200/60' : 'bg-slate-50 hover:bg-slate-100'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-1 mb-0.5">
+                              <span className="font-bold text-slate-900 truncate">{m.name}</span>
+                              <span className="text-[9px] text-slate-400 font-mono shrink-0">{m.date}</span>
+                            </div>
+                            <p className="text-slate-600 text-[10px] line-clamp-1">{m.message}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                    Jejak Audit Sistem
+                  </p>
+                  <div className="space-y-1.5">
+                    {logs.slice(0, 2).map((l) => (
+                      <div key={l.id} className="p-2 rounded-xl bg-slate-50 text-[11px] text-slate-700">
                         <span className="font-mono text-[9px] text-slate-400 block">{l.time}</span>
                         {l.event}
                       </div>
@@ -1929,6 +1985,107 @@ const AdminDashboardPage = ({
                       </table>
                     </div>
                   </div>
+                </div>
+              </div>
+
+              {/* ROW 4: RECENT CONSULTATION INBOX TABLE (EXECUTIVE DASHBOARD VIEW) */}
+              <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-4 border-b border-slate-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center shrink-0">
+                      <Inbox size={20} />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-sm font-bold text-slate-900">
+                          Kotak Masuk Konsultasi Terbaru (Inflow Landing Page)
+                        </h3>
+                        {unreadConsultationsCount > 0 ? (
+                          <span className="text-[10px] font-bold bg-blue-600 text-white px-2 py-0.5 rounded-full shadow-xs animate-pulse">
+                            {unreadConsultationsCount} Pesan Baru
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full border border-slate-200">
+                            Semua Terbaca
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-500 font-medium mt-0.5">
+                        Pesan dan permohonan kemitraan yang dikirim oleh pengunjung melalui form Kontak Kami.
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setCurrentNav('inbox')}
+                    className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
+                  >
+                    <span>Buka Semua di Tab Inbox</span>
+                    <ArrowRight size={13} />
+                  </button>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="text-[10px] uppercase font-bold text-slate-400 bg-slate-50/70 border-b border-slate-100">
+                        <th className="py-2.5 px-3">STATUS</th>
+                        <th className="py-2.5 px-3">PENGIRIM & ORGANISASI</th>
+                        <th className="py-2.5 px-3">WAKTU MASUK</th>
+                        <th className="py-2.5 px-3">ISI PESAN</th>
+                        <th className="py-2.5 px-3 text-right">AKSI</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-xs">
+                      {consultationMessages.slice(0, 5).map((msg) => (
+                        <tr
+                          key={msg.id}
+                          className={`hover:bg-slate-50/80 transition-colors cursor-pointer ${
+                            !msg.isRead ? 'bg-blue-50/25' : ''
+                          }`}
+                          onClick={() => {
+                            if (onMarkConsultationRead) onMarkConsultationRead(msg.id);
+                            setSelectedMessage(msg);
+                          }}
+                        >
+                          <td className="py-3 px-3 whitespace-nowrap">
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                                msg.status === 'Baru'
+                                  ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                  : msg.status === 'Diproses'
+                                  ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                  : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              }`}
+                            >
+                              {msg.status}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3">
+                            <div className="font-bold text-slate-900">{msg.name}</div>
+                            <div className="text-[11px] text-slate-500">{msg.organization}</div>
+                          </td>
+                          <td className="py-3 px-3 font-mono text-[11px] text-slate-500 whitespace-nowrap">
+                            {msg.date}
+                          </td>
+                          <td className="py-3 px-3 max-w-sm">
+                            <p className="text-slate-600 line-clamp-1">{msg.message}</p>
+                          </td>
+                          <td className="py-3 px-3 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              onClick={() => {
+                                if (onMarkConsultationRead) onMarkConsultationRead(msg.id);
+                                setSelectedMessage(msg);
+                              }}
+                              className="px-2.5 py-1 bg-slate-900 hover:bg-blue-600 text-white rounded text-[11px] font-semibold transition-colors cursor-pointer"
+                            >
+                              Detail
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
 
