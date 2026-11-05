@@ -18,15 +18,15 @@
     "semantic_hash": ""
   },
   "src/components/AboutUs.jsx": {
-    "mtime": 1793863096.474792,
-    "seen": 1793863557.8826246,
-    "ast_hash": "37608217b993c8fecbc48c6f97da9a51",
+    "mtime": 1793870700.387859,
+    "seen": 1793870922.672805,
+    "ast_hash": "b02f0c1f514140c339ca177078dc3af8",
     "semantic_hash": ""
   },
   "src/components/ContactModal.jsx": {
-    "mtime": 1790972593.847176,
-    "seen": 1793598012.4977372,
-    "ast_hash": "1462c8b2beae887cd71a30e1c671e399",
+    "mtime": 1793871008.7626243,
+    "seen": 1793871080.286988,
+    "ast_hash": "4b9d73c4af6a49fdd575836b748452b3",
     "semantic_hash": ""
   },
   "src/components/Features.jsx": {
@@ -48,8 +48,8 @@
     "semantic_hash": ""
   },
   "src/components/Hero.jsx": {
-    "mtime": 1793821271.0720675,
-    "seen": 1793862773.2896888,
+    "mtime": 1793870979.4501102,
+    "seen": 1793871080.286988,
     "ast_hash": "23240a41735b2dfbe7d96e6c3269b406",
     "semantic_hash": ""
   },
@@ -66,9 +66,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1793869872.356555,
-    "seen": 1793869910.6589584,
-    "ast_hash": "0ed49c88528159d36012021d223d4f1d",
+    "mtime": 1793870592.2238417,
+    "seen": 1793870679.3296487,
+    "ast_hash": "e6341795411a624e7e1c9a44e3a1833c",
     "semantic_hash": ""
   },
   "anti-slop/audit-001-2026-11-02.md": {
@@ -948,9 +948,15 @@
     "semantic_hash": ""
   },
   "agents.md": {
-    "mtime": 1793866991.2946825,
-    "seen": 1793869910.6589584,
-    "ast_hash": "d989b92132ea2383eaa382c6440530b6",
+    "mtime": 1793870592.276066,
+    "seen": 1793870679.3296487,
+    "ast_hash": "73c3ed93e563194cc6912190273cfcb4",
+    "semantic_hash": ""
+  },
+  "public/images/about/img5.webp": {
+    "mtime": 1793870434.8506925,
+    "seen": 1793870578.4258683,
+    "ast_hash": "53445e63b0865b4dc8382af0e407a519",
     "semantic_hash": ""
   }
 }

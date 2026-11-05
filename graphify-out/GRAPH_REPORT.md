@@ -1,7 +1,7 @@
 # Graph Report - teradesk-ui-slicing  (2026-11-05)
 
 ## Corpus Check
-- 147 files · ~256,011 words
+- 147 files · ~256,026 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 56 file(s) not represented in the graph (top: .csv 53, (none) 2, .css 1)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `615c7097`
+- Built from commit: `7c525593`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -663,5 +663,5 @@ _Questions this graph is uniquely positioned to answer:_
   _`DesignSystemGenerator` has 3 INFERRED edges - model-reasoned connections that need verification._
 - **Should `package.json` be split into smaller, more focused modules?**
   _Cohesion score 0.08143939393939394 - nodes in this community are weakly interconnected._
-- **Why does `main()` connect `.test_full_configuration_typescript` to `.recommend_plugins`, `.add_colors`, `.validate_config`, `.test_node_check_parses_generated_config`, `pathlib`, `argparse`, `.add_plugins`, `.generate_config_string`?**
+- **Why does `primitive` connect `primitive` to `radius`, `gray`, `design-tokens-starter.json`, `shadow`, `spacing`, `fontSize`?**
   _High betweenness centrality (0.009) - this node is a cross-community bridge._

@@ -75,7 +75,7 @@ Semua aset statis terkelola di dalam direktori `public/`:
 - `public/logo-teramedia.png`: Logo brand TeraDesk & Favicon aplikasi.
 - `public/images/img1.JPG`: Foto dokumentasi pada kartu preview Hero section.
 - `public/images/alip-credit.png`: Foto profil pengembang pada Modal Developer Credits.
-- `public/images/about/img1.webp` s/d `img4.webp`: Rangkaian foto marquee carousel section "Tentang Kami".
+- `public/images/about/img1.webp` s/d `img5.webp`: Rangkaian foto marquee carousel section "Tentang Kami".
 - **Higiene Asset**: Jangan meninggalkan file draft/uncompressed yang tidak direferensikan dalam kode sumber.
 
 ---

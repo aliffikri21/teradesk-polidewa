@@ -17,10 +17,14 @@ const aboutImages = [
     src: '/images/about/img4.webp',
     alt: 'Pelatihan dan Kaderisasi Anggota Baru TERAMEDIA',
   },
+  {
+    src: '/images/about/img5.webp',
+    alt: 'Foto Bersama Pengurus dan Kader TERAMEDIA dengan Spanduk Multimedia Teknik',
+  },
 ];
 
 const AboutUs = () => {
-  // Duplikasi 3x (12 gambar) untuk memastikan perputaran infinite marquee mulus 100% tanpa jeda
+  // Duplikasi 3x (15 gambar) untuk memastikan perputaran infinite marquee mulus 100% tanpa jeda
   const marqueeList = [...aboutImages, ...aboutImages, ...aboutImages];
 
   return (
@@ -37,8 +41,8 @@ const AboutUs = () => {
           Tentang Kami
         </h2>
 
-        {/* Text Paragraphs - Left-Aligned, 3 distinct blocks with natural line-height */}
-        <div className="space-y-4 sm:space-y-5 text-slate-800 text-sm sm:text-base md:text-[16px] lg:text-[17px] leading-relaxed max-w-4xl text-left font-normal">
+        {/* Text Paragraphs - Justified alignment, 3 distinct blocks with natural line-height */}
+        <div className="space-y-4 sm:space-y-5 text-slate-800 text-sm sm:text-base md:text-[16px] lg:text-[17px] leading-relaxed max-w-4xl text-justify font-normal">
           <p>
             TERAMEDIA merupakan suatu organisasi Program Studi Teknologi Rekayasa Multimedia yang dinaungi oleh kampus Politeknik Dewantara. Didirikan pada tahun 14 Februari 2020 hingga saat ini telah aktif selama 6 tahun.
           </p>
@@ -73,7 +77,7 @@ const AboutUs = () => {
                 alt={item.alt}
                 draggable="false"
                 className="w-full h-full object-cover select-none transition-transform duration-700 ease-out group-hover:scale-105"
-                loading={index < 4 ? 'eager' : 'lazy'}
+                loading={index < 5 ? 'eager' : 'lazy'}
               />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 pointer-events-none" />
             </div>

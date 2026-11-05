@@ -57,7 +57,7 @@ Satu ekosistem kerja digital terpusat mencakup 10 modul siap pakai:
 teradesk-ui-slicing/
 ├── public/
 │   ├── images/
-│   │   ├── about/          # Asset webp carousel Tentang Kami (img1.webp - img4.webp)
+│   │   ├── about/          # Asset webp carousel Tentang Kami (img1.webp - img5.webp)
 │   │   ├── alip-credit.png # Foto profil Developer Credits
 │   │   └── img1.JPG        # Foto dokumentasi Hero section
 │   └── logo-teramedia.png  # Favicon dan logo resmi brand
