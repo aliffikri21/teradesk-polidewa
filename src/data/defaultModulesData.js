@@ -581,3 +581,4 @@ export const defaultModuleStatuses = {
   kkm: true,
   activity: true,
 };
+

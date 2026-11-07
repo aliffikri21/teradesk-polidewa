@@ -249,6 +249,8 @@ const AdminDashboardPage = ({
   onAddSuratLog: propOnAddSuratLog,
   moduleStatuses: propModuleStatuses,
   onToggleModuleStatus: propOnToggleModuleStatus,
+  initialNav = 'dashboard',
+  onOpenCommandPalette,
 }) => {
   // Mobile Sidebar Drawer State
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -257,7 +259,12 @@ const AdminDashboardPage = ({
   // Navigation View:
   // 'dashboard' | 'proker' | 'students' | 'inbox' | 'par' | 'archive' | 'asset' | 'finance' | 'attendance' | 'timeline' | 'hr' | 'helpdesk' |
   // 'session' | 'backup' | 'logs' | 'settings'
-  const [currentNav, setCurrentNav] = useState('dashboard');
+  const [currentNav, setCurrentNav] = useState(initialNav || 'dashboard');
+  const [prevInitialNav, setPrevInitialNav] = useState(initialNav);
+  if (prevInitialNav !== initialNav) {
+    setPrevInitialNav(initialNav);
+    setCurrentNav(initialNav || 'dashboard');
+  }
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDivision, setSelectedDivision] = useState('Semua Divisi');
   const [accessFilter, setAccessFilter] = useState('Semua Akses');
@@ -1693,17 +1700,29 @@ const AdminDashboardPage = ({
               <Menu size={20} />
             </button>
 
-            {/* Search Bar for TeraDesk */}
-            <div className="relative w-44 sm:w-72 lg:w-96">
-              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            {/* Search Bar for TeraDesk (Spotlight Command Palette Trigger) */}
+            <div
+              onClick={() => {
+                if (onOpenCommandPalette) onOpenCommandPalette();
+              }}
+              className="relative w-44 sm:w-72 lg:w-96 cursor-pointer group"
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  if (onOpenCommandPalette) onOpenCommandPalette();
+                }
+              }}
+            >
+              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-blue-600 transition-colors" />
               <input
                 type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                readOnly
                 placeholder="Cari Layanan, Proposal, atau NIM..."
-                className="w-full pl-9 pr-10 sm:pr-14 py-2 bg-slate-50 hover:bg-slate-100/70 focus:bg-white rounded-xl border border-slate-200/80 text-xs font-medium text-slate-800 focus:outline-hidden focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all placeholder:text-slate-400"
+                className="w-full pl-9 pr-10 sm:pr-14 py-2 bg-slate-50 hover:bg-slate-100/70 rounded-xl border border-slate-200/80 text-xs font-medium text-slate-800 focus:outline-hidden transition-all placeholder:text-slate-400 cursor-pointer select-none"
               />
-              <span className="hidden sm:inline absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono font-medium text-slate-400 bg-slate-200/60 px-1.5 py-0.5 rounded">
+              <span className="hidden sm:inline absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono font-medium text-slate-400 bg-slate-200/60 px-1.5 py-0.5 rounded border border-slate-300/60 group-hover:bg-slate-200 group-hover:text-slate-700 transition-colors">
                 Ctrl + K
               </span>
             </div>

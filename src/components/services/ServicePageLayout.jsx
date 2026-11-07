@@ -123,10 +123,10 @@ const ServicePageLayout = ({
   onSelectService,
   authUser,
   onLogout,
+  onOpenCommandPalette,
   children,
 }) => {
   const [isSwitcherOpen, setIsSwitcherOpen] = useState(false);
-  const [searchVal, setSearchVal] = useState('');
 
   return (
     <div className="w-full min-h-screen bg-[#F8FAFC] text-slate-800 flex font-sans antialiased selection:bg-blue-600 selection:text-white">
@@ -292,21 +292,49 @@ const ServicePageLayout = ({
               <span className="text-blue-600 font-bold truncate max-w-[180px]">{title}</span>
             </div>
 
-            <div className="relative w-64 md:hidden">
+            <div
+              onClick={() => {
+                if (onOpenCommandPalette) onOpenCommandPalette();
+              }}
+              className="relative w-64 md:hidden cursor-pointer"
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  if (onOpenCommandPalette) onOpenCommandPalette();
+                }
+              }}
+            >
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
-                value={searchVal}
-                onChange={(e) => setSearchVal(e.target.value)}
-                placeholder="Cari..."
-                className="w-full pl-8 pr-3 py-1.5 bg-slate-50 rounded-xl border border-slate-200 text-xs font-medium focus:outline-hidden"
+                readOnly
+                placeholder="Cari (Spotlight)..."
+                className="w-full pl-8 pr-3 py-1.5 bg-slate-50 rounded-xl border border-slate-200 text-xs font-medium focus:outline-hidden cursor-pointer select-none"
               />
             </div>
           </div>
 
-          {/* Right: Quick Switcher Dropdown & Profile */}
-          <div className="flex items-center gap-3">
+          {/* Right: Spotlight Trigger, Quick Switcher Dropdown & Profile */}
+          <div className="flex items-center gap-2 sm:gap-3">
             
+            {/* Spotlight Command Palette trigger */}
+            <button
+              type="button"
+              onClick={() => {
+                if (onOpenCommandPalette) onOpenCommandPalette();
+              }}
+              title="Buka Spotlight Command Palette (Ctrl+K)"
+              className="flex items-center gap-1.5 sm:gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+            >
+              <Search size={14} className="text-amber-500" />
+              <span className="hidden sm:inline">Spotlight</span>
+              <kbd className="hidden md:inline-block text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-200/80 text-slate-500 border border-slate-300/60">
+                Ctrl K
+              </kbd>
+            </button>
+
             {/* Quick Switcher Dropdown (Accessible on all screens) */}
             <div className="relative">
               <button

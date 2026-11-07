@@ -251,6 +251,7 @@ const FeaturesPortal = ({
   onSelectService,
   authUser,
   onLogout,
+  onOpenCommandPalette,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Semua');
@@ -343,6 +344,22 @@ const FeaturesPortal = ({
                 <span>Panel Admin</span>
               </button>
             )}
+
+            {/* Spotlight Command Palette trigger */}
+            <button
+              type="button"
+              onClick={() => {
+                if (onOpenCommandPalette) onOpenCommandPalette();
+              }}
+              title="Buka Spotlight Command Palette (Ctrl+K)"
+              className="hidden sm:flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border border-slate-200"
+            >
+              <Search size={14} className="text-amber-500" />
+              <span>Spotlight</span>
+              <kbd className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-200/80 text-slate-500">
+                Ctrl K
+              </kbd>
+            </button>
 
             <button
               onClick={onOpenContact}
@@ -499,13 +516,25 @@ const FeaturesPortal = ({
                   placeholder="Cari modul, surat dinas, alur kerja..."
                   className="w-full pl-11 pr-10 py-3 rounded-2xl bg-white border border-slate-300 text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-xs placeholder-slate-400"
                 />
-                {searchQuery && (
+                {searchQuery ? (
                   <button
                     onClick={() => setSearchQuery('')}
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1 rounded-full cursor-pointer"
                     aria-label="Bersihkan pencarian"
                   >
                     <X size={15} />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (onOpenCommandPalette) onOpenCommandPalette();
+                    }}
+                    title="Buka Spotlight Global (Ctrl+K)"
+                    className="hidden sm:flex absolute right-3.5 top-1/2 -translate-y-1/2 items-center gap-1 px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-[10px] font-mono text-slate-500 border border-slate-200 transition-colors cursor-pointer"
+                  >
+                    <span>Spotlight</span>
+                    <span className="font-bold text-slate-700">Ctrl K</span>
                   </button>
                 )}
               </div>

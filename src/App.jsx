@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ShieldAlert } from 'lucide-react';
+import { ShieldAlert, Search } from 'lucide-react';
 import Hero from './components/Hero';
 import Features from './components/Features';
 import AboutUs from './components/AboutUs';
@@ -9,6 +9,7 @@ import LoginPage from './components/LoginPage';
 import AdminDashboardPage from './components/admin/AdminDashboardPage';
 import FeaturesPortal from './components/FeaturesPortal';
 import ServiceDispatcher from './components/services/ServiceDispatcher';
+import CommandPalette from './components/common/CommandPalette';
 import { initialDefaultAccounts } from './data/defaultAccounts';
 import { initialDefaultProker } from './data/defaultProker';
 import { initialDefaultConsultations } from './data/defaultConsultations';
@@ -108,6 +109,8 @@ function App() {
   const [authUser, setAuthUser] = useState(null); // null = Guest, object = Authenticated pengurus
   const [isContactOpen, setIsContactOpen] = useState(false);
   const [accessDeniedInfo, setAccessDeniedInfo] = useState(null);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [adminInitialNav, setAdminInitialNav] = useState('dashboard');
 
   // Registered accounts state dengan pembersihan data lama agar hanya akun Alif Fikri yang aktif
   const [registeredAccounts, setRegisteredAccounts] = useState(() => {
@@ -1221,12 +1224,27 @@ function App() {
     return () => window.removeEventListener('keydown', handleGlobalKey);
   }, [authUser]);
 
+  // Global keyboard shortcut (Ctrl + K or Cmd + K) to toggle Spotlight Command Palette
+  useEffect(() => {
+    const handleCommandPaletteKey = (e) => {
+      if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleCommandPaletteKey);
+    return () => window.removeEventListener('keydown', handleCommandPaletteKey);
+  }, []);
+
   // Guarantee that on page refresh (initial mount), session is completely destroyed
   useEffect(() => {
     sessionStorage.clear();
   }, []);
 
-  const handleNavigate = (page, serviceId = null, pushHistory = true) => {
+  const handleNavigate = (page, serviceId = null, pushHistory = true, adminNav = null) => {
+    if (adminNav) {
+      setAdminInitialNav(adminNav);
+    }
     if (page === 'landing') {
       setCurrentView({ page: 'landing', serviceId: null });
       if (pushHistory && window.location.pathname !== '/') {
@@ -1494,6 +1512,7 @@ function App() {
               handleNavigate(serviceId ? 'service' : 'portal', serviceId)
             }
             prokerList={prokerList}
+            onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
           />
 
           {/* Fitur Unggulan Section (11 Cards Grid on Light Background) */}
@@ -1524,6 +1543,8 @@ function App() {
       ) : currentView.page === 'admin' ? (
         /* Halaman Baru: Admin & Developer Dashboard Dedicated Page */
         <AdminDashboardPage
+          initialNav={adminInitialNav}
+          onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
           onBackToLanding={() => handleNavigate('landing')}
           onNavigateToPortal={() => handleNavigate('portal')}
           onNavigateToService={(serviceId) => handleNavigate('service', serviceId)}
@@ -1582,6 +1603,7 @@ function App() {
           onSelectService={(serviceId) => handleNavigate('service', serviceId)}
           authUser={authUser}
           onLogout={handleLogout}
+          onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
           prokerList={prokerList}
           onAddProker={handleAddProker}
           onUpdateProker={handleUpdateProker}
@@ -1630,6 +1652,7 @@ function App() {
           onSelectService={(serviceId) => handleNavigate('service', serviceId)}
           authUser={authUser}
           onLogout={handleLogout}
+          onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
         />
       )}
 
@@ -1672,6 +1695,40 @@ function App() {
         isOpen={isContactOpen}
         onClose={() => setIsContactOpen(false)}
         onSubmitMessage={handleSendConsultation}
+      />
+
+      {/* Floating Spotlight Command Palette Trigger Pill */}
+      <button
+        type="button"
+        onClick={() => setIsCommandPaletteOpen(true)}
+        aria-label="Buka Spotlight Command Palette (Ctrl+K)"
+        title="Buka Spotlight Command Palette (Ctrl + K)"
+        className="fixed bottom-5 right-5 z-40 flex items-center gap-2 px-3 py-2 rounded-full bg-slate-900/95 hover:bg-slate-900 text-white shadow-[0_8px_30px_rgba(0,0,0,0.35)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)] border border-slate-700/80 backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 group cursor-pointer"
+      >
+        <div className="w-5 h-5 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center font-bold shrink-0 shadow-xs">
+          <Search size={11} className="stroke-[3]" />
+        </div>
+        <span className="text-xs font-bold text-slate-200 group-hover:text-white">Spotlight</span>
+        <kbd className="hidden sm:inline-block text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300">
+          Ctrl K
+        </kbd>
+      </button>
+
+      {/* Global Spotlight Command Palette Modal */}
+      <CommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        onNavigate={handleNavigate}
+        onOpenContact={() => setIsContactOpen(true)}
+        authUser={authUser}
+        accounts={registeredAccounts}
+        prokerList={prokerList}
+        tickets={designTickets}
+        archiveDocs={archiveDocs}
+        suratLog={suratLog}
+        assets={assets}
+        activityLogs={activityLogs}
+        consultationMessages={consultationMessages}
       />
     </div>
   );
