@@ -18,6 +18,13 @@ const ServiceDispatcher = ({
   onSelectService,
   authUser,
   onLogout,
+  prokerList = [],
+  onAddProker,
+  onUpdateProker,
+  onDeleteProker,
+  accounts = [],
+  onAddAccount,
+  onAddActivityLog,
 }) => {
   const commonProps = {
     onBackToPortal,
@@ -25,6 +32,13 @@ const ServiceDispatcher = ({
     onSelectService,
     authUser,
     onLogout,
+    prokerList,
+    onAddProker,
+    onUpdateProker,
+    onDeleteProker,
+    accounts,
+    onAddAccount,
+    onAddActivityLog,
   };
 
   switch (serviceId) {

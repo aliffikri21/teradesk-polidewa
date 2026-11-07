@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   CalendarRange,
   Calendar,
@@ -8,7 +8,8 @@ import {
   CheckCircle2,
   Users,
   MapPin,
-  Send
+  Send,
+  Sparkles
 } from 'lucide-react';
 import ServicePageLayout from './ServicePageLayout';
 
@@ -71,8 +72,9 @@ const sampleEvents = [
 ];
 
 const TimelineServicePage = (props) => {
+  const { prokerList = [], onAddProker } = props;
   const [activeTab, setActiveTab] = useState('roadmap'); // 'roadmap' | 'agenda' | 'tambah'
-  const [events, setEvents] = useState(sampleEvents);
+  const [localEvents, setLocalEvents] = useState(sampleEvents);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Form State
@@ -86,23 +88,76 @@ const TimelineServicePage = (props) => {
   });
   const [formSuccess, setFormSuccess] = useState(false);
 
+  // Sinkronisasi data Program Kerja dari Admin (prokerList) ke Master Timeline
+  const allEvents = useMemo(() => {
+    const adminEvents = (prokerList || []).map((p) => ({
+      id: p.id,
+      title: p.title,
+      division: p.division || 'Badan Pengurus Harian (BPH)',
+      date: p.period || 'Periode 2026',
+      location: p.location || 'Kampus Politeknik Dewantara',
+      pic: p.pic || `BPH & ${p.division || 'Proker'}`,
+      target: p.target || 'Seluruh Anggota & Mahasiswa',
+      status: p.status || 'Terjadwal',
+      color:
+        p.status === 'Aktif' || p.status === 'Sedang Berjalan'
+          ? 'emerald'
+          : p.status === 'Akan Datang'
+          ? 'blue'
+          : 'cyan',
+      isMasterProker: true,
+      badge: p.badge || 'Program Kerja Resmi',
+    }));
+
+    // Gabungkan dengan localEvents, pastikan tidak ada ID bentrok
+    const adminIds = new Set(adminEvents.map((e) => e.id));
+    const uniqueLocal = localEvents.filter((e) => !adminIds.has(e.id));
+    return [...adminEvents, ...uniqueLocal];
+  }, [prokerList, localEvents]);
+
   const handleFormSubmit = (e) => {
     e.preventDefault();
     if (!eventForm.title || !eventForm.date) return;
 
+    const newId = `proker-${Date.now()}`;
+    const newProkerData = {
+      id: newId,
+      badge: 'Jadwal Timeline',
+      tag: 'sinkronisasi kalender',
+      title: eventForm.title,
+      actionText: 'lihat detail agenda',
+      actionServiceId: 'timeline',
+      division: eventForm.division,
+      period: eventForm.date,
+      status: 'Akan Datang',
+      isVisible: true,
+      order: (prokerList?.length || 0) + 1,
+      location: eventForm.location || 'Kampus Politeknik Dewantara',
+      pic: eventForm.pic || props.authUser?.name || 'PIC Terdaftar',
+      target: eventForm.target || '50 Peserta',
+    };
+
+    // 1. Simpan ke master prokerList global jika callback tersedia
+    if (typeof onAddProker === 'function') {
+      onAddProker(newProkerData);
+    }
+
+    // 2. Simpan juga ke localEvents agar render seketika
     const newEvt = {
-      id: `EVT-0${events.length + 1}`,
+      id: newId,
       title: eventForm.title,
       division: eventForm.division,
       date: eventForm.date,
-      location: eventForm.location || 'Sekretariat / Kampus',
-      pic: eventForm.pic || 'PIC Terdaftar',
+      location: eventForm.location || 'Kampus Politeknik Dewantara',
+      pic: eventForm.pic || props.authUser?.name || 'PIC Terdaftar',
       target: eventForm.target || '50 Peserta',
       status: 'Terjadwal Baru',
       color: 'blue',
+      isMasterProker: true,
+      badge: 'Jadwal Timeline',
     };
 
-    setEvents([...events, newEvt]);
+    setLocalEvents((prev) => [newEvt, ...prev]);
     setFormSuccess(true);
     setTimeout(() => {
       setFormSuccess(false);
@@ -118,7 +173,7 @@ const TimelineServicePage = (props) => {
     }, 1200);
   };
 
-  const filteredEvents = events.filter((evt) =>
+  const filteredEvents = allEvents.filter((evt) =>
     evt.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     evt.division.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -136,24 +191,24 @@ const TimelineServicePage = (props) => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-5">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-gray-400 font-medium">Program Kerja Tahunan</span>
+            <span className="text-xs text-gray-400 font-medium">Program Kerja Terdata</span>
             <span className="w-2 h-2 rounded-full bg-cyan-400"></span>
           </div>
           <div className="text-2xl sm:text-3xl font-extrabold text-white mb-1">
-            18 Proker
+            {allEvents.length} Proker
           </div>
-          <p className="text-[11px] text-gray-400">Tersusun dalam GBHPK Organisasi</p>
+          <p className="text-[11px] text-gray-400">Tersinkronisasi dengan Admin Dashboard</p>
         </div>
 
         <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-5">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-gray-400 font-medium">Proker Bulan Ini (Nov 2026)</span>
+            <span className="text-xs text-gray-400 font-medium">Proker Aktif & Berjalan</span>
             <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
           </div>
           <div className="text-2xl sm:text-3xl font-extrabold text-blue-400 mb-1">
-            2 Acara
+            {allEvents.filter((e) => e.status === 'Aktif' || e.status === 'Sedang Berjalan').length || 2} Acara
           </div>
-          <p className="text-[11px] text-gray-400">LDK 2026 & Workshop UI/UX</p>
+          <p className="text-[11px] text-gray-400">Jadwal periode aktif berjalan</p>
         </div>
 
         <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-5">
@@ -169,13 +224,13 @@ const TimelineServicePage = (props) => {
 
         <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-5">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-gray-400 font-medium">Proker Sukses Terlaksana</span>
+            <span className="text-xs text-gray-400 font-medium">Akan Datang / Perencanaan</span>
             <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
           </div>
           <div className="text-2xl sm:text-3xl font-extrabold text-emerald-400 mb-1">
-            12 Proker
+            {allEvents.filter((e) => e.status === 'Akan Datang' || e.status === 'Perencanaan' || e.status === 'Terjadwal Baru').length} Proker
           </div>
-          <p className="text-[11px] text-gray-400">LPJ telah diterima BPH</p>
+          <p className="text-[11px] text-gray-400">Dalam persiapan tim divisi</p>
         </div>
       </div>
 
@@ -202,7 +257,7 @@ const TimelineServicePage = (props) => {
           }`}
         >
           <Clock size={16} />
-          <span>Agenda Acara Mendatang ({events.length})</span>
+          <span>Agenda Acara Mendatang ({allEvents.length})</span>
         </button>
 
         <button
@@ -224,23 +279,35 @@ const TimelineServicePage = (props) => {
           <div className="bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8">
             <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8">
               <div>
-                <h3 className="text-lg font-bold text-white">Visualisasi Roadmap Periode Q4 2026</h3>
-                <p className="text-xs text-gray-400">Pemetaan waktu pelaksanaan kegiatan agar persiapan logistik berjalan terencana.</p>
+                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                  <span>Visualisasi Roadmap Periode 2026</span>
+                  <span className="text-[10px] bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 px-2 py-0.5 rounded-full font-mono flex items-center gap-1">
+                    <Sparkles size={10} /> Live Sync
+                  </span>
+                </h3>
+                <p className="text-xs text-gray-400">Pemetaan waktu pelaksanaan kegiatan yang terhubung langsung dengan Master Proker Admin.</p>
               </div>
             </div>
 
             {/* Timeline Bars */}
             <div className="space-y-4">
-              {events.map((evt) => (
+              {allEvents.map((evt) => (
                 <div key={evt.id} className="bg-slate-900 border border-white/10 rounded-2xl p-5 hover:border-white/20 transition-all">
                   <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 mb-3">
                     <div>
-                      <span className="text-[10px] bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2 py-0.5 rounded font-mono">
-                        {evt.division}
-                      </span>
-                      <h4 className="font-bold text-white text-sm sm:text-base mt-1">{evt.title}</h4>
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <span className="text-[10px] bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2 py-0.5 rounded font-mono">
+                          {evt.division}
+                        </span>
+                        {evt.isMasterProker && (
+                          <span className="text-[9px] bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 px-2 py-0.5 rounded-full font-medium">
+                            {evt.badge || 'Proker Resmi'}
+                          </span>
+                        )}
+                      </div>
+                      <h4 className="font-bold text-white text-sm sm:text-base">{evt.title}</h4>
                     </div>
-                    <span className="text-xs font-semibold px-3 py-1 rounded-full bg-white/10 text-gray-200">
+                    <span className="text-xs font-semibold px-3 py-1 rounded-full bg-white/10 text-gray-200 shrink-0">
                       {evt.status}
                     </span>
                   </div>
@@ -282,7 +349,14 @@ const TimelineServicePage = (props) => {
               <div key={evt.id} className="bg-white/5 border border-white/10 rounded-3xl p-6 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="text-xs font-mono text-cyan-300">{evt.date}</span>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs font-mono text-cyan-300">{evt.date}</span>
+                      {evt.isMasterProker && (
+                        <span className="text-[9px] bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 px-2 py-0.5 rounded-full font-medium">
+                          {evt.badge || 'Proker Resmi'}
+                        </span>
+                      )}
+                    </div>
                     <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-semibold">
                       {evt.status}
                     </span>

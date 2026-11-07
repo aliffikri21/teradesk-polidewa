@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@qpokychuk/sf-pro-display": "^1.0.2",
+    "firebase": "^13.2.0",
     "lucide-react": "^1.50.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   LayoutDashboard,
   Users,
@@ -52,7 +52,9 @@ import {
   Inbox,
   Mail,
   MessageSquare,
-  CheckCircle2
+  CheckCircle2,
+  LogIn,
+  Send
 } from 'lucide-react';
 
 const divisionsList = [
@@ -218,6 +220,10 @@ const AdminDashboardPage = ({
   onMarkAllConsultationsRead,
   onDeleteConsultation,
   onResetConsultations,
+  activityLogs = [],
+  onAddActivityLog,
+  onClearActivityLogs,
+  onResetActivityLogs,
 }) => {
   // Navigation View:
   // 'dashboard' | 'proker' | 'students' | 'inbox' | 'par' | 'archive' | 'asset' | 'finance' | 'attendance' | 'timeline' | 'hr' | 'helpdesk' |
@@ -513,6 +519,37 @@ const AdminDashboardPage = ({
     },
   ]);
 
+  // Sinkronisasi data Akun Terdaftar ke tabel Rapor Kader SDM
+  const combinedKaderRaporList = useMemo(() => {
+    const existingNims = new Set(kaderRaporList.map((k) => k.nim));
+    const registeredKader = (accounts || [])
+      .filter((acc) => !existingNims.has(acc.nim))
+      .map((acc) => ({
+        nim: acc.nim,
+        name: acc.name
+          ? acc.name
+              .split(' ')
+              .map((w) => (w ? w.charAt(0).toUpperCase() + w.slice(1) : ''))
+              .join(' ')
+          : 'Pengurus Resmi',
+        division:
+          acc.division === 'BPH'
+            ? 'Badan Pengurus Harian (BPH)'
+            : acc.division && acc.division.startsWith('Divisi')
+            ? acc.division
+            : `Divisi ${acc.division || 'BPH'}`,
+        diksar: 'Lulus Diksar & Penugasan BPH',
+        score: acc.canAccessAdmin ? 98 : 92,
+        attendance: '98%',
+        grade: acc.canAccessAdmin ? 'A+ (Pimpinan)' : 'A (Sangat Aktif)',
+        gradeColor: acc.canAccessAdmin
+          ? 'text-violet-700 bg-violet-50 border-violet-200'
+          : 'text-emerald-700 bg-emerald-50 border-emerald-200',
+        certStatus: 'Siap Terbit',
+      }));
+    return [...registeredKader, ...kaderRaporList];
+  }, [accounts, kaderRaporList]);
+
   // 5. DIVISI KKM: State & Logic
   const [kkmOrders, setKkmOrders] = useState([
     {
@@ -544,16 +581,108 @@ const AdminDashboardPage = ({
     },
   ]);
 
-  // Activity Logs
-  const [logs, setLogs] = useState([
-    { id: 1, time: '14:50:12', event: 'Sistem inisialisasi database kredensial TeraDesk', type: 'info' },
-    { id: 2, time: '14:52:40', event: 'Audit Session Guard: Auto-destroy on refresh diaktifkan', type: 'success' },
-    { id: 3, time: '15:00:15', event: 'Kredensial resmi Alif Fikri (23404053) dimuat ke memori', type: 'info' },
-  ]);
+  // Activity Logs State & Filtering
+  const [localLogs, setLocalLogs] = useState([]);
+  const [logSearchQuery, setLogSearchQuery] = useState('');
+  const [logFilterCategory, setLogFilterCategory] = useState('all'); // 'all' | 'login' | 'module_submit' | 'system'
 
-  const addLog = (event, type = 'info') => {
+  // Prioritize global persistent activityLogs if available, fallback to local
+  const currentLogs = useMemo(() => {
+    if (activityLogs && activityLogs.length > 0) return activityLogs;
+    if (localLogs && localLogs.length > 0) return localLogs;
+    return [
+      {
+        id: 1,
+        time: '14:50:12',
+        date: '06 Nov 2026',
+        timestamp: '14:50:12 WIB, 06 Nov 2026',
+        event: 'Sistem inisialisasi database kredensial TeraDesk',
+        type: 'info',
+        category: 'system',
+        module: 'Sistem Admin',
+        actor: {
+          name: 'Sistem TeraDesk',
+          nim: 'SYSTEM',
+          role: 'Core Engine',
+          division: 'Infrastruktur',
+        },
+      },
+    ];
+  }, [activityLogs, localLogs]);
+
+  const addLog = (event, type = 'info', extra = {}) => {
     const time = getTimestamp();
-    setLogs((prev) => [{ id: Date.now(), time, event, type }, ...prev.slice(0, 24)]);
+    const date = new Date().toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+    const logItem = {
+      id: Date.now() + Math.floor(Math.random() * 1000),
+      time,
+      date,
+      timestamp: `${time} WIB, ${date}`,
+      event,
+      type,
+      category: extra.category || 'system',
+      module: extra.module || 'Sistem Admin',
+      actor: extra.actor || {
+        name: 'Administrator (Alif Fikri)',
+        nim: '23404053',
+        role: 'Demisioner Ketua Umum',
+        division: 'BPH & Pimpinan Organisasi',
+      },
+      ...extra,
+    };
+    if (onAddActivityLog) {
+      onAddActivityLog(logItem);
+    } else {
+      setLocalLogs((prev) => [logItem, ...prev.slice(0, 49)]);
+    }
+  };
+
+  const filteredActivityLogs = useMemo(() => {
+    return currentLogs.filter((log) => {
+      // Category filter
+      if (logFilterCategory !== 'all' && log.category !== logFilterCategory) {
+        return false;
+      }
+      // Search filter
+      if (logSearchQuery.trim()) {
+        const q = logSearchQuery.toLowerCase();
+        const eventMatch = (log.event || '').toLowerCase().includes(q);
+        const nameMatch = (log.actor?.name || log.userName || '').toLowerCase().includes(q);
+        const nimMatch = (log.actor?.nim || log.userNim || '').toLowerCase().includes(q);
+        const roleMatch = (log.actor?.role || log.userRole || '').toLowerCase().includes(q);
+        const moduleMatch = (log.module || log.moduleName || '').toLowerCase().includes(q);
+        const divMatch = (log.actor?.division || log.userDivision || '').toLowerCase().includes(q);
+        return eventMatch || nameMatch || nimMatch || roleMatch || moduleMatch || divMatch;
+      }
+      return true;
+    });
+  }, [currentLogs, logFilterCategory, logSearchQuery]);
+
+  const loginCount = useMemo(() => {
+    return currentLogs.filter((l) => l.category === 'login').length;
+  }, [currentLogs]);
+
+  const moduleSubmitCount = useMemo(() => {
+    return currentLogs.filter((l) => l.category === 'module_submit').length;
+  }, [currentLogs]);
+
+  const systemCount = useMemo(() => {
+    return currentLogs.filter((l) => l.category === 'system' || !l.category).length;
+  }, [currentLogs]);
+
+  const handleExportLogsJson = () => {
+    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(currentLogs, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute('href', dataStr);
+    downloadAnchor.setAttribute('download', `teradesk_audit_logs_${new Date().toISOString().slice(0, 10)}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    addLog('Ekspor riwayat aktivitas log berhasil diunduh (JSON)', 'info');
   };
 
   const togglePasswordVisibility = (nim) => {
@@ -1273,7 +1402,7 @@ const AdminDashboardPage = ({
                     <span>Log Aktivitas</span>
                   </div>
                   <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-slate-100 text-slate-500">
-                    {logs.length}
+                    {currentLogs.length}
                   </span>
                 </button>
 
@@ -1431,7 +1560,7 @@ const AdminDashboardPage = ({
                     Jejak Audit Sistem
                   </p>
                   <div className="space-y-1.5">
-                    {logs.slice(0, 2).map((l) => (
+                    {currentLogs.slice(0, 3).map((l) => (
                       <div key={l.id} className="p-2 rounded-xl bg-slate-50 text-[11px] text-slate-700">
                         <span className="font-mono text-[9px] text-slate-400 block">{l.time}</span>
                         {l.event}
@@ -2525,31 +2654,44 @@ const AdminDashboardPage = ({
               </div>
 
               <div className="space-y-3">
-                <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="px-3 py-1.5 bg-blue-50 text-blue-700 font-mono text-xs font-bold rounded-lg border border-blue-200">
-                      05 - 07 Nov
+                {prokerList && prokerList.length > 0 ? (
+                  prokerList.map((p) => (
+                    <div
+                      key={p.id}
+                      className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between hover:border-slate-300 transition-all"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="px-3 py-1.5 bg-blue-50 text-blue-700 font-mono text-xs font-bold rounded-lg border border-blue-200 whitespace-nowrap">
+                          {p.period || 'Periode 2026'}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h4 className="text-sm font-bold text-slate-900">{p.title}</h4>
+                            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                              {p.badge || 'Proker'}
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-500 mt-0.5">
+                            {p.division} • Penanggung Jawab: {p.pic || 'Divisi Pelaksana'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${
+                          p.status === 'Aktif' || p.status === 'Sedang Berjalan'
+                            ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                            : 'text-blue-700 bg-blue-50 border-blue-200'
+                        }`}>
+                          {p.status || 'Terjadwal'}
+                        </span>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-slate-900">Workshop UI/UX & Creative Media</h4>
-                      <p className="text-xs text-slate-500">Divisi Media & Informasi • Lab Multimedia</p>
-                    </div>
+                  ))
+                ) : (
+                  <div className="bg-white p-8 rounded-2xl border border-dashed border-slate-200 text-center text-slate-400 text-xs">
+                    Belum ada program kerja terdaftar di timeline.
                   </div>
-                  <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">Jadwal Aman</span>
-                </div>
-
-                <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="px-3 py-1.5 bg-indigo-50 text-indigo-700 font-mono text-xs font-bold rounded-lg border border-indigo-200">
-                      15 - 17 Nov
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-slate-900">Latihan Dasar Kepemimpinan (LDK) 2026</h4>
-                      <p className="text-xs text-slate-500">Divisi Kaderisasi & SDM • Villa Pusdiklat</p>
-                    </div>
-                  </div>
-                  <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">Jadwal Aman</span>
-                </div>
+                )}
               </div>
             </div>
           )}
@@ -2628,7 +2770,7 @@ const AdminDashboardPage = ({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {kaderRaporList.map((k) => (
+                      {combinedKaderRaporList.map((k) => (
                         <tr key={k.nim} className="hover:bg-slate-50/60 transition-colors">
                           <td className="py-3 px-3">
                             <span className="font-bold text-slate-900 block">{k.name}</span>
@@ -4324,41 +4466,277 @@ const AdminDashboardPage = ({
 
           {/* TAB: LOGS & AUDIT TRAIL */}
           {currentNav === 'logs' && (
-            <div className="max-w-4xl mx-auto space-y-6">
-              <div className="flex items-center justify-between">
+            <div className="max-w-5xl mx-auto space-y-6">
+              {/* Header with Title and Actions */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                      Audit Trail Real-Time
+                    </span>
+                    <span className="text-xs text-slate-400 font-mono">
+                      {currentLogs.length} total event tercatat
+                    </span>
+                  </div>
                   <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
                     Log Aktivitas & Jejak Audit
                   </h1>
                   <p className="text-xs text-slate-500 font-medium mt-1">
-                    Rekam jejak setiap aksi mutasi akun, perombakan sandi, dan status operasional.
+                    Pemantauan terpusat siapa saja yang baru login, timestamp autentikasi, serta rekaman submit formulir & modul organisasi.
                   </p>
                 </div>
-                <button
-                  onClick={() => setLogs([])}
-                  className="px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-semibold hover:bg-slate-50 transition-colors cursor-pointer"
-                >
-                  Bersihkan Log
-                </button>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    onClick={handleExportLogsJson}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors shadow-2xs cursor-pointer"
+                    title="Unduh log dalam format JSON"
+                  >
+                    <Download size={14} className="text-slate-500" />
+                    <span>Ekspor JSON</span>
+                  </button>
+                  {onResetActivityLogs && (
+                    <button
+                      onClick={onResetActivityLogs}
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors cursor-pointer"
+                      title="Reset ke log riwayat default"
+                    >
+                      <RefreshCw size={13} className="text-slate-400" />
+                      <span>Reset</span>
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      if (onClearActivityLogs) onClearActivityLogs();
+                      setLocalLogs([]);
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-red-200 bg-red-50 text-xs font-bold text-red-600 hover:bg-red-100 transition-colors cursor-pointer"
+                    title="Bersihkan seluruh log aktivitas"
+                  >
+                    <Trash2 size={13} />
+                    <span>Bersihkan</span>
+                  </button>
+                </div>
               </div>
 
-              <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs divide-y divide-slate-100 overflow-hidden">
-                {logs.length === 0 ? (
-                  <div className="p-8 text-center text-xs text-slate-400">
-                    Tidak ada catatan aktivitas sistem saat ini.
+              {/* 3 Metric Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs flex items-center justify-between">
+                  <div>
+                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                      Total Jejak Audit
+                    </span>
+                    <span className="text-2xl font-black text-slate-900 mt-1 block">
+                      {currentLogs.length}
+                    </span>
+                    <span className="text-[11px] text-slate-500 mt-0.5 block">
+                      Tersimpan di local storage
+                    </span>
+                  </div>
+                  <div className="w-11 h-11 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700">
+                    <Clock size={20} />
+                  </div>
+                </div>
+
+                <div className="bg-white p-4 rounded-2xl border border-blue-200/80 shadow-2xs flex items-center justify-between">
+                  <div>
+                    <span className="text-[11px] font-bold text-blue-500 uppercase tracking-wider block">
+                      Aktivitas Login Pengurus
+                    </span>
+                    <span className="text-2xl font-black text-blue-700 mt-1 block">
+                      {loginCount}
+                    </span>
+                    <span className="text-[11px] text-blue-600/80 mt-0.5 block">
+                      Timestamp & identitas tersimpan
+                    </span>
+                  </div>
+                  <div className="w-11 h-11 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600">
+                    <LogIn size={20} />
+                  </div>
+                </div>
+
+                <div className="bg-white p-4 rounded-2xl border border-emerald-200/80 shadow-2xs flex items-center justify-between">
+                  <div>
+                    <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider block">
+                      Submit Modul & Formulir
+                    </span>
+                    <span className="text-2xl font-black text-emerald-700 mt-1 block">
+                      {moduleSubmitCount}
+                    </span>
+                    <span className="text-[11px] text-emerald-600/80 mt-0.5 block">
+                      PAR, Timeline, Kontak, Arsip
+                    </span>
+                  </div>
+                  <div className="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600">
+                    <Send size={20} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Filter and Search Bar */}
+              <div className="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                  {/* Category Pills */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+                    {[
+                      { id: 'all', label: 'Semua Aktivitas', count: currentLogs.length },
+                      { id: 'login', label: 'Aktivitas Login', count: loginCount },
+                      { id: 'module_submit', label: 'Submit Modul', count: moduleSubmitCount },
+                      { id: 'system', label: 'Sistem & Akun', count: systemCount },
+                    ].map((tab) => (
+                      <button
+                        key={tab.id}
+                        onClick={() => setLogFilterCategory(tab.id)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
+                          logFilterCategory === tab.id
+                            ? 'bg-slate-900 text-white shadow-2xs'
+                            : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200/60'
+                        }`}
+                      >
+                        <span>{tab.label}</span>
+                        <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
+                          logFilterCategory === tab.id ? 'bg-slate-800 text-slate-200' : 'bg-slate-200/70 text-slate-600'
+                        }`}>
+                          {tab.count}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Search Query */}
+                  <div className="relative w-full sm:w-64">
+                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder="Cari user, NIM, event, modul..."
+                      value={logSearchQuery}
+                      onChange={(e) => setLogSearchQuery(e.target.value)}
+                      className="w-full pl-8 pr-7 py-1.5 bg-slate-50 hover:bg-slate-100/80 focus:bg-white border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
+                    />
+                    {logSearchQuery && (
+                      <button
+                        onClick={() => setLogSearchQuery('')}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs cursor-pointer"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Feed Card List */}
+              <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
+                {filteredActivityLogs.length === 0 ? (
+                  <div className="p-12 text-center space-y-2">
+                    <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-200 text-slate-400 flex items-center justify-center mx-auto">
+                      <Clock size={20} />
+                    </div>
+                    <p className="text-sm font-bold text-slate-700">Tidak ada log aktivitas yang cocok</p>
+                    <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                      Coba ganti filter kategori atau kata kunci pencarian Anda untuk melihat jejak audit lainnya.
+                    </p>
                   </div>
                 ) : (
-                  logs.map((item) => (
-                    <div key={item.id} className="p-4 flex items-center justify-between hover:bg-slate-50/60 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <span className={`w-2 h-2 rounded-full ${
-                          item.type === 'success' ? 'bg-emerald-500' : item.type === 'warning' ? 'bg-amber-500' : 'bg-blue-500'
-                        }`}></span>
-                        <span className="text-xs font-medium text-slate-800">{item.event}</span>
-                      </div>
-                      <span className="font-mono text-[11px] text-slate-400">{item.time}</span>
-                    </div>
-                  ))
+                  <div className="divide-y divide-slate-100">
+                    {filteredActivityLogs.map((item) => {
+                      const isLogin = item.category === 'login';
+                      const isModule = item.category === 'module_submit';
+
+                      return (
+                        <div
+                          key={item.id}
+                          className="p-4 sm:p-4.5 hover:bg-slate-50/70 transition-colors flex flex-col sm:flex-row sm:items-start justify-between gap-3"
+                        >
+                          <div className="flex items-start gap-3.5">
+                            {/* Icon Indicator */}
+                            <div className={`w-9 h-9 rounded-xl border flex items-center justify-center shrink-0 mt-0.5 ${
+                              isLogin
+                                ? 'bg-blue-50 border-blue-200 text-blue-600'
+                                : isModule
+                                ? 'bg-emerald-50 border-emerald-200 text-emerald-600'
+                                : item.type === 'warning'
+                                ? 'bg-amber-50 border-amber-200 text-amber-600'
+                                : 'bg-slate-100 border-slate-200 text-slate-600'
+                            }`}>
+                              {isLogin ? (
+                                <LogIn size={16} />
+                              ) : isModule ? (
+                                <Send size={16} />
+                              ) : item.type === 'warning' ? (
+                                <ShieldCheck size={16} />
+                              ) : (
+                                <Clock size={16} />
+                              )}
+                            </div>
+
+                            {/* Event Content & Actor Info */}
+                            <div className="space-y-1">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                                  isLogin
+                                    ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                    : isModule
+                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                    : 'bg-slate-100 text-slate-700 border-slate-200'
+                                }`}>
+                                  {isLogin ? 'Autentikasi Login' : isModule ? 'Submit Modul' : 'Sistem & Akun'}
+                                </span>
+
+                                {(item.module || item.moduleName) && (
+                                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200/80">
+                                    Modul: {item.module || item.moduleName}
+                                  </span>
+                                )}
+
+                                <span className={`w-1.5 h-1.5 rounded-full ${
+                                  item.type === 'success' ? 'bg-emerald-500' : item.type === 'warning' ? 'bg-amber-500' : 'bg-blue-500'
+                                }`}></span>
+                              </div>
+
+                              <h4 className="text-sm font-bold text-slate-900 leading-snug">
+                                {item.event}
+                              </h4>
+
+                              {item.details && (
+                                <p className="text-xs text-slate-600 bg-slate-50/80 border border-slate-100 rounded-lg p-2 font-mono">
+                                  {item.details}
+                                </p>
+                              )}
+
+                              {/* Actor Information Block */}
+                              {(item.actor || item.userName) && (
+                                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-500 pt-0.5">
+                                  <span className="font-semibold text-slate-700 flex items-center gap-1">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                                    {item.actor?.name || item.userName}
+                                    {(item.actor?.nim || item.userNim) && (item.actor?.nim || item.userNim) !== 'SYSTEM' && (
+                                      <span className="font-mono text-slate-400">({item.actor?.nim || item.userNim})</span>
+                                    )}
+                                  </span>
+                                  {(item.actor?.role || item.userRole) && (
+                                    <span>• Jabatan: <strong className="text-slate-600">{item.actor?.role || item.userRole}</strong></span>
+                                  )}
+                                  {(item.actor?.division || item.userDivision) && (
+                                    <span>• {item.actor?.division || item.userDivision}</span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Timestamp Details */}
+                          <div className="sm:text-right shrink-0 pl-12 sm:pl-0">
+                            <span className="font-mono text-xs font-bold text-slate-800 block">
+                              {item.time || item.timestamp || '12:00:00'}
+                            </span>
+                            <span className="font-mono text-[11px] text-slate-400 block mt-0.5">
+                              {item.date || '07 Nov 2026'}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 )}
               </div>
             </div>

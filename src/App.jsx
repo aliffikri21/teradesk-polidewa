@@ -12,6 +12,21 @@ import ServiceDispatcher from './components/services/ServiceDispatcher';
 import { initialDefaultAccounts } from './data/defaultAccounts';
 import { initialDefaultProker } from './data/defaultProker';
 import { initialDefaultConsultations } from './data/defaultConsultations';
+import { initialDefaultActivityLogs } from './data/defaultActivityLogs';
+import { isFirebaseConfigured } from './services/firebase';
+import {
+  subscribeActivityLogs,
+  addActivityLogToDb,
+  clearActivityLogsFromDb,
+  resetActivityLogsInDb,
+} from './services/activityLogService';
+import {
+  subscribeConsultations,
+  addConsultationToDb,
+  updateConsultationStatusInDb,
+  deleteConsultationFromDb,
+  resetConsultationsInDb,
+} from './services/consultationService';
 
 function App() {
   const [pendingTarget, setPendingTarget] = useState(() => {
@@ -105,6 +120,17 @@ function App() {
 
   const handleAddProker = (newProker) => {
     setProkerList((prev) => [newProker, ...prev]);
+    handleAddActivityLog({
+      category: 'module_submit',
+      type: 'info',
+      userName: authUser?.name || 'Administrator',
+      userNim: authUser?.nim || '23404053',
+      userRole: authUser?.role || 'BPH',
+      userDivision: newProker.division || 'BPH',
+      moduleName: 'Master Timeline',
+      event: `Submit Proker: ${newProker.title.length > 40 ? newProker.title.slice(0, 40) + '...' : newProker.title}`,
+      details: `Pendaftaran jadwal program kerja periode ${newProker.period || '2026'} di ${newProker.location || 'Kampus'}.`,
+    });
   };
 
   const handleUpdateProker = (id, updatedFields) => {
@@ -199,6 +225,128 @@ function App() {
     }
   }, [consultationMessages]);
 
+  // Activity Logs & Audit Trail state (Login & Module Submissions)
+  const [activityLogs, setActivityLogs] = useState(() => {
+    try {
+      const saved = localStorage.getItem('teradesk_activity_logs_v1');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return initialDefaultActivityLogs;
+  });
+
+  // Persist activity logs
+  useEffect(() => {
+    try {
+      localStorage.setItem('teradesk_activity_logs_v1', JSON.stringify(activityLogs));
+    } catch {
+      // ignore
+    }
+  }, [activityLogs]);
+
+  // Real-time Cloud Firestore synchronization (aktif otomatis jika kredensial Firebase terisi)
+  useEffect(() => {
+    if (!isFirebaseConfigured) return;
+
+    const unsubLogs = subscribeActivityLogs((cloudLogs) => {
+      if (Array.isArray(cloudLogs) && cloudLogs.length > 0) {
+        setActivityLogs(cloudLogs);
+      }
+    });
+
+    const unsubConsultations = subscribeConsultations((cloudMessages) => {
+      if (Array.isArray(cloudMessages) && cloudMessages.length > 0) {
+        setConsultationMessages(cloudMessages);
+      }
+    });
+
+    return () => {
+      unsubLogs();
+      unsubConsultations();
+    };
+  }, []);
+
+  const handleAddActivityLog = ({
+    category = 'system', // 'login' | 'module_submit' | 'system'
+    type = 'info', // 'success' | 'info' | 'warning'
+    userName = 'Pengguna',
+    userNim = '-',
+    userRole = 'Pengurus',
+    userDivision = 'BPH',
+    moduleName = 'Workspace',
+    event = '',
+    details = '',
+  }) => {
+    const now = new Date();
+    const time = now.toLocaleTimeString('id-ID');
+    const date = now.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+    const newLog = {
+      id: `log-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      time,
+      timestamp: time,
+      date,
+      category,
+      type,
+      userName,
+      userNim,
+      userRole,
+      userDivision,
+      actor: {
+        name: userName,
+        nim: userNim,
+        role: userRole,
+        division: userDivision,
+      },
+      moduleName,
+      module: moduleName,
+      event,
+      details,
+    };
+    setActivityLogs((prev) => {
+      const updated = [newLog, ...prev.slice(0, 99)];
+      try {
+        localStorage.setItem('teradesk_activity_logs_v1', JSON.stringify(updated));
+      } catch {
+        // ignore
+      }
+      return updated;
+    });
+
+    if (isFirebaseConfigured) {
+      addActivityLogToDb(newLog);
+    }
+  };
+
+  const handleClearActivityLogs = () => {
+    setActivityLogs([]);
+    try {
+      localStorage.setItem('teradesk_activity_logs_v1', JSON.stringify([]));
+    } catch {
+      // ignore
+    }
+    if (isFirebaseConfigured) {
+      clearActivityLogsFromDb();
+    }
+  };
+
+  const handleResetActivityLogs = () => {
+    setActivityLogs(initialDefaultActivityLogs);
+    try {
+      localStorage.setItem('teradesk_activity_logs_v1', JSON.stringify(initialDefaultActivityLogs));
+    } catch {
+      // ignore
+    }
+    if (isFirebaseConfigured) {
+      resetActivityLogsInDb(initialDefaultActivityLogs);
+    }
+  };
+
   const handleSendConsultation = (newMessage) => {
     const now = new Date();
     const dateFormatted =
@@ -249,12 +397,42 @@ function App() {
         new CustomEvent('teradesk-consultation-updated', { detail: nextList })
       );
     }
+
+    if (isFirebaseConfigured) {
+      addConsultationToDb(created);
+    }
+
+    handleAddActivityLog({
+      category: 'module_submit',
+      type: 'info',
+      userName: created.name,
+      userNim: '-',
+      userRole: 'Pengirim Konsultasi',
+      userDivision: created.organization,
+      moduleName: 'Kontak Kami (Inflow)',
+      event: `Konsultasi Baru: ${created.name}`,
+      details: `Pesan baru masuk dari lembaga ${created.organization}: "${created.message.length > 60 ? created.message.slice(0, 60) + '...' : created.message}"`,
+    });
   };
 
   const handleUpdateConsultationStatus = (id, newStatus) => {
     setConsultationMessages((prev) =>
       prev.map((msg) => (msg.id === id ? { ...msg, status: newStatus, isRead: true } : msg))
     );
+    if (isFirebaseConfigured) {
+      updateConsultationStatusInDb(id, newStatus);
+    }
+    handleAddActivityLog({
+      category: 'module_submit',
+      type: 'success',
+      userName: authUser?.name || 'Administrator',
+      userNim: authUser?.nim || '23404053',
+      userRole: authUser?.role || 'BPH',
+      userDivision: 'BPH',
+      moduleName: 'Kotak Masuk Konsultasi',
+      event: `Respon Tiket #${id}`,
+      details: `Status respon konsultasi ID #${id} berhasil diubah menjadi "${newStatus}".`,
+    });
   };
 
   const handleMarkConsultationRead = (id) => {
@@ -269,10 +447,16 @@ function App() {
 
   const handleDeleteConsultation = (id) => {
     setConsultationMessages((prev) => prev.filter((msg) => msg.id !== id));
+    if (isFirebaseConfigured) {
+      deleteConsultationFromDb(id);
+    }
   };
 
   const handleResetConsultations = () => {
     setConsultationMessages(initialDefaultConsultations);
+    if (isFirebaseConfigured) {
+      resetConsultationsInDb(initialDefaultConsultations);
+    }
   };
 
   // Synchronize browser history and popstate (back/forward buttons)
@@ -455,6 +639,19 @@ function App() {
     } catch {
       // ignore
     }
+
+    handleAddActivityLog({
+      category: 'login',
+      type: 'success',
+      userName: userProfile.name,
+      userNim: userProfile.nim,
+      userRole: userProfile.role || 'Pengurus',
+      userDivision: userProfile.division || 'BPH',
+      moduleName: 'Autentikasi Login',
+      event: `Login Berhasil: ${userProfile.name}`,
+      details: `User NIM ${userProfile.nim} berhasil masuk dengan akses ${userProfile.canAccessAdmin ? 'Admin Executive' : 'Portal Mahasiswa'}.`,
+    });
+
     let target = pendingTarget || { page: 'portal', serviceId: null };
 
     // Jika target login adalah dashboard admin tetapi akun tidak memiliki izin admin:
@@ -477,6 +674,19 @@ function App() {
   };
 
   const handleLogout = () => {
+    if (authUser) {
+      handleAddActivityLog({
+        category: 'login',
+        type: 'info',
+        userName: authUser.name,
+        userNim: authUser.nim,
+        userRole: authUser.role || 'Pengurus',
+        userDivision: authUser.division || 'BPH',
+        moduleName: 'Autentikasi Login',
+        event: `Logout Sesi: ${authUser.name}`,
+        details: `Sesi login pengguna NIM ${authUser.nim} telah diakhiri dengan aman.`,
+      });
+    }
     setAuthUser(null);
     sessionStorage.clear();
     setCurrentView({ page: 'landing', serviceId: null });
@@ -489,6 +699,17 @@ function App() {
   // Developer Dashboard account actions
   const handleAddAccount = (newAccount) => {
     setRegisteredAccounts((prev) => [newAccount, ...prev]);
+    handleAddActivityLog({
+      category: 'system',
+      type: 'success',
+      userName: authUser?.name || 'Administrator',
+      userNim: authUser?.nim || '23404053',
+      userRole: authUser?.role || 'BPH',
+      userDivision: 'BPH',
+      moduleName: 'Manajemen Akun',
+      event: `Akun Baru: ${newAccount.name}`,
+      details: `Mendaftarkan akun mahasiswa NIM ${newAccount.nim} (${newAccount.role} - ${newAccount.division}).`,
+    });
   };
 
   const handleUpdatePassword = (nim, newPassword) => {
@@ -504,10 +725,32 @@ function App() {
     if (authUser && authUser.nim === originalNim) {
       setAuthUser((prev) => ({ ...prev, ...updatedAccount }));
     }
+    handleAddActivityLog({
+      category: 'system',
+      type: 'info',
+      userName: authUser?.name || 'Administrator',
+      userNim: authUser?.nim || '23404053',
+      userRole: authUser?.role || 'BPH',
+      userDivision: 'BPH',
+      moduleName: 'Manajemen Akun',
+      event: `Update Akun: NIM ${originalNim}`,
+      details: `Data akun pengurus NIM ${originalNim} berhasil diperbarui.`,
+    });
   };
 
   const handleDeleteAccount = (nim) => {
     setRegisteredAccounts((prev) => prev.filter((acc) => acc.nim !== nim));
+    handleAddActivityLog({
+      category: 'system',
+      type: 'warning',
+      userName: authUser?.name || 'Administrator',
+      userNim: authUser?.nim || '23404053',
+      userRole: authUser?.role || 'BPH',
+      userDivision: 'BPH',
+      moduleName: 'Manajemen Akun',
+      event: `Hapus Akun: NIM ${nim}`,
+      details: `Akun pengurus NIM ${nim} dihapus dari basis data sistem.`,
+    });
   };
 
   const handleResetAccounts = () => {
@@ -616,6 +859,10 @@ function App() {
           onMarkAllConsultationsRead={handleMarkAllConsultationsRead}
           onDeleteConsultation={handleDeleteConsultation}
           onResetConsultations={handleResetConsultations}
+          activityLogs={activityLogs}
+          onAddActivityLog={handleAddActivityLog}
+          onClearActivityLogs={handleClearActivityLogs}
+          onResetActivityLogs={handleResetActivityLogs}
         />
       ) : currentView.page === 'service' ? (
         /* Halaman Layanan Spesifik (PAR, Arsip, Aset, Kas, dsb.) */
@@ -626,6 +873,13 @@ function App() {
           onSelectService={(serviceId) => handleNavigate('service', serviceId)}
           authUser={authUser}
           onLogout={handleLogout}
+          prokerList={prokerList}
+          onAddProker={handleAddProker}
+          onUpdateProker={handleUpdateProker}
+          onDeleteProker={handleDeleteProker}
+          accounts={registeredAccounts}
+          onAddAccount={handleAddAccount}
+          onAddActivityLog={handleAddActivityLog}
         />
       ) : (
         /* Halaman Khusus Portal Fitur & Katalog Aplikasi Organisasi */

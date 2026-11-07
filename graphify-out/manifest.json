@@ -6,15 +6,15 @@
     "semantic_hash": ""
   },
   "package.json": {
-    "mtime": 1793809373.8949652,
-    "seen": 1793809527.0327904,
-    "ast_hash": "5c9c07bbae272c197afc4c73ef9b726d",
+    "mtime": 1794058386.2094803,
+    "seen": 1794058676.269549,
+    "ast_hash": "7057cee1b6bb1bcfb8c9f1de5fe867e8",
     "semantic_hash": ""
   },
   "src/App.jsx": {
-    "mtime": 1793874377.6044536,
-    "seen": 1793874625.216953,
-    "ast_hash": "4f02aa3227b42abacae2754ecb805010",
+    "mtime": 1794058635.9068873,
+    "seen": 1794058676.269549,
+    "ast_hash": "e54cb6519038cf5d6eda648d22aa4c90",
     "semantic_hash": ""
   },
   "src/components/AboutUs.jsx": {
@@ -24,8 +24,8 @@
     "semantic_hash": ""
   },
   "src/components/ContactModal.jsx": {
-    "mtime": 1793874508.0404873,
-    "seen": 1793874625.216953,
+    "mtime": 1793874655.6272354,
+    "seen": 1793974203.7211328,
     "ast_hash": "ebc35e5aff436014941fe8751577e063",
     "semantic_hash": ""
   },
@@ -42,9 +42,9 @@
     "semantic_hash": ""
   },
   "src/components/Footer.jsx": {
-    "mtime": 1793864277.3675864,
-    "seen": 1793864785.4810524,
-    "ast_hash": "92d0ba1df6767a5bb8d08c3006dacc2b",
+    "mtime": 1793982679.2254276,
+    "seen": 1794057580.4550753,
+    "ast_hash": "13f5d22a6214ce4dec956c16f91eb288",
     "semantic_hash": ""
   },
   "src/components/Hero.jsx": {
@@ -60,9 +60,9 @@
     "semantic_hash": ""
   },
   "vite.config.js": {
-    "mtime": 1793819879.0898914,
-    "seen": 1793819954.666257,
-    "ast_hash": "e1ce46d2f8589d45e9b15ecb0f52b852",
+    "mtime": 1794059566.8285322,
+    "seen": 1794059699.9379075,
+    "ast_hash": "265fc48ca7f146085dc5bb12e9d42eb2",
     "semantic_hash": ""
   },
   "README.md": {
@@ -828,9 +828,9 @@
     "semantic_hash": ""
   },
   "src/components/services/HrServicePage.jsx": {
-    "mtime": 1793602287.5735812,
-    "seen": 1793602632.2620957,
-    "ast_hash": "51a234295471de7ea4feed45dd5d2257",
+    "mtime": 1793974363.0925753,
+    "seen": 1793981629.1844215,
+    "ast_hash": "6b1fd531e95431db8c9227b35e5cbc90",
     "semantic_hash": ""
   },
   "src/components/services/ParServicePage.jsx": {
@@ -840,9 +840,9 @@
     "semantic_hash": ""
   },
   "src/components/services/ServiceDispatcher.jsx": {
-    "mtime": 1793871752.1830988,
-    "seen": 1793873663.4475877,
-    "ast_hash": "3682c97d5e6b925f70852c070ba3265e",
+    "mtime": 1793984796.048251,
+    "seen": 1794057580.4550753,
+    "ast_hash": "c3c28b0cccb7b1e0c49f1701bd3d5b5e",
     "semantic_hash": ""
   },
   "src/components/services/ServicePageLayout.jsx": {
@@ -852,9 +852,9 @@
     "semantic_hash": ""
   },
   "src/components/services/TimelineServicePage.jsx": {
-    "mtime": 1793602287.5735812,
-    "seen": 1793602632.2620957,
-    "ast_hash": "73d08c810dd7043a3f450f95090fe633",
+    "mtime": 1793974363.3278313,
+    "seen": 1793981629.1844215,
+    "ast_hash": "dab8e0fa7122c0c804e30ad58eded708",
     "semantic_hash": ""
   },
   "src/data/defaultAccounts.js": {
@@ -864,9 +864,9 @@
     "semantic_hash": ""
   },
   "src/components/admin/AdminDashboardPage.jsx": {
-    "mtime": 1793874487.6344824,
-    "seen": 1793874625.216953,
-    "ast_hash": "b0efee3f65433ef01da71c6ac79c9d2a",
+    "mtime": 1794057624.2204595,
+    "seen": 1794058676.269549,
+    "ast_hash": "ef356c1a8b8343c5abb798675da17c97",
     "semantic_hash": ""
   },
   "public/logo-teramedia.png": {
@@ -969,6 +969,36 @@
     "mtime": 1793873694.2185102,
     "seen": 1793874625.216953,
     "ast_hash": "24826abdd28788b03ccd1c60bb4316a0",
+    "semantic_hash": ""
+  },
+  "src/data/defaultActivityLogs.js": {
+    "mtime": 1794057624.3073583,
+    "seen": 1794058676.269549,
+    "ast_hash": "ea8afaf4c32781b2d67983d2e984604c",
+    "semantic_hash": ""
+  },
+  "src/services/activityLogService.js": {
+    "mtime": 1794058815.0415497,
+    "seen": 1794059699.9379075,
+    "ast_hash": "c6468f742ff3b17d0bdd0d34e732119c",
+    "semantic_hash": ""
+  },
+  "src/services/consultationService.js": {
+    "mtime": 1794058695.3204126,
+    "seen": 1794059699.9379075,
+    "ast_hash": "4c546cd26a1dd0418d7ed50a862ac8f5",
+    "semantic_hash": ""
+  },
+  "src/services/firebase.js": {
+    "mtime": 1794059446.0268085,
+    "seen": 1794059699.9379075,
+    "ast_hash": "e76f05219cff624c65b8c69f924bcc74",
+    "semantic_hash": ""
+  },
+  "vercel.json": {
+    "mtime": 1794058695.5583427,
+    "seen": 1794059699.9379075,
+    "ast_hash": "ccde9ca2d91b8f540f78f64319b3c2b2",
     "semantic_hash": ""
   }
 }

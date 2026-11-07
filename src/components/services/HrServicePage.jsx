@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Users,
   Search,
@@ -6,7 +6,11 @@ import {
   Mail,
   Award,
   Filter,
-  Building2
+  Building2,
+  ShieldCheck,
+  Sparkles,
+  CheckCircle2,
+  Download
 } from 'lucide-react';
 import ServicePageLayout from './ServicePageLayout';
 
@@ -94,27 +98,103 @@ const sampleMembers = [
 ];
 
 const HrServicePage = (props) => {
+  const { accounts = [] } = props;
   const [activeTab, setActiveTab] = useState('direktori'); // 'direktori' | 'struktur' | 'kinerja'
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDiv, setSelectedDiv] = useState('Semua');
+  const [downloadToast, setDownloadToast] = useState(null);
 
-  const divisions = [
-    'Semua',
-    'Badan Pengurus Harian (BPH)',
-    'Divisi Kaderisasi & SDM',
-    'Divisi Media & Informasi',
-    'Divisi Minat & Bakat',
-    'Dewan Pembina',
-  ];
+  // Sinkronisasi data Akun Terdaftar Admin Dashboard ke direktori SDM
+  const allMembers = useMemo(() => {
+    // 1. Format semua akun terdaftar di sistem
+    const accountMembers = (accounts || []).map((acc) => {
+      const nameFormatted = acc.name
+        ? acc.name
+            .split(' ')
+            .map((w) => (w ? w.charAt(0).toUpperCase() + w.slice(1) : ''))
+            .join(' ')
+        : 'Pengurus TeraDesk';
 
-  const filteredMembers = sampleMembers.filter((m) => {
+      const initials = acc.name
+        ? acc.name
+            .split(' ')
+            .filter(Boolean)
+            .slice(0, 2)
+            .map((w) => w[0].toUpperCase())
+            .join('')
+        : 'TD';
+
+      const divisionFormatted =
+        acc.division === 'BPH'
+          ? 'Badan Pengurus Harian (BPH)'
+          : acc.division && acc.division.startsWith('Divisi')
+          ? acc.division
+          : `Divisi ${acc.division || 'BPH'}`;
+
+      const roleFormatted = acc.role
+        ? acc.role.charAt(0).toUpperCase() + acc.role.slice(1)
+        : 'Staff Pengurus';
+
+      return {
+        id: `ACC-${acc.nim}`,
+        nim: acc.nim,
+        name: nameFormatted,
+        role: roleFormatted,
+        division: divisionFormatted,
+        email: `${acc.nim}@teramedia.org`,
+        phone: '0821-4040-5300',
+        status: 'Aktif',
+        initials,
+        isRegisteredAccount: true,
+        canAccessAdmin: Boolean(acc.canAccessAdmin),
+        isDefault: Boolean(acc.isDefault),
+      };
+    });
+
+    // 2. Gabungkan akun terdaftar dengan sampleMembers (tanpa duplikasi nama)
+    const registeredNames = new Set(accountMembers.map((a) => a.name.toLowerCase()));
+    const remainingSample = sampleMembers.filter(
+      (s) => !registeredNames.has(s.name.toLowerCase())
+    );
+
+    return [...accountMembers, ...remainingSample];
+  }, [accounts]);
+
+  // Daftar divisi dinamis dari data gabungan
+  const divisions = useMemo(() => {
+    const list = [
+      'Semua',
+      'Badan Pengurus Harian (BPH)',
+      'Divisi Kaderisasi & SDM',
+      'Divisi Media & Informasi',
+      'Divisi Minat & Bakat',
+      'Dewan Pembina',
+    ];
+    allMembers.forEach((m) => {
+      if (m.division && !list.includes(m.division)) {
+        list.push(m.division);
+      }
+    });
+    return list;
+  }, [allMembers]);
+
+  const filteredMembers = allMembers.filter((m) => {
     const matchDiv = selectedDiv === 'Semua' || m.division === selectedDiv;
+    const q = searchQuery.toLowerCase();
     const matchSearch =
-      m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.division.toLowerCase().includes(searchQuery.toLowerCase());
+      m.name.toLowerCase().includes(q) ||
+      m.role.toLowerCase().includes(q) ||
+      m.division.toLowerCase().includes(q) ||
+      (m.nim && m.nim.toLowerCase().includes(q));
     return matchDiv && matchSearch;
   });
+
+  const handleDownloadCert = (memberName, role) => {
+    setDownloadToast(`E-Sertifikat resmi ${role} a.n. ${memberName} berhasil diunduh.`);
+    setTimeout(() => {
+      setDownloadToast(null);
+    }, 3000);
+  };
 
   return (
     <ServicePageLayout
@@ -125,6 +205,14 @@ const HrServicePage = (props) => {
       icon={Users}
       {...props}
     >
+      {/* Download Certificate Toast */}
+      {downloadToast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-emerald-600 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border border-emerald-400/30 animate-in fade-in slide-in-from-bottom-3 duration-200">
+          <CheckCircle2 size={18} className="shrink-0" />
+          <span className="text-xs font-semibold">{downloadToast}</span>
+        </div>
+      )}
+
       {/* Top Metric Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-5">
@@ -133,9 +221,9 @@ const HrServicePage = (props) => {
             <span className="w-2 h-2 rounded-full bg-indigo-400"></span>
           </div>
           <div className="text-2xl sm:text-3xl font-extrabold text-white mb-1">
-            124 Orang
+            {allMembers.length} Orang
           </div>
-          <p className="text-[11px] text-gray-400">Terdaftar dengan NIK Mahasiswa</p>
+          <p className="text-[11px] text-gray-400">Terdaftar di Direktori & Database Akun</p>
         </div>
 
         <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-5">
@@ -144,31 +232,31 @@ const HrServicePage = (props) => {
             <span className="w-2 h-2 rounded-full bg-cyan-400"></span>
           </div>
           <div className="text-2xl sm:text-3xl font-extrabold text-cyan-400 mb-1">
-            8 Divisi
+            {divisions.filter((d) => d !== 'Semua').length} Divisi
           </div>
           <p className="text-[11px] text-gray-400">Struktur organisasi lengkap</p>
         </div>
 
         <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-5">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-gray-400 font-medium">Pakta Integritas Terisi</span>
+            <span className="text-xs text-gray-400 font-medium">Akun TeraDesk Aktif</span>
             <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
           </div>
           <div className="text-2xl sm:text-3xl font-extrabold text-emerald-400 mb-1">
-            98.4%
+            {accounts.length} Akun
           </div>
-          <p className="text-[11px] text-gray-400">Tanda tangan digital tersimpan</p>
+          <p className="text-[11px] text-gray-400">Akses login portal terverifikasi</p>
         </div>
 
         <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-5">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-gray-400 font-medium">Pelatihan Kaderisasi</span>
+            <span className="text-xs text-gray-400 font-medium">Pakta Integritas</span>
             <span className="w-2 h-2 rounded-full bg-amber-400"></span>
           </div>
           <div className="text-2xl sm:text-3xl font-extrabold text-amber-400 mb-1">
-            3 Selesai
+            100% Sah
           </div>
-          <p className="text-[11px] text-gray-400">LDK 1, LDK 2, & ToT Organisasi</p>
+          <p className="text-[11px] text-gray-400">Terverifikasi sistem organisasi</p>
         </div>
       </div>
 
@@ -183,7 +271,7 @@ const HrServicePage = (props) => {
           }`}
         >
           <Users size={16} />
-          <span>Direktori Pengurus ({sampleMembers.length})</span>
+          <span>Direktori Pengurus ({allMembers.length})</span>
         </button>
 
         <button
@@ -221,7 +309,7 @@ const HrServicePage = (props) => {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari nama pengurus, jabatan, atau divisi..."
+                placeholder="Cari nama pengurus, NIM, jabatan, atau divisi..."
                 className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/15 rounded-xl text-xs sm:text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -246,18 +334,42 @@ const HrServicePage = (props) => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {filteredMembers.map((m) => (
-              <div key={m.id} className="bg-white/5 border border-white/10 rounded-3xl p-6 flex flex-col justify-between hover:border-indigo-400/30 transition-all">
+              <div
+                key={m.id}
+                className={`bg-white/5 border rounded-3xl p-6 flex flex-col justify-between transition-all ${
+                  m.isRegisteredAccount
+                    ? 'border-blue-500/40 shadow-lg shadow-blue-950/20 hover:border-blue-400'
+                    : 'border-white/10 hover:border-indigo-400/30'
+                }`}
+              >
                 <div>
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between mb-3">
                     <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 flex items-center justify-center font-bold text-base">
                       {m.initials}
                     </div>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                      {m.status}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      {m.isRegisteredAccount && (
+                        <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 flex items-center gap-1">
+                          <ShieldCheck size={10} /> Akun
+                        </span>
+                      )}
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        {m.status}
+                      </span>
+                    </div>
                   </div>
 
-                  <h4 className="font-bold text-white text-sm mb-1">{m.name}</h4>
+                  <h4 className="font-bold text-white text-sm mb-0.5 flex items-center gap-1.5">
+                    <span>{m.name}</span>
+                    {m.canAccessAdmin && (
+                      <span className="text-[8px] font-mono px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                        Admin
+                      </span>
+                    )}
+                  </h4>
+                  {m.nim && (
+                    <p className="text-[10px] font-mono text-cyan-300/80 mb-1">NIM: {m.nim}</p>
+                  )}
                   <p className="text-xs text-indigo-300 font-semibold mb-1">{m.role}</p>
                   <p className="text-[11px] text-gray-400 mb-4">{m.division}</p>
 
@@ -288,9 +400,21 @@ const HrServicePage = (props) => {
             <div className="space-y-6 text-center">
               {/* Level 1: Pembina */}
               <div className="inline-block bg-slate-900 border-2 border-amber-400/40 rounded-2xl p-4 max-w-xs shadow-lg">
-                <span className="text-[10px] text-amber-300 font-mono">Level 1 - Pengarah</span>
+                <span className="text-[10px] text-amber-300 font-mono">Level 1 - Pengarah & Pembina</span>
                 <h4 className="font-bold text-white text-sm mt-0.5">Dr. Hendra Wijaya</h4>
                 <p className="text-xs text-gray-400">Pembina Organisasi</p>
+              </div>
+
+              <div className="w-0.5 h-6 bg-white/20 mx-auto"></div>
+
+              {/* Level 1.5: Dewan Kehormatan / Demisioner Ketum */}
+              <div className="inline-block bg-slate-900 border-2 border-indigo-400/40 rounded-2xl p-4 max-w-sm shadow-lg">
+                <div className="flex items-center justify-center gap-1.5 text-[10px] text-indigo-300 font-mono mb-0.5">
+                  <Sparkles size={11} />
+                  <span>Dewan Kehormatan & Pengembang Sistem</span>
+                </div>
+                <h4 className="font-bold text-white text-sm">Alif Fikri Haykal</h4>
+                <p className="text-xs text-gray-400">Demisioner Ketua Umum • Lead Architect TeraDesk (NIM: 23404053)</p>
               </div>
 
               <div className="w-0.5 h-6 bg-white/20 mx-auto"></div>
@@ -345,26 +469,37 @@ const HrServicePage = (props) => {
         <div className="max-w-4xl mx-auto space-y-6">
           <div className="bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8">
             <h3 className="text-lg font-bold text-white mb-2">Penilaian Kinerja & Sertifikasi Kepengurusan</h3>
-            <p className="text-xs text-gray-400 mb-6">Penghitungan skor kontribusi proker dan pencetakan e-sertifikat kepengurusan.</p>
+            <p className="text-xs text-gray-400 mb-6">Penghitungan skor kontribusi proker dan pencetakan e-sertifikat kepengurusan resmi.</p>
 
             <div className="space-y-4">
+              {/* Prioritaskan Akun Terdaftar (Alif Fikri dkk) + Pengurus Utama */}
               {[
-                { name: 'Muhammad Farhan', role: 'Ketua Umum', score: 98, cert: 'Sertifikat Ketum Terbit' },
-                { name: 'Nisa Salsabila', role: 'Sekretaris Jenderal', score: 96, cert: 'Sertifikat Sekjen Terbit' },
-                { name: 'Reza Fahrezi', role: 'Bendahara Umum', score: 95, cert: 'Sertifikat Bendum Terbit' },
-                { name: 'Bagas Aditya', role: 'Kadiv Kaderisasi', score: 94, cert: 'Sertifikat Kadiv Terbit' },
+                { name: 'Alif Fikri Haykal', role: 'Demisioner Ketua Umum & Lead Dev', score: 99, cert: 'E-Sertifikat Demisioner Terbit', nim: '23404053' },
+                { name: 'Muhammad Farhan', role: 'Ketua Umum', score: 98, cert: 'E-Sertifikat Ketum Terbit' },
+                { name: 'Nisa Salsabila', role: 'Sekretaris Jenderal', score: 96, cert: 'E-Sertifikat Sekjen Terbit' },
+                { name: 'Reza Fahrezi', role: 'Bendahara Umum', score: 95, cert: 'E-Sertifikat Bendum Terbit' },
+                { name: 'Bagas Aditya', role: 'Kadiv Kaderisasi', score: 94, cert: 'E-Sertifikat Kadiv Terbit' },
               ].map((item, idx) => (
-                <div key={idx} className="bg-slate-900 border border-white/10 rounded-2xl p-4 flex items-center justify-between gap-4">
+                <div key={idx} className="bg-slate-900 border border-white/10 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <h4 className="font-bold text-white text-sm">{item.name}</h4>
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-bold text-white text-sm">{item.name}</h4>
+                      {item.nim && (
+                        <span className="text-[10px] font-mono text-cyan-300">NIM: {item.nim}</span>
+                      )}
+                    </div>
                     <p className="text-xs text-gray-400">{item.role}</p>
                   </div>
-                  <div className="text-right flex items-center gap-3">
+                  <div className="flex items-center gap-3 self-end sm:self-auto">
                     <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-500/20 px-2.5 py-1 rounded-full border border-emerald-500/30">
                       Skor KPI: {item.score}/100
                     </span>
-                    <button className="text-xs font-semibold text-blue-300 hover:text-white bg-blue-600/30 hover:bg-blue-600 px-3 py-1.5 rounded-lg transition-colors cursor-pointer">
-                      Unduh E-Sertifikat
+                    <button
+                      onClick={() => handleDownloadCert(item.name, item.role)}
+                      className="text-xs font-semibold text-blue-300 hover:text-white bg-blue-600/30 hover:bg-blue-600 px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
+                    >
+                      <Download size={13} />
+                      <span>Unduh E-Sertifikat</span>
                     </button>
                   </div>
                 </div>
