@@ -7,30 +7,29 @@ import {
   onSnapshot,
   getDocs,
   writeBatch,
-  query,
-  orderBy,
   serverTimestamp,
 } from 'firebase/firestore';
 import { db, isFirebaseConfigured } from './firebase';
-import { initialDefaultTickets } from '../data/defaultTickets';
+import { initialDefaultTickets, sortTicketsNewestFirst } from '../data/defaultTickets';
 
 const COLLECTION_NAME = 'design_tickets';
 
 /**
  * Berlangganan (real-time listener) pembaruan tiket request desain dari Firestore.
- * Sinkronisasi seketika saat ada permohonan tiket baru di deployment maupun localhost.
+ * Sinkronisasi seketika saat ada permohonan tiket baru di deployment maupun localhost,
+ * otomatis diurutkan dari yang paling baru di atas.
  */
 export const subscribeTickets = (onUpdate, onError, getLocalTickets) => {
   if (!isFirebaseConfigured || !db) return () => {};
 
   try {
-    const q = query(collection(db, COLLECTION_NAME), orderBy('createdAt', 'desc'));
+    const colRef = collection(db, COLLECTION_NAME);
     let isFirstLoad = true;
 
     return onSnapshot(
-      q,
+      colRef,
       async (snapshot) => {
-        const cloudTickets = snapshot.docs.map((d) => ({
+        let cloudTickets = snapshot.docs.map((d) => ({
           ...d.data(),
           id: d.id,
         }));
@@ -46,13 +45,14 @@ export const subscribeTickets = (onUpdate, onError, getLocalTickets) => {
               try {
                 await setDoc(doc(db, COLLECTION_NAME, String(tkt.id)), {
                   ...tkt,
-                  createdAt: tkt.createdAt || serverTimestamp(),
+                  createdAt: tkt.createdAt || new Date().toISOString(),
+                  createdTimestamp: tkt.createdTimestamp || Date.now(),
                 }, { merge: true });
               } catch (e) {
                 console.warn('⚠️ [Firestore Tickets] Gagal seeding tiket:', e);
               }
             }
-            onUpdate(seedList);
+            onUpdate(sortTicketsNewestFirst(seedList));
             return;
           }
 
@@ -66,7 +66,8 @@ export const subscribeTickets = (onUpdate, onError, getLocalTickets) => {
                 try {
                   await setDoc(doc(db, COLLECTION_NAME, String(tkt.id)), {
                     ...tkt,
-                    createdAt: tkt.createdAt || serverTimestamp(),
+                    createdAt: tkt.createdAt || new Date().toISOString(),
+                    createdTimestamp: tkt.createdTimestamp || Date.now(),
                   }, { merge: true });
                   cloudTickets.unshift(tkt);
                 } catch (e) {
@@ -78,7 +79,7 @@ export const subscribeTickets = (onUpdate, onError, getLocalTickets) => {
         }
 
         if (cloudTickets.length > 0) {
-          onUpdate(cloudTickets);
+          onUpdate(sortTicketsNewestFirst(cloudTickets));
         }
       },
       (error) => {
@@ -94,16 +95,19 @@ export const subscribeTickets = (onUpdate, onError, getLocalTickets) => {
 
 /**
  * Menyimpan tiket request desain baru ke Firestore.
+ * Menyimpan timestamp numerik dan ISO string agar selalu urut terbaru di posisi atas.
  */
 export const addTicketToDb = async (ticket) => {
   if (!isFirebaseConfigured || !db || !ticket?.id) return null;
 
   try {
     const docRef = doc(db, COLLECTION_NAME, String(ticket.id));
+    const nowIso = new Date().toISOString();
     await setDoc(docRef, {
       ...ticket,
       id: String(ticket.id),
-      createdAt: serverTimestamp(),
+      createdAt: ticket.createdAt || nowIso,
+      createdTimestamp: ticket.createdTimestamp || Date.now(),
     }, { merge: true });
     return String(ticket.id);
   } catch (error) {
@@ -169,3 +173,4 @@ export const resetTicketsInDb = async (defaultTickets = initialDefaultTickets) =
     console.error('❌ [Firestore Tickets] Gagal mereset tiket di cloud:', error);
   }
 };
+

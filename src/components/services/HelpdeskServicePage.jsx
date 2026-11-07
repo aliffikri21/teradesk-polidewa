@@ -6,10 +6,13 @@ import {
   CheckCircle2,
   Send,
   AlertCircle,
-  Filter
+  Filter,
+  Eye,
+  X,
+  Copy
 } from 'lucide-react';
 import ServicePageLayout from './ServicePageLayout';
-import { initialDefaultTickets } from '../../data/defaultTickets';
+import { initialDefaultTickets, sortTicketsNewestFirst } from '../../data/defaultTickets';
 
 const HelpdeskServicePage = (props) => {
   const {
@@ -23,6 +26,7 @@ const HelpdeskServicePage = (props) => {
   const tickets = (propTickets && propTickets.length > 0) ? propTickets : localTickets;
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState('Semua');
+  const [selectedTicket, setSelectedTicket] = useState(null);
 
   // Form State
   const [ticketForm, setTicketForm] = useState({
@@ -38,12 +42,13 @@ const HelpdeskServicePage = (props) => {
     e.preventDefault();
     if (!ticketForm.title || !ticketForm.requester) return;
 
+    const now = new Date();
     const newTkt = {
       id: `PUB-2026-${Date.now().toString().slice(-4)}`,
-      title: ticketForm.title,
+      title: ticketForm.title.trim(),
       category: ticketForm.category,
       canvas: ticketForm.category,
-      requester: ticketForm.requester,
+      requester: ticketForm.requester.trim(),
       division: authUser?.division || 'Divisi Pemohon',
       targetDate: ticketForm.targetDate || '3 Hari Lagi',
       deadline: ticketForm.targetDate || '3 Hari Lagi',
@@ -51,14 +56,15 @@ const HelpdeskServicePage = (props) => {
       designer: 'Antrean Tim Pubdok',
       status: 'Diajukan',
       statusColor: 'bg-amber-50 text-amber-700 border-amber-200',
-      brief: ticketForm.brief || '-',
-      createdAt: new Date().toISOString().slice(0, 10),
+      brief: ticketForm.brief?.trim() || '-',
+      createdAt: now.toISOString(),
+      createdTimestamp: Date.now(),
     };
 
     if (onAddTicket) {
       onAddTicket(newTkt);
     } else {
-      setLocalTickets((prev) => [newTkt, ...prev]);
+      setLocalTickets((prev) => sortTicketsNewestFirst([newTkt, ...prev]));
     }
 
     setFormSuccess(true);
@@ -75,7 +81,8 @@ const HelpdeskServicePage = (props) => {
     }, 1200);
   };
 
-  const filteredTickets = tickets.filter((t) => {
+  const sortedTickets = sortTicketsNewestFirst(tickets);
+  const filteredTickets = sortedTickets.filter((t) => {
     const matchCat = filterCategory === 'Semua' || t.category === filterCategory;
     const matchSearch =
       t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -223,16 +230,21 @@ const HelpdeskServicePage = (props) => {
                     <th className="py-4 px-6">Target Selesai</th>
                     <th className="py-4 px-6">Pekerja (Assigned)</th>
                     <th className="py-4 px-6">Status Pengerjaan</th>
+                    <th className="py-4 px-6 text-right">Detail</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
                   {filteredTickets.map((t) => (
-                    <tr key={t.id} className="hover:bg-white/5 transition-colors">
+                    <tr
+                      key={t.id}
+                      onClick={() => setSelectedTicket(t)}
+                      className="hover:bg-white/10 transition-colors cursor-pointer group"
+                    >
                       <td className="py-4 px-6">
                         <span className="font-mono text-[10px] text-rose-300 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
                           {t.id}
                         </span>
-                        <p className="font-bold text-white text-xs sm:text-sm mt-1">{t.title}</p>
+                        <p className="font-bold text-white text-xs sm:text-sm mt-1 group-hover:text-blue-400 transition-colors">{t.title}</p>
                       </td>
                       <td className="py-4 px-6 text-gray-300">
                         {t.category}
@@ -241,16 +253,30 @@ const HelpdeskServicePage = (props) => {
                         {t.requester}
                       </td>
                       <td className="py-4 px-6 font-mono text-amber-300">
-                        {t.targetDate}
+                        {t.targetDate || t.deadline}
                       </td>
                       <td className="py-4 px-6 text-gray-400">
-                        {t.assignedTo}
+                        {t.assignedTo || t.designer}
                       </td>
                       <td className="py-4 px-6">
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${t.statusColor}`}>
                           <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
                           {t.status}
                         </span>
+                      </td>
+                      <td className="py-4 px-6 text-right">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedTicket(t);
+                          }}
+                          className="px-2.5 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                          title="Buka Detail Pesanan"
+                        >
+                          <Eye size={13} />
+                          <span>Lihat</span>
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -408,6 +434,124 @@ const HelpdeskServicePage = (props) => {
                   Untuk penugasan fotografer dan videografer hari-H acara, mohon ajukan permohonan minimal 7 hari sebelumnya agar jadwal staf peliput tidak bentrok dengan perkuliahan.
                 </p>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL POP UP: DETAIL PESANAN TIKET DESAIN */}
+      {selectedTicket && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="bg-slate-900 border border-white/20 rounded-3xl max-w-xl w-full shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col max-h-[90vh]">
+            {/* Header Modal */}
+            <div className="p-5 sm:p-6 border-b border-white/10 flex items-start justify-between bg-white/5">
+              <div>
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                  <span className="font-mono text-xs font-bold text-rose-300 bg-rose-500/20 border border-rose-500/30 px-2.5 py-0.5 rounded-md">
+                    {selectedTicket.id}
+                  </span>
+                  <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-gray-200 text-xs font-semibold">
+                    {selectedTicket.category || selectedTicket.canvas}
+                  </span>
+                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${selectedTicket.statusColor}`}>
+                    {selectedTicket.status}
+                  </span>
+                </div>
+                <h3 className="text-base sm:text-lg font-bold text-white leading-snug">
+                  {selectedTicket.title}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedTicket(null)}
+                className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-colors cursor-pointer"
+                title="Tutup Modal"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Body Modal */}
+            <div className="p-5 sm:p-6 space-y-4 overflow-y-auto text-xs sm:text-sm">
+              {/* Card Identitas Pengaju */}
+              <div className="bg-blue-950/40 border border-blue-500/30 rounded-2xl p-4">
+                <p className="text-[10px] font-bold text-blue-400 uppercase tracking-wider mb-2">
+                  Identitas Pengaju Permohonan
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <span className="text-gray-400 block text-xs">Nama Pemohon (PIC):</span>
+                    <span className="font-bold text-white">{selectedTicket.requester}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-400 block text-xs">Divisi / Asal Pemohon:</span>
+                    <span className="font-bold text-white">{selectedTicket.division || 'Divisi Pemohon'}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-400 block text-xs">Waktu Pengajuan:</span>
+                    <span className="font-mono text-gray-300">
+                      {selectedTicket.createdAt ? String(selectedTicket.createdAt).slice(0, 10) : 'Tercatat di sistem'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-400 block text-xs">Target Kebutuhan (Deadline):</span>
+                    <span className="font-bold text-amber-300">{selectedTicket.targetDate || selectedTicket.deadline}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card Rincian Kebutuhan Desain */}
+              <div className="space-y-3">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                  Rincian Kebutuhan & Brief Desain
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+                    <span className="text-gray-400 block text-[11px] mb-0.5">Jenis Bantuan / Layanan:</span>
+                    <span className="font-semibold text-white">{selectedTicket.category}</span>
+                  </div>
+                  <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+                    <span className="text-gray-400 block text-[11px] mb-0.5">Desainer / Pekerja (PIC Pubdok):</span>
+                    <span className="font-semibold text-white">{selectedTicket.assignedTo || selectedTicket.designer || 'Tim Pubdok'}</span>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+                  <span className="text-gray-400 block text-xs font-medium mb-1.5">
+                    Instruksi Khusus & Uraian Brief:
+                  </span>
+                  <p className="text-xs text-gray-200 whitespace-pre-line leading-relaxed font-mono bg-black/40 p-3 rounded-xl border border-white/10">
+                    {selectedTicket.brief && selectedTicket.brief !== '-'
+                      ? selectedTicket.brief
+                      : 'Tidak ada instruksi brief khusus. Silakan konfirmasi lebih lanjut ke pihak pemohon.'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer Modal */}
+            <div className="p-4 sm:p-5 border-t border-white/10 bg-white/5 flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  const text = `[Tiket ${selectedTicket.id}] ${selectedTicket.title}\nPengaju: ${selectedTicket.requester} (${selectedTicket.division || '-'})\nDeadline: ${selectedTicket.targetDate || selectedTicket.deadline}\nBrief: ${selectedTicket.brief}`;
+                  navigator.clipboard?.writeText(text);
+                  alert(`Informasi tiket ${selectedTicket.id} berhasil disalin ke clipboard!`);
+                }}
+                className="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <Copy size={13} />
+                <span>Salin Info Tiket</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedTicket(null)}
+                className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer"
+              >
+                Tutup
+              </button>
             </div>
           </div>
         </div>

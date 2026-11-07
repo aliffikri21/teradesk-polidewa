@@ -63,7 +63,7 @@ import {
   Menu
 } from 'lucide-react';
 import { playNotificationChime, getSoundMuted, setSoundMuted } from '../../utils/notificationSound';
-import { initialDefaultTickets } from '../../data/defaultTickets';
+import { initialDefaultTickets, sortTicketsNewestFirst } from '../../data/defaultTickets';
 
 const divisionsList = [
   'Semua Divisi',
@@ -239,6 +239,7 @@ const AdminDashboardPage = ({
 }) => {
   // Mobile Sidebar Drawer State
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [selectedPubdokTicket, setSelectedPubdokTicket] = useState(null);
 
   // Navigation View:
   // 'dashboard' | 'proker' | 'students' | 'inbox' | 'par' | 'archive' | 'asset' | 'finance' | 'attendance' | 'timeline' | 'hr' | 'helpdesk' |
@@ -466,8 +467,8 @@ const AdminDashboardPage = ({
   ]);
 
   // 2. DIVISI PUBLIKASI & DOKUMENTASI (PUBDOK): State & Logic
-  const [localPubdokTickets, setLocalPubdokTickets] = useState(initialDefaultTickets);
-  const activePubdokTickets = (tickets && tickets.length > 0) ? tickets : localPubdokTickets;
+  const [localPubdokTickets, setLocalPubdokTickets] = useState(() => sortTicketsNewestFirst(initialDefaultTickets));
+  const activePubdokTickets = sortTicketsNewestFirst((tickets && tickets.length > 0) ? tickets : localPubdokTickets);
   const [pubdokFilter, setPubdokFilter] = useState('Semua');
   const [formPubTitle, setFormPubTitle] = useState('');
   const [formPubDiv, setFormPubDiv] = useState('Divisi Kaderisasi');
@@ -769,6 +770,7 @@ const AdminDashboardPage = ({
     e.preventDefault();
     if (!formPubTitle.trim()) return;
 
+    const now = new Date();
     const newTicket = {
       id: `PUB-2026-${Date.now().toString().slice(-4)}`,
       title: formPubTitle.trim(),
@@ -782,13 +784,15 @@ const AdminDashboardPage = ({
       statusColor: 'bg-blue-50 text-blue-700 border-blue-200',
       designer: 'Antrean Pubdok',
       assignedTo: 'Antrean Pubdok',
-      createdAt: new Date().toISOString().slice(0, 10),
+      brief: 'Kebutuhan visual internal diajukan melalui Admin Console Pubdok.',
+      createdAt: now.toISOString(),
+      createdTimestamp: Date.now(),
     };
 
     if (onAddTicket) {
       onAddTicket(newTicket);
     } else {
-      setLocalPubdokTickets((prev) => [newTicket, ...prev]);
+      setLocalPubdokTickets((prev) => sortTicketsNewestFirst([newTicket, ...prev]));
     }
     setFormPubTitle('');
     addLog(`Tiket request desain baru dibuat: ${newTicket.id} (${newTicket.title})`, 'info');
@@ -3062,11 +3066,12 @@ const AdminDashboardPage = ({
                     .map((t) => (
                       <div
                         key={t.id}
-                        className="p-4 bg-slate-50/80 hover:bg-slate-50 border border-slate-200/80 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 transition-colors"
+                        onClick={() => setSelectedPubdokTicket(t)}
+                        className="p-4 bg-slate-50/80 hover:bg-slate-50 border border-slate-200/80 hover:border-rose-300 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 transition-all cursor-pointer group shadow-2xs hover:shadow-xs"
                       >
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <span className="font-mono text-[11px] font-bold text-rose-600">{t.id}</span>
+                            <span className="font-mono text-[11px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-100">{t.id}</span>
                             <span className="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 text-[10px] font-semibold">
                               {t.canvas || t.category}
                             </span>
@@ -3074,9 +3079,11 @@ const AdminDashboardPage = ({
                               {t.status}
                             </span>
                           </div>
-                          <h4 className="text-sm font-bold text-slate-900">{t.title}</h4>
+                          <h4 className="text-sm font-bold text-slate-900 group-hover:text-rose-600 transition-colors flex items-center gap-1.5">
+                            <span>{t.title}</span>
+                          </h4>
                           <p className="text-xs text-slate-500">
-                            Pengaju: <span className="font-semibold text-slate-700">{t.division || t.requester}</span> • Deadline: {t.deadline || t.targetDate} • PIC: {t.designer || t.assignedTo || 'Tim Pubdok'}
+                            Pengaju: <span className="font-semibold text-slate-700">{t.division || t.requester}</span> • Deadline: <span className="font-medium text-slate-700">{t.deadline || t.targetDate}</span> • PIC: {t.designer || t.assignedTo || 'Tim Pubdok'}
                           </p>
                           {t.brief && t.brief !== '-' && (
                             <p className="text-xs text-slate-600 bg-white/90 p-2 rounded-lg border border-slate-200/60 font-mono mt-1">
@@ -3086,9 +3093,26 @@ const AdminDashboardPage = ({
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedPubdokTicket(t);
+                            }}
+                            className="px-2.5 py-1.5 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
+                            title="Buka Detail Pesanan"
+                          >
+                            <Eye size={13} />
+                            <span>Detail</span>
+                          </button>
+
                           {(t.status === 'Antrean' || t.status === 'Diajukan') && (
                             <button
-                              onClick={() => handleToggleTicketStatus(t.id, 'Dikerjakan')}
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleToggleTicketStatus(t.id, 'Dikerjakan');
+                              }}
                               className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-semibold cursor-pointer shadow-xs"
                             >
                               Mulai Kerjakan
@@ -3096,20 +3120,26 @@ const AdminDashboardPage = ({
                           )}
                           {(t.status === 'Dikerjakan' || t.status === 'Sedang Dikerjakan') && (
                             <button
-                              onClick={() => handleToggleTicketStatus(t.id, 'Selesai')}
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleToggleTicketStatus(t.id, 'Selesai');
+                              }}
                               className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold cursor-pointer shadow-xs"
                             >
                               Tandai Selesai
                             </button>
                           )}
                           {t.status === 'Selesai' && (
-                            <span className="text-xs font-bold text-emerald-700 flex items-center gap-1">
+                            <span className="text-xs font-bold text-emerald-700 flex items-center gap-1 px-1">
                               <Check size={14} /> Selesai Siap Upload
                             </span>
                           )}
                           {onDeleteTicket && (
                             <button
-                              onClick={() => {
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 if (window.confirm(`Hapus tiket ${t.id} - ${t.title}?`)) {
                                   onDeleteTicket(t.id);
                                 }
@@ -5711,6 +5741,169 @@ const AdminDashboardPage = ({
                   type="button"
                   onClick={() => setSelectedMessage(null)}
                   className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                >
+                  Tutup
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL POP UP: DETAIL PESANAN TIKET DESAIN PUBDOK */}
+      {selectedPubdokTicket && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white rounded-3xl max-w-2xl w-full border border-slate-200 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col max-h-[90vh]">
+            {/* Modal Header */}
+            <div className="p-5 sm:p-6 border-b border-slate-100 flex items-start justify-between bg-slate-50/70">
+              <div>
+                <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                  <span className="font-mono text-xs font-bold text-rose-600 bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-md">
+                    {selectedPubdokTicket.id}
+                  </span>
+                  <span className="px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-700 text-xs font-semibold">
+                    {selectedPubdokTicket.category || selectedPubdokTicket.canvas}
+                  </span>
+                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${selectedPubdokTicket.statusColor || 'bg-slate-100 text-slate-700 border-slate-200'}`}>
+                    {selectedPubdokTicket.status}
+                  </span>
+                </div>
+                <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-snug">
+                  {selectedPubdokTicket.title}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedPubdokTicket(null)}
+                className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-xl transition-colors cursor-pointer"
+                title="Tutup Modal"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-5 sm:p-6 space-y-5 overflow-y-auto text-xs sm:text-sm">
+              {/* Info Pemohon (Siapa yang Mengajukan) */}
+              <div className="bg-blue-50/60 border border-blue-100 rounded-2xl p-4">
+                <p className="text-[10px] font-bold text-blue-600 uppercase tracking-wider mb-2">
+                  Identitas Pemohon Desain
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <span className="text-slate-500 block text-[11px]">Nama Pemohon / PIC:</span>
+                    <span className="font-bold text-slate-900">{selectedPubdokTicket.requester || '-'}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block text-[11px]">Divisi / Asal Organisasi:</span>
+                    <span className="font-bold text-slate-900">{selectedPubdokTicket.division || '-'}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block text-[11px]">Waktu Pengajuan:</span>
+                    <span className="font-mono text-slate-700">
+                      {selectedPubdokTicket.createdAt ? String(selectedPubdokTicket.createdAt).slice(0, 10) : 'Tercatat di sistem'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block text-[11px]">Target Selesai (Deadline):</span>
+                    <span className="font-bold text-rose-600">
+                      {selectedPubdokTicket.deadline || selectedPubdokTicket.targetDate || '-'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Detail Pesanan & Brief */}
+              <div className="space-y-3">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  Rincian Pesanan & Brief Pengerjaan
+                </p>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/70">
+                    <span className="text-slate-500 block text-[11px] mb-0.5">Format / Dimensi Kanvas:</span>
+                    <span className="font-semibold text-slate-800">{selectedPubdokTicket.canvas || selectedPubdokTicket.category}</span>
+                  </div>
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/70">
+                    <span className="text-slate-500 block text-[11px] mb-0.5">Desainer Bertanggung Jawab (PIC Pubdok):</span>
+                    <span className="font-semibold text-slate-800">{selectedPubdokTicket.designer || selectedPubdokTicket.assignedTo || 'Tim Pubdok'}</span>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80">
+                  <span className="text-slate-500 block text-[11px] font-medium mb-1.5">
+                    Instruksi Khusus & Uraian Brief:
+                  </span>
+                  <p className="text-xs text-slate-800 whitespace-pre-line leading-relaxed font-mono bg-white p-3 rounded-xl border border-slate-200/60">
+                    {selectedPubdokTicket.brief && selectedPubdokTicket.brief !== '-'
+                      ? selectedPubdokTicket.brief
+                      : 'Tidak ada catatan brief khusus yang disertakan.'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer Controls */}
+            <div className="p-4 sm:p-5 border-t border-slate-100 bg-slate-50/70 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const textToCopy = `[Tiket ${selectedPubdokTicket.id}] ${selectedPubdokTicket.title}\nPengaju: ${selectedPubdokTicket.requester} (${selectedPubdokTicket.division})\nDeadline: ${selectedPubdokTicket.deadline || selectedPubdokTicket.targetDate}\nBrief: ${selectedPubdokTicket.brief}`;
+                    navigator.clipboard?.writeText(textToCopy);
+                    alert(`Detail tiket ${selectedPubdokTicket.id} berhasil disalin ke clipboard!`);
+                  }}
+                  className="flex-1 sm:flex-initial px-3 py-2 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Copy size={13} />
+                  <span>Salin Info</span>
+                </button>
+                {onDeleteTicket && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (window.confirm(`Hapus tiket ${selectedPubdokTicket.id}?`)) {
+                        onDeleteTicket(selectedPubdokTicket.id);
+                        setSelectedPubdokTicket(null);
+                      }
+                    }}
+                    className="px-3 py-2 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <Trash2 size={13} />
+                    <span>Hapus</span>
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                {(selectedPubdokTicket.status === 'Antrean' || selectedPubdokTicket.status === 'Diajukan') && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleToggleTicketStatus(selectedPubdokTicket.id, 'Dikerjakan');
+                      setSelectedPubdokTicket((prev) => prev ? { ...prev, status: 'Dikerjakan', statusColor: 'bg-amber-50 text-amber-700 border-amber-200' } : null);
+                    }}
+                    className="w-full sm:w-auto px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer shadow-xs"
+                  >
+                    Mulai Kerjakan
+                  </button>
+                )}
+                {(selectedPubdokTicket.status === 'Dikerjakan' || selectedPubdokTicket.status === 'Sedang Dikerjakan') && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleToggleTicketStatus(selectedPubdokTicket.id, 'Selesai');
+                      setSelectedPubdokTicket((prev) => prev ? { ...prev, status: 'Selesai', statusColor: 'bg-emerald-50 text-emerald-700 border-emerald-200' } : null);
+                    }}
+                    className="w-full sm:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer shadow-xs"
+                  >
+                    Tandai Selesai
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setSelectedPubdokTicket(null)}
+                  className="w-full sm:w-auto px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer"
                 >
                   Tutup
                 </button>

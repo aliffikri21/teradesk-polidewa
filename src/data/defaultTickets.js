@@ -1,35 +1,23 @@
+/**
+ * Dataset bawaan terpadu untuk Tiket Desain & Layanan Publikasi (Helpdesk / Pubdok).
+ */
 export const initialDefaultTickets = [
   {
-    id: 'PUB-2026-001',
-    title: 'Feed & Reels Open Recruitment Kader Muda 2026',
-    division: 'Divisi Kaderisasi',
-    requester: 'Fajar Nugraha (Kaderisasi)',
-    category: 'Desain Grafis / Poster',
-    canvas: 'Feed 1:1 + Reels 9:16',
-    deadline: '10 Nov 2026',
-    targetDate: '10 Nov 2026',
-    status: 'Dikerjakan',
-    statusColor: 'bg-amber-50 text-amber-700 border-amber-200',
-    designer: 'Bagas Aditya (Pubdok)',
-    assignedTo: 'Bagas Aditya (Pubdok)',
-    brief: 'Format 1:1 feed dan 9:16 story/reels untuk pubdok kaderisasi penerimaan anggota baru.',
-    createdAt: '2026-11-05',
-  },
-  {
-    id: 'PUB-2026-002',
-    title: 'Backdrop Spanduk Panggung & Sertifikat Seminar',
-    division: 'BPH',
-    requester: 'Siti Aminah (BPH)',
-    category: 'Spanduk / Banner',
-    canvas: 'Spanduk 3x1m & A4 Cetak',
-    deadline: '14 Nov 2026',
-    targetDate: '14 Nov 2026',
-    status: 'Antrean',
-    statusColor: 'bg-blue-50 text-blue-700 border-blue-200',
-    designer: 'Menunggu Penugasan',
-    assignedTo: 'Menunggu Penugasan',
-    brief: 'Banner panggung auditorium kampus 3x1 meter dan template sertifikat peserta seminar.',
-    createdAt: '2026-11-06',
+    id: 'PUB-2026-004',
+    title: 'Dokumentasi Video Teaser Turnamen Futsal',
+    division: 'Divisi Minat & Bakat',
+    requester: 'Rian Pratama (Mikat)',
+    category: 'Liputan Foto / Video',
+    canvas: 'Video 9:16 Reels',
+    deadline: '25 Nov 2026',
+    targetDate: '25 Nov 2026',
+    status: 'Selesai',
+    statusColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    designer: 'Budi (Pubdok)',
+    assignedTo: 'Budi (Pubdok)',
+    brief: 'Video teaser 30 detik untuk feed Instagram dan liputan dokumentasi kegiatan.',
+    createdAt: '2026-11-07T14:45:00.000Z',
+    createdTimestamp: 1762526700000,
   },
   {
     id: 'PUB-2026-003',
@@ -45,22 +33,73 @@ export const initialDefaultTickets = [
     designer: 'Nadia Safitri (Pubdok)',
     assignedTo: 'Nadia Safitri (Pubdok)',
     brief: 'Desain twibbon PNG transparan frame foto perayaan dies natalis.',
-    createdAt: '2026-11-07',
+    createdAt: '2026-11-07T10:15:00.000Z',
+    createdTimestamp: 1762510500000,
   },
   {
-    id: 'PUB-2026-004',
-    title: 'Dokumentasi Video Teaser Turnamen Futsal',
-    division: 'Divisi Minat & Bakat',
-    requester: 'Rian Pratama (Mikat)',
-    category: 'Liputan Foto / Video',
-    canvas: 'Video 9:16 Reels',
-    deadline: '25 Nov 2026',
-    targetDate: '25 Nov 2026',
-    status: 'Selesai',
-    statusColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    designer: 'Budi (Pubdok)',
-    assignedTo: 'Budi (Pubdok)',
-    brief: 'Video teaser 30 detik untuk feed Instagram dan liputan dokumentasi kegiatan.',
-    createdAt: '2026-11-07',
+    id: 'PUB-2026-002',
+    title: 'Backdrop Spanduk Panggung & Sertifikat Seminar',
+    division: 'BPH',
+    requester: 'Siti Aminah (BPH)',
+    category: 'Spanduk / Banner',
+    canvas: 'Spanduk 3x1m & A4 Cetak',
+    deadline: '14 Nov 2026',
+    targetDate: '14 Nov 2026',
+    status: 'Antrean',
+    statusColor: 'bg-blue-50 text-blue-700 border-blue-200',
+    designer: 'Menunggu Penugasan',
+    assignedTo: 'Menunggu Penugasan',
+    brief: 'Banner panggung auditorium kampus 3x1 meter dan template sertifikat peserta seminar.',
+    createdAt: '2026-11-06T09:30:00.000Z',
+    createdTimestamp: 1762421400000,
+  },
+  {
+    id: 'PUB-2026-001',
+    title: 'Feed & Reels Open Recruitment Kader Muda 2026',
+    division: 'Divisi Kaderisasi',
+    requester: 'Fajar Nugraha (Kaderisasi)',
+    category: 'Desain Grafis / Poster',
+    canvas: 'Feed 1:1 + Reels 9:16',
+    deadline: '10 Nov 2026',
+    targetDate: '10 Nov 2026',
+    status: 'Dikerjakan',
+    statusColor: 'bg-amber-50 text-amber-700 border-amber-200',
+    designer: 'Bagas Aditya (Pubdok)',
+    assignedTo: 'Bagas Aditya (Pubdok)',
+    brief: 'Format 1:1 feed dan 9:16 story/reels untuk pubdok kaderisasi penerimaan anggota baru.',
+    createdAt: '2026-11-05T08:00:00.000Z',
+    createdTimestamp: 1762329600000,
   },
 ];
+
+/**
+ * Mengurutkan tiket secara deterministik dari yang TERBARU di posisi paling atas.
+ */
+export const sortTicketsNewestFirst = (ticketsList) => {
+  if (!Array.isArray(ticketsList)) return [];
+
+  return [...ticketsList].sort((a, b) => {
+    const getTime = (t) => {
+      if (!t) return 0;
+      if (t.createdTimestamp) {
+        const num = Number(t.createdTimestamp);
+        if (!isNaN(num) && num > 0) return num;
+      }
+      if (t.createdAt) {
+        if (typeof t.createdAt?.toMillis === 'function') {
+          return t.createdAt.toMillis();
+        }
+        if (typeof t.createdAt === 'string') {
+          const parsed = Date.parse(t.createdAt);
+          if (!isNaN(parsed)) return parsed;
+        }
+      }
+      // Ekstrak digit ID sebagai fallback (contoh PUB-2026-8912 -> 20268912)
+      const digits = String(t.id || '').replace(/\D/g, '');
+      const parsedId = parseInt(digits, 10);
+      return isNaN(parsedId) ? 0 : parsedId;
+    };
+
+    return getTime(b) - getTime(a);
+  });
+};

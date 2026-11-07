@@ -13,7 +13,7 @@ import { initialDefaultAccounts } from './data/defaultAccounts';
 import { initialDefaultProker } from './data/defaultProker';
 import { initialDefaultConsultations } from './data/defaultConsultations';
 import { initialDefaultActivityLogs } from './data/defaultActivityLogs';
-import { initialDefaultTickets } from './data/defaultTickets';
+import { initialDefaultTickets, sortTicketsNewestFirst } from './data/defaultTickets';
 import { isFirebaseConfigured } from './services/firebase';
 import {
   subscribeActivityLogs,
@@ -146,13 +146,13 @@ function App() {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
+          return sortTicketsNewestFirst(parsed);
         }
       }
     } catch {
       // ignore
     }
-    return initialDefaultTickets;
+    return sortTicketsNewestFirst(initialDefaultTickets);
   });
 
   // Persist designTickets changes
@@ -214,7 +214,7 @@ function App() {
   };
 
   const handleAddTicket = (newTicket) => {
-    setDesignTickets((prev) => [newTicket, ...prev]);
+    setDesignTickets((prev) => sortTicketsNewestFirst([newTicket, ...prev]));
     addTicketToDb(newTicket);
     handleAddActivityLog({
       category: 'module_submit',
@@ -395,7 +395,7 @@ function App() {
     const unsubTickets = subscribeTickets(
       (cloudTickets) => {
         if (Array.isArray(cloudTickets) && cloudTickets.length > 0) {
-          setDesignTickets(cloudTickets);
+          setDesignTickets(sortTicketsNewestFirst(cloudTickets));
         }
       },
       (err) => console.warn('⚠️ [Tickets Sync Error]:', err),

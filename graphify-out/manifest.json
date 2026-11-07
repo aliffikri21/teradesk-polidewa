@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "src/App.jsx": {
-    "mtime": 1794072012.8444798,
-    "seen": 1794072126.9666724,
-    "ast_hash": "3520114283c9882a7c3ba6c408de23bf",
+    "mtime": 1794072581.7323086,
+    "seen": 1794072851.1298308,
+    "ast_hash": "9712711550410f4bed032c03e7409b64",
     "semantic_hash": ""
   },
   "src/components/AboutUs.jsx": {
@@ -822,9 +822,9 @@
     "semantic_hash": ""
   },
   "src/components/services/HelpdeskServicePage.jsx": {
-    "mtime": 1794071604.3532498,
-    "seen": 1794072126.9666724,
-    "ast_hash": "279c1895b9d0686f8dd41f37995c06c0",
+    "mtime": 1794072680.2084494,
+    "seen": 1794072851.1298308,
+    "ast_hash": "56d79ef5093fc5dd1834bb0d2af98f70",
     "semantic_hash": ""
   },
   "src/components/services/HrServicePage.jsx": {
@@ -864,9 +864,9 @@
     "semantic_hash": ""
   },
   "src/components/admin/AdminDashboardPage.jsx": {
-    "mtime": 1794072090.3659713,
-    "seen": 1794072126.9666724,
-    "ast_hash": "8309f0f6340a4afe861331450764389b",
+    "mtime": 1794072824.4812877,
+    "seen": 1794072851.1298308,
+    "ast_hash": "1901fb551bed1add274a1fb451345657",
     "semantic_hash": ""
   },
   "public/logo-teramedia.png": {
@@ -1026,15 +1026,15 @@
     "semantic_hash": ""
   },
   "src/data/defaultTickets.js": {
-    "mtime": 1794071556.3612008,
-    "seen": 1794072126.9666724,
-    "ast_hash": "7a32725c54977edeed32f1fe459753b7",
+    "mtime": 1794072495.8358471,
+    "seen": 1794072851.1298308,
+    "ast_hash": "08dab7c7deda63b23eb9c21304de4a1f",
     "semantic_hash": ""
   },
   "src/services/ticketService.js": {
-    "mtime": 1794071567.7454998,
-    "seen": 1794072126.9666724,
-    "ast_hash": "acf6a6f560f14784a204b4a0f65f2c07",
+    "mtime": 1794072527.518064,
+    "seen": 1794072851.1298308,
+    "ast_hash": "daa8ff96a7ccb2e8ba74a7c990d370e1",
     "semantic_hash": ""
   }
 }
