@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import {
   LayoutDashboard,
   Users,
@@ -57,8 +57,11 @@ import {
   Send,
   Laptop,
   Smartphone,
-  Tablet
+  Tablet,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
+import { playNotificationChime, getSoundMuted, setSoundMuted } from '../../utils/notificationSound';
 
 const divisionsList = [
   'Semua Divisi',
@@ -243,6 +246,58 @@ const AdminDashboardPage = ({
   const [inboxFilterStatus, setInboxFilterStatus] = useState('Semua Status'); // 'Semua Status' | 'Baru' | 'Diproses' | 'Selesai'
   const [selectedMessage, setSelectedMessage] = useState(null);
   const unreadConsultationsCount = consultationMessages.filter((m) => !m.isRead).length;
+
+  // Real-time Sound & Toast State for Kotak Masuk Konsultasi
+  const [isSoundMutedState, setIsSoundMutedState] = useState(() => getSoundMuted());
+  const [inboxToast, setInboxToast] = useState(null);
+  const knownMessageIdsRef = useRef(new Set((consultationMessages || []).map((m) => m.id)));
+  const isFirstMountRef = useRef(true);
+
+  useEffect(() => {
+    if (isFirstMountRef.current) {
+      isFirstMountRef.current = false;
+      knownMessageIdsRef.current = new Set((consultationMessages || []).map((m) => m.id));
+      return;
+    }
+
+    const currentList = consultationMessages || [];
+    const newArrivals = currentList.filter((m) => !knownMessageIdsRef.current.has(m.id));
+
+    if (newArrivals.length > 0) {
+      newArrivals.forEach((m) => knownMessageIdsRef.current.add(m.id));
+
+      // Mainkan suara "tinggg" kristal yang elegan
+      playNotificationChime(0.5);
+
+      // Tampilkan toast notifikasi pesan masuk real-time
+      const latestMsg = newArrivals[0];
+      setInboxToast({
+        id: latestMsg.id,
+        name: latestMsg.name || 'Pengunjung',
+        subject: latestMsg.subject || 'Permohonan Konsultasi Baru',
+        time: latestMsg.time || 'Baru saja',
+      });
+
+      const timer = setTimeout(() => {
+        setInboxToast(null);
+      }, 7000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [consultationMessages]);
+
+  const handleToggleSound = () => {
+    const nextState = !isSoundMutedState;
+    setSoundMuted(nextState);
+    setIsSoundMutedState(nextState);
+    if (!nextState) {
+      playNotificationChime(0.5); // Uji tinggg saat diaktifkan kembali
+    }
+  };
+
+  const handleTestChime = () => {
+    playNotificationChime(0.5);
+  };
 
   // State for Proker Management Tab
   const [prokerSearchQuery, setProkerSearchQuery] = useState('');
@@ -3361,6 +3416,40 @@ const AdminDashboardPage = ({
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
+                  {/* Sound Chime Toggle & Test Button */}
+                  <div className="flex items-center gap-1 bg-white border border-slate-200/90 rounded-xl p-1 shadow-xs">
+                    <button
+                      onClick={handleToggleSound}
+                      className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+                        isSoundMutedState
+                          ? 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                          : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+                      }`}
+                      title={isSoundMutedState ? 'Bunyi tinggg dinonaktifkan (klik untuk aktifkan)' : 'Bunyi tinggg aktif (klik untuk bisu)'}
+                    >
+                      {isSoundMutedState ? (
+                        <>
+                          <VolumeX size={14} className="text-slate-400" />
+                          <span>Suara Bisu</span>
+                        </>
+                      ) : (
+                        <>
+                          <Volume2 size={14} className="text-blue-600 animate-pulse" />
+                          <span>Bunyi Tinggg Aktif</span>
+                        </>
+                      )}
+                    </button>
+                    {!isSoundMutedState && (
+                      <button
+                        onClick={handleTestChime}
+                        className="px-2 py-1.5 text-[11px] font-medium text-slate-500 hover:text-blue-600 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
+                        title="Uji coba bunyi notifikasi tinggg"
+                      >
+                        Uji Bunyi
+                      </button>
+                    )}
+                  </div>
+
                   {unreadConsultationsCount > 0 && (
                     <button
                       onClick={onMarkAllConsultationsRead}
@@ -5544,6 +5633,55 @@ const AdminDashboardPage = ({
                 >
                   Tutup
                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Real-time Incoming Message Toast */}
+      {inboxToast && (
+        <div className="fixed bottom-6 right-6 z-50 max-w-sm w-full bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-blue-200 p-4 transition-all">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-md">
+              <Bell size={20} className="animate-bounce" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-ping"></span>
+                  Pesan Masuk Real-Time
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setInboxToast(null)}
+                  className="text-slate-400 hover:text-slate-600 cursor-pointer p-0.5"
+                  title="Tutup notifikasi"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+              <h4 className="text-sm font-bold text-slate-900 mt-1.5 truncate">
+                {inboxToast.name}
+              </h4>
+              <p className="text-xs text-slate-600 line-clamp-2 mt-0.5">
+                {inboxToast.subject}
+              </p>
+              <div className="mt-3 flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCurrentNav('inbox');
+                    const found = consultationMessages.find((m) => m.id === inboxToast.id);
+                    if (found) setSelectedMessage(found);
+                    setInboxToast(null);
+                  }}
+                  className="text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
+                >
+                  <Inbox size={13} />
+                  <span>Buka Pesan</span>
+                </button>
+                <span className="text-[11px] font-mono text-slate-400">{inboxToast.time}</span>
               </div>
             </div>
           </div>

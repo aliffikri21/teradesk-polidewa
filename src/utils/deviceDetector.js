@@ -81,3 +81,4 @@ export const getDeviceInfo = () => {
     summary,
   };
 };
+
