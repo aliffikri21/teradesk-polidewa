@@ -1224,17 +1224,18 @@ function App() {
     return () => window.removeEventListener('keydown', handleGlobalKey);
   }, [authUser]);
 
-  // Global keyboard shortcut (Ctrl + K or Cmd + K) to toggle Spotlight Command Palette
+  // Global keyboard shortcut (Ctrl + K or Cmd + K) to toggle Spotlight Command Palette (disabled on landing page)
   useEffect(() => {
     const handleCommandPaletteKey = (e) => {
       if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'k') {
+        if (currentView.page === 'landing') return;
         e.preventDefault();
         setIsCommandPaletteOpen((prev) => !prev);
       }
     };
     window.addEventListener('keydown', handleCommandPaletteKey);
     return () => window.removeEventListener('keydown', handleCommandPaletteKey);
-  }, []);
+  }, [currentView.page]);
 
   // Guarantee that on page refresh (initial mount), session is completely destroyed
   useEffect(() => {
@@ -1246,6 +1247,7 @@ function App() {
       setAdminInitialNav(adminNav);
     }
     if (page === 'landing') {
+      setIsCommandPaletteOpen(false);
       setCurrentView({ page: 'landing', serviceId: null });
       if (pushHistory && window.location.pathname !== '/') {
         window.history.pushState(null, '', '/');
@@ -1512,7 +1514,6 @@ function App() {
               handleNavigate(serviceId ? 'service' : 'portal', serviceId)
             }
             prokerList={prokerList}
-            onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
           />
 
           {/* Fitur Unggulan Section (11 Cards Grid on Light Background) */}
@@ -1697,26 +1698,28 @@ function App() {
         onSubmitMessage={handleSendConsultation}
       />
 
-      {/* Floating Spotlight Command Palette Trigger Pill */}
-      <button
-        type="button"
-        onClick={() => setIsCommandPaletteOpen(true)}
-        aria-label="Buka Spotlight Command Palette (Ctrl+K)"
-        title="Buka Spotlight Command Palette (Ctrl + K)"
-        className="fixed bottom-5 right-5 z-40 flex items-center gap-2 px-3 py-2 rounded-full bg-slate-900/95 hover:bg-slate-900 text-white shadow-[0_8px_30px_rgba(0,0,0,0.35)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)] border border-slate-700/80 backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 group cursor-pointer"
-      >
-        <div className="w-5 h-5 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center font-bold shrink-0 shadow-xs">
-          <Search size={11} className="stroke-[3]" />
-        </div>
-        <span className="text-xs font-bold text-slate-200 group-hover:text-white">Spotlight</span>
-        <kbd className="hidden sm:inline-block text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300">
-          Ctrl K
-        </kbd>
-      </button>
+      {/* Floating Spotlight Command Palette Trigger Pill (Khusus di luar Landing Page) */}
+      {currentView.page !== 'landing' && (
+        <button
+          type="button"
+          onClick={() => setIsCommandPaletteOpen(true)}
+          aria-label="Buka Spotlight Command Palette (Ctrl+K)"
+          title="Buka Spotlight Command Palette (Ctrl + K)"
+          className="fixed bottom-5 right-5 z-40 flex items-center gap-2 px-3.5 py-2 rounded-full bg-slate-900/95 hover:bg-slate-900 text-white shadow-[0_8px_30px_rgba(0,0,0,0.35)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)] border border-slate-700/80 backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 group cursor-pointer"
+        >
+          <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold shrink-0 shadow-xs">
+            <Search size={11} className="stroke-[3]" />
+          </div>
+          <span className="text-xs font-bold text-slate-200 group-hover:text-white">Spotlight</span>
+          <kbd className="hidden sm:inline-block text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300">
+            Ctrl K
+          </kbd>
+        </button>
+      )}
 
-      {/* Global Spotlight Command Palette Modal */}
+      {/* Global Spotlight Command Palette Modal (Khusus di luar Landing Page) */}
       <CommandPalette
-        isOpen={isCommandPaletteOpen}
+        isOpen={isCommandPaletteOpen && currentView.page !== 'landing'}
         onClose={() => setIsCommandPaletteOpen(false)}
         onNavigate={handleNavigate}
         onOpenContact={() => setIsContactOpen(true)}

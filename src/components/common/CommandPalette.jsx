@@ -41,7 +41,7 @@ const MODULES_CONFIG = [
     subtitle: 'Alur persetujuan proposal program kerja bertingkat & tanda tangan digital',
     division: 'BPH & Kesekretariatan',
     category: 'Administrasi & Legalitas',
-    badgeColor: 'text-indigo-400 bg-indigo-500/15 border-indigo-500/30',
+    badgeColor: 'text-indigo-600 bg-indigo-50 border-indigo-200/80',
     icon: FileCheck2,
     keywords: ['par', 'proposal', 'persetujuan', 'approval', 'bph', 'pembina', 'pengesahan', 'proker'],
   },
@@ -51,7 +51,7 @@ const MODULES_CONFIG = [
     subtitle: 'Repositori cloud surat masuk/keluar, SK, dan generator nomor surat anti-bentrok',
     division: 'Divisi Kesekretariatan',
     category: 'Administrasi & Legalitas',
-    badgeColor: 'text-blue-400 bg-blue-500/15 border-blue-500/30',
+    badgeColor: 'text-blue-600 bg-blue-50 border-blue-200/80',
     icon: FolderArchive,
     keywords: ['arsip', 'surat', 'e-arsip', 'sk', 'nomor surat', 'lpj', 'dokumen', 'surat masuk', 'surat keluar'],
   },
@@ -61,7 +61,7 @@ const MODULES_CONFIG = [
     subtitle: 'Katalog alat multimedia (kamera, mic, proyektor) & peminjaman ruangan',
     division: 'Logistik & Operasional',
     category: 'Operasional & Aset',
-    badgeColor: 'text-amber-400 bg-amber-500/15 border-amber-500/30',
+    badgeColor: 'text-amber-600 bg-amber-50 border-amber-200/80',
     icon: Boxes,
     keywords: ['aset', 'inventaris', 'alat', 'kamera', 'pinjam', 'booking', 'mic', 'sony', 'ruang rapat', 'logistik'],
   },
@@ -71,7 +71,7 @@ const MODULES_CONFIG = [
     subtitle: 'Pencatatan kas masuk/keluar, reimbursement nota belanja & pagu anggaran',
     division: 'Bendahara & Keuangan',
     category: 'Keuangan & Anggaran',
-    badgeColor: 'text-teal-400 bg-teal-500/15 border-teal-500/30',
+    badgeColor: 'text-teal-600 bg-teal-50 border-teal-200/80',
     icon: Receipt,
     keywords: ['kas', 'keuangan', 'uang', 'reimbursement', 'anggaran', 'nota', 'kwitansi', 'saldo', 'bendahara'],
   },
@@ -81,7 +81,7 @@ const MODULES_CONFIG = [
     subtitle: 'Absensi cepat via scan QR proyektor, pembuat notula otomatis & action items PIC',
     division: 'Divisi Kaderisasi',
     category: 'Tata Kelola SDM',
-    badgeColor: 'text-purple-400 bg-purple-500/15 border-purple-500/30',
+    badgeColor: 'text-purple-600 bg-purple-50 border-purple-200/80',
     icon: ClipboardCheck,
     keywords: ['presensi', 'absen', 'kehadiran', 'qr', 'notula', 'rapat', 'action items', 'kaderisasi'],
   },
@@ -91,7 +91,7 @@ const MODULES_CONFIG = [
     subtitle: 'Roadmap kalender kegiatan tahunan seluruh divisi untuk cegah bentrok jadwal',
     division: 'Internal & Proker',
     category: 'Operasional & Aset',
-    badgeColor: 'text-rose-400 bg-rose-500/15 border-rose-500/30',
+    badgeColor: 'text-rose-600 bg-rose-50 border-rose-200/80',
     icon: CalendarRange,
     keywords: ['timeline', 'kalender', 'jadwal', 'proker', 'gantt', 'kegiatan', 'roadmap', 'program kerja'],
   },
@@ -101,7 +101,7 @@ const MODULES_CONFIG = [
     subtitle: 'Direktori kepengurusan lengkap, profil keahlian, dan sertifikat kepengurusan',
     division: 'Litbang & SDM',
     category: 'Tata Kelola SDM',
-    badgeColor: 'text-cyan-400 bg-cyan-500/15 border-cyan-500/30',
+    badgeColor: 'text-cyan-600 bg-cyan-50 border-cyan-200/80',
     icon: Users,
     keywords: ['hr', 'sdm', 'anggota', 'pengurus', 'struktur', 'nim', 'jabatan', 'litbang', 'mahasiswa'],
   },
@@ -111,7 +111,7 @@ const MODULES_CONFIG = [
     subtitle: 'Sistem antrean tiket brief desain publikasi (Feed, Story, Banner, Poster)',
     division: 'Publikasi & Dokumentasi',
     category: 'Publikasi & Media',
-    badgeColor: 'text-pink-400 bg-pink-500/15 border-pink-500/30',
+    badgeColor: 'text-pink-600 bg-pink-50 border-pink-200/80',
     icon: Headphones,
     keywords: ['helpdesk', 'desain', 'tiket', 'pubdok', 'feed', 'poster', 'banner', 'story', 'instagram', 'medinfo'],
   },
@@ -121,7 +121,7 @@ const MODULES_CONFIG = [
     subtitle: 'Portal permohonan media partner eksternal, barter publikasi & kontak relasi mitra',
     division: 'Divisi Humas & Media',
     category: 'Hubungan Masyarakat',
-    badgeColor: 'text-sky-400 bg-sky-500/15 border-sky-500/30',
+    badgeColor: 'text-sky-600 bg-sky-50 border-sky-200/80',
     icon: Globe,
     keywords: ['humas', 'media partner', 'medpart', 'mitra', 'relasi', 'kolaborasi', 'promosi', 'eksternal'],
   },
@@ -131,7 +131,7 @@ const MODULES_CONFIG = [
     subtitle: 'Pre-order merchandise resmi, penyewaan alat multimedia, & buku laba rugi usaha',
     division: 'Dana Usaha (KKM)',
     category: 'Kewirausahaan Mahasiswa',
-    badgeColor: 'text-amber-400 bg-amber-500/15 border-amber-500/30',
+    badgeColor: 'text-amber-600 bg-amber-50 border-amber-200/80',
     icon: ShoppingBag,
     keywords: ['kkm', 'usaha', 'merchandise', 'preorder', 'kaos', 'lanyard', 'sewa kamera', 'laba rugi', 'danus'],
   },
@@ -141,7 +141,7 @@ const MODULES_CONFIG = [
     subtitle: 'Dokumentasi foto, riwayat kegiatan sukses, dan berkas LPJ resmi lintas divisi',
     division: 'Semua Divisi',
     category: 'Dokumentasi & Kegiatan',
-    badgeColor: 'text-emerald-400 bg-emerald-500/15 border-emerald-500/30',
+    badgeColor: 'text-emerald-600 bg-emerald-50 border-emerald-200/80',
     icon: CalendarCheck,
     keywords: ['kegiatan', 'arsip kegiatan', 'dokumentasi', 'event', 'foto', 'lpj', 'partisipan', 'riwayat'],
   },
@@ -210,7 +210,7 @@ export default function CommandPalette({
         subtitle: 'Halaman showcase, program kerja unggulan, dan profil TERAMEDIA',
         badge: 'Halaman',
         icon: Home,
-        iconColor: 'text-blue-400 bg-blue-500/15 border-blue-500/30',
+        iconColor: 'text-slate-700 bg-slate-100 border-slate-200/80',
         action: () => {
           onNavigate('landing');
           onClose();
@@ -224,7 +224,7 @@ export default function CommandPalette({
         subtitle: 'Katalog interaktif seluruh 11 modul layanan digital organisasi',
         badge: 'Portal',
         icon: LayoutGrid,
-        iconColor: 'text-amber-400 bg-amber-500/15 border-amber-500/30',
+        iconColor: 'text-amber-600 bg-amber-50 border-amber-200/80',
         action: () => {
           onNavigate('portal');
           onClose();
@@ -238,7 +238,7 @@ export default function CommandPalette({
         subtitle: 'Buka formulir permohonan konsultasi atau kerjasama dengan pengurus',
         badge: 'Modal',
         icon: MessageSquare,
-        iconColor: 'text-emerald-400 bg-emerald-500/15 border-emerald-500/30',
+        iconColor: 'text-emerald-600 bg-emerald-50 border-emerald-200/80',
         action: () => {
           onClose();
           onOpenContact();
@@ -257,7 +257,7 @@ export default function CommandPalette({
           subtitle: 'Ringkasan metrik statistik operasional & shortcut administrasi (Ctrl+Shift+D)',
           badge: 'Admin Panel',
           icon: ShieldCheck,
-          iconColor: 'text-indigo-400 bg-indigo-500/15 border-indigo-500/30',
+          iconColor: 'text-blue-600 bg-blue-50 border-blue-200/80',
           action: () => {
             onNavigate('admin', null, true, 'dashboard');
             onClose();
@@ -271,7 +271,7 @@ export default function CommandPalette({
           subtitle: `Kelola pesan & konsultasi masuk (${consultationMessages.length} pesan tercatat)`,
           badge: 'Admin Inbox',
           icon: MessageSquare,
-          iconColor: 'text-sky-400 bg-sky-500/15 border-sky-500/30',
+          iconColor: 'text-sky-600 bg-sky-50 border-sky-200/80',
           action: () => {
             onNavigate('admin', null, true, 'inbox');
             onClose();
@@ -285,7 +285,7 @@ export default function CommandPalette({
           subtitle: `Manajemen autentikasi login NIM dan peran pengurus (${accounts.length} akun)`,
           badge: 'Admin SDM',
           icon: Users,
-          iconColor: 'text-cyan-400 bg-cyan-500/15 border-cyan-500/30',
+          iconColor: 'text-cyan-600 bg-cyan-50 border-cyan-200/80',
           action: () => {
             onNavigate('admin', null, true, 'students');
             onClose();
@@ -299,7 +299,7 @@ export default function CommandPalette({
           subtitle: `Rekam jejak histori login, submit formulir, dan ekspor xlsx (${activityLogs.length} entri)`,
           badge: 'Admin Logs',
           icon: Clock,
-          iconColor: 'text-purple-400 bg-purple-500/15 border-purple-500/30',
+          iconColor: 'text-purple-600 bg-purple-50 border-purple-200/80',
           action: () => {
             onNavigate('admin', null, true, 'logs');
             onClose();
@@ -313,7 +313,7 @@ export default function CommandPalette({
           subtitle: 'Pengaturan kartu program kerja unggulan di beranda utama',
           badge: 'Admin Proker',
           icon: CalendarRange,
-          iconColor: 'text-rose-400 bg-rose-500/15 border-rose-500/30',
+          iconColor: 'text-rose-600 bg-rose-50 border-rose-200/80',
           action: () => {
             onNavigate('admin', null, true, 'proker');
             onClose();
@@ -331,7 +331,7 @@ export default function CommandPalette({
           : 'Masuk dengan NIM dan password pengurus untuk membuka workspace',
         badge: authUser ? 'Sesi Aktif' : 'Autentikasi',
         icon: UserCheck,
-        iconColor: 'text-emerald-400 bg-emerald-500/15 border-emerald-500/30',
+        iconColor: 'text-blue-600 bg-blue-50 border-blue-200/80',
         action: () => {
           if (!authUser) {
             onNavigate('login');
@@ -381,7 +381,7 @@ export default function CommandPalette({
           subtitle: `${acc.role} • Divisi: ${acc.division || 'BPH'} • Akses: ${acc.canAccessAdmin ? 'Admin' : 'Anggota'}`,
           badge: acc.division || 'SDM',
           icon: Users,
-          iconColor: 'text-cyan-400 bg-cyan-500/15 border-cyan-500/30',
+          iconColor: 'text-cyan-600 bg-cyan-50 border-cyan-200/80',
           action: () => {
             if (authUser?.canAccessAdmin) {
               onNavigate('admin', null, true, 'students');
@@ -407,7 +407,7 @@ export default function CommandPalette({
           subtitle: `Status: ${t.status} • Pemohon: ${t.requester} (${t.division || 'Umum'}) • Kanvas: ${t.category || t.canvas || 'Feed'}`,
           badge: t.status,
           icon: Ticket,
-          iconColor: 'text-pink-400 bg-pink-500/15 border-pink-500/30',
+          iconColor: 'text-pink-600 bg-pink-50 border-pink-200/80',
           action: () => {
             onNavigate('service', 'helpdesk');
             onClose();
@@ -429,7 +429,7 @@ export default function CommandPalette({
           subtitle: `Kondisi: ${a.status || 'Tersedia'} • Kategori: ${a.category || 'Alat'} • Lokasi: ${a.location || 'Sekretariat'}`,
           badge: a.status || 'Aset',
           icon: Boxes,
-          iconColor: 'text-amber-400 bg-amber-500/15 border-amber-500/30',
+          iconColor: 'text-amber-600 bg-amber-50 border-amber-200/80',
           action: () => {
             onNavigate('service', 'asset');
             onClose();
@@ -454,7 +454,7 @@ export default function CommandPalette({
           subtitle: `Kategori: ${doc.kategori || doc.jenis || 'Dokumen'} • Tanggal: ${doc.date || doc.tanggal || '2026'}`,
           badge: 'E-Arsip',
           icon: FileText,
-          iconColor: 'text-blue-400 bg-blue-500/15 border-blue-500/30',
+          iconColor: 'text-blue-600 bg-blue-50 border-blue-200/80',
           action: () => {
             onNavigate('service', 'archive');
             onClose();
@@ -476,7 +476,7 @@ export default function CommandPalette({
           subtitle: `Divisi: ${p.division} • Periode: ${p.period || '2026'} • Tempat: ${p.location || 'Kampus'}`,
           badge: p.division,
           icon: CalendarRange,
-          iconColor: 'text-rose-400 bg-rose-500/15 border-rose-500/30',
+          iconColor: 'text-rose-600 bg-rose-50 border-rose-200/80',
           action: () => {
             onNavigate('service', p.actionServiceId || 'timeline');
             onClose();
@@ -499,7 +499,7 @@ export default function CommandPalette({
         subtitle: `Unduh spreadsheet audit trail ${activityLogs.length} rekam jejak pengguna dalam format Excel`,
         badge: 'Excel .XLSX',
         icon: FileSpreadsheet,
-        iconColor: 'text-emerald-400 bg-emerald-500/15 border-emerald-500/30',
+        iconColor: 'text-emerald-700 bg-emerald-50 border-emerald-200/80',
         action: () => {
           exportLogsToXLSX(activityLogs, 'teradesk_log_aktivitas_semua.xlsx', 'Semua Log');
           showToast('File spreadsheet Excel berhasil diunduh!');
@@ -514,7 +514,7 @@ export default function CommandPalette({
         subtitle: `Status saat ini: ${isSoundMutedState ? 'Senyap (Muted)' : 'Aktif (Bunyi kristal "tinggg" saat inbox baru)'}`,
         badge: isSoundMutedState ? 'Muted' : 'Sound On',
         icon: isSoundMutedState ? Volume2 : VolumeX,
-        iconColor: 'text-amber-400 bg-amber-500/15 border-amber-500/30',
+        iconColor: 'text-amber-700 bg-amber-50 border-amber-200/80',
         action: () => {
           const next = !isSoundMutedState;
           setSoundMuted(next);
@@ -535,7 +535,7 @@ export default function CommandPalette({
         subtitle: 'Buka formulir pengajuan desain Pubdok (Instagram Feed, Story, Backdrop)',
         badge: 'Helpdesk',
         icon: Headphones,
-        iconColor: 'text-pink-400 bg-pink-500/15 border-pink-500/30',
+        iconColor: 'text-pink-600 bg-pink-50 border-pink-200/80',
         action: () => {
           onNavigate('service', 'helpdesk');
           onClose();
@@ -549,7 +549,7 @@ export default function CommandPalette({
         subtitle: 'Unggah lembar persetujuan proker ke alur validasi bertingkat BPH & Pembina',
         badge: 'PAR Modul',
         icon: FileCheck2,
-        iconColor: 'text-indigo-400 bg-indigo-500/15 border-indigo-500/30',
+        iconColor: 'text-indigo-600 bg-indigo-50 border-indigo-200/80',
         action: () => {
           onNavigate('service', 'par');
           onClose();
@@ -563,7 +563,7 @@ export default function CommandPalette({
         subtitle: 'Dapatkan kode penomoran resmi organisasi instan tanpa bentrok nomor',
         badge: 'E-Arsip',
         icon: FolderArchive,
-        iconColor: 'text-blue-400 bg-blue-500/15 border-blue-500/30',
+        iconColor: 'text-blue-600 bg-blue-50 border-blue-200/80',
         action: () => {
           onNavigate('service', 'archive');
           onClose();
@@ -577,7 +577,7 @@ export default function CommandPalette({
         subtitle: 'Cek jadwal ketersediaan kamera Sony A7, mic wireless, dan ruang sekretariat',
         badge: 'Inventaris',
         icon: Boxes,
-        iconColor: 'text-amber-400 bg-amber-500/15 border-amber-500/30',
+        iconColor: 'text-amber-600 bg-amber-50 border-amber-200/80',
         action: () => {
           onNavigate('service', 'asset');
           onClose();
@@ -591,7 +591,7 @@ export default function CommandPalette({
         subtitle: 'Nomor narahubung: +62 822-7711-2345 (Sekretariat Kampus Dewantara)',
         badge: 'Salin Kontak',
         icon: Copy,
-        iconColor: 'text-emerald-400 bg-emerald-500/15 border-emerald-500/30',
+        iconColor: 'text-emerald-700 bg-emerald-50 border-emerald-200/80',
         action: () => {
           if (navigator.clipboard) {
             navigator.clipboard.writeText('+62 822-7711-2345');
@@ -671,27 +671,27 @@ export default function CommandPalette({
       aria-modal="true"
       aria-labelledby="spotlight-title"
       onKeyDown={handleKeyDown}
-      className="fixed inset-0 z-[120] flex items-start justify-center pt-8 sm:pt-16 md:pt-20 px-3 sm:px-4 bg-slate-950/75 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-[120] flex items-start justify-center pt-8 sm:pt-16 md:pt-20 px-3 sm:px-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="relative w-full max-w-2xl bg-[#090e24]/95 border border-slate-700/80 rounded-2xl sm:rounded-3xl shadow-[0_30px_90px_rgba(0,0,0,0.7)] text-white overflow-hidden flex flex-col max-h-[85vh] sm:max-h-[80vh] animate-in zoom-in-95 duration-150">
+      <div className="relative w-full max-w-2xl bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl shadow-2xl text-slate-800 overflow-hidden flex flex-col max-h-[85vh] sm:max-h-[80vh] animate-in zoom-in-95 duration-150">
         
-        {/* Subtle decorative top accent bar */}
-        <div className="h-1 w-full bg-gradient-to-r from-blue-500 via-amber-400 to-emerald-400" />
+        {/* Subtle decorative top accent bar (Admin Corporate Blue) */}
+        <div className="h-1 w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500" />
 
         {/* Toast alert indicator */}
         {toastMessage && (
-          <div className="absolute top-3 right-3 z-50 px-3 py-1.5 rounded-xl bg-emerald-500 text-slate-950 text-xs font-extrabold shadow-lg flex items-center gap-1.5 animate-in fade-in slide-in-from-top-2 duration-150">
-            <Check size={14} className="stroke-[3]" />
+          <div className="absolute top-3 right-3 z-50 px-3.5 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-bold shadow-xl flex items-center gap-1.5 animate-in fade-in slide-in-from-top-2 duration-150 border border-slate-800">
+            <Check size={14} className="stroke-[3] text-emerald-400" />
             <span>{toastMessage}</span>
           </div>
         )}
 
         {/* 1. Header & Search Input */}
-        <div className="p-3.5 sm:p-4 border-b border-slate-800/80 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-amber-400/15 border border-amber-400/30 text-amber-400 flex items-center justify-center shrink-0">
+        <div className="p-3.5 sm:p-4 border-b border-slate-100 flex items-center gap-3 bg-white">
+          <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-200/80 text-blue-600 flex items-center justify-center shrink-0 shadow-xs">
             <Search size={18} className="stroke-[2.5]" />
           </div>
           
@@ -705,7 +705,7 @@ export default function CommandPalette({
               setSelectedIndex(0);
             }}
             placeholder="Ketik perintah, nama modul, NIM, tiket, surat, atau aksi cepat..."
-            className="flex-1 bg-transparent text-sm sm:text-base text-white placeholder-slate-400 focus:outline-none font-medium"
+            className="flex-1 bg-transparent text-sm sm:text-base text-slate-900 placeholder:text-slate-400 focus:outline-none font-semibold"
             autoComplete="off"
             spellCheck="false"
           />
@@ -716,7 +716,7 @@ export default function CommandPalette({
                 setQuery('');
                 inputRef.current?.focus();
               }}
-              className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
               aria-label="Hapus kata kunci"
             >
               <X size={16} />
@@ -724,14 +724,14 @@ export default function CommandPalette({
           )}
 
           <div className="hidden sm:flex items-center gap-1">
-            <kbd className="px-1.5 py-0.5 text-[10px] font-mono text-slate-400 bg-slate-800 border border-slate-700 rounded-md">
+            <kbd className="px-2 py-0.5 text-[10px] font-mono font-medium text-slate-500 bg-slate-100 border border-slate-200 rounded-md shadow-2xs">
               ESC
             </kbd>
           </div>
         </div>
 
         {/* 2. Category Filter Pills */}
-        <div className="px-3.5 sm:px-4 py-2 border-b border-slate-800/80 bg-slate-900/50 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+        <div className="px-3.5 sm:px-4 py-2 border-b border-slate-100 bg-slate-50/70 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
           {CATEGORY_TABS.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
@@ -743,13 +743,13 @@ export default function CommandPalette({
                 }}
                 className={`px-3 py-1 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-150 cursor-pointer flex items-center gap-1.5 ${
                   isActive
-                    ? 'bg-amber-400 text-slate-950 font-bold shadow-xs'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/70'
+                    ? 'bg-slate-900 text-white font-bold shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/70'
                 }`}
               >
                 <span>{tab.label}</span>
                 {tab.id === 'modul' && (
-                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${isActive ? 'bg-slate-950 text-amber-300' : 'bg-slate-800 text-slate-300'}`}>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${isActive ? 'bg-slate-800 text-blue-300' : 'bg-slate-200/80 text-slate-600'}`}>
                     11
                   </span>
                 )}
@@ -761,16 +761,16 @@ export default function CommandPalette({
         {/* 3. Results List */}
         <div
           ref={listRef}
-          className="flex-1 overflow-y-auto p-2 sm:p-2.5 space-y-1 divide-y divide-slate-800/40 custom-scrollbar"
+          className="flex-1 overflow-y-auto p-2 sm:p-2.5 space-y-1 divide-y divide-slate-100 custom-scrollbar bg-white"
         >
           {filteredItems.length === 0 ? (
             <div className="py-12 px-4 text-center flex flex-col items-center justify-center">
-              <div className="w-12 h-12 rounded-2xl bg-slate-800/80 border border-slate-700/60 text-slate-400 flex items-center justify-center mb-3">
+              <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-200/80 text-slate-400 flex items-center justify-center mb-3 shadow-xs">
                 <Search size={22} />
               </div>
-              <p className="text-sm font-bold text-slate-200">Tidak ada hasil ditemukan</p>
-              <p className="text-xs text-slate-400 max-w-sm mt-1 leading-relaxed">
-                Tidak ada modul, data, atau aksi yang cocok dengan kata kunci &quot;<span className="text-amber-300 font-semibold">{query}</span>&quot;.
+              <p className="text-sm font-bold text-slate-900">Tidak ada hasil ditemukan</p>
+              <p className="text-xs text-slate-500 max-w-sm mt-1 leading-relaxed font-normal">
+                Tidak ada modul, data, atau aksi yang cocok dengan kata kunci &quot;<span className="text-blue-600 font-semibold">{query}</span>&quot;.
               </p>
               <button
                 onClick={() => {
@@ -778,7 +778,7 @@ export default function CommandPalette({
                   setActiveTab('semua');
                   inputRef.current?.focus();
                 }}
-                className="mt-4 px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-slate-200 transition-colors cursor-pointer"
+                className="mt-4 px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-xs font-bold text-slate-700 transition-colors shadow-2xs cursor-pointer"
               >
                 Reset Pencarian
               </button>
@@ -796,14 +796,14 @@ export default function CommandPalette({
                   onClick={() => item.action()}
                   className={`group relative p-2.5 sm:p-3 rounded-xl transition-all duration-150 cursor-pointer flex items-center justify-between gap-3 ${
                     isSelected
-                      ? 'bg-gradient-to-r from-blue-600/25 via-amber-400/10 to-transparent border border-blue-500/40 shadow-xs'
-                      : 'hover:bg-slate-800/50 border border-transparent'
+                      ? 'bg-blue-50/70 border border-blue-200/90 shadow-xs'
+                      : 'hover:bg-slate-50 border border-transparent'
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div
-                      className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${
-                        item.iconColor || 'text-slate-300 bg-slate-800 border-slate-700'
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border shadow-2xs ${
+                        item.iconColor || 'text-slate-600 bg-slate-100 border-slate-200'
                       }`}
                     >
                       <IconComp size={18} />
@@ -811,16 +811,16 @@ export default function CommandPalette({
 
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className={`text-xs sm:text-sm font-bold truncate ${isSelected ? 'text-amber-300' : 'text-slate-100'}`}>
+                        <span className={`text-xs sm:text-sm font-bold truncate ${isSelected ? 'text-blue-700' : 'text-slate-800'}`}>
                           {item.title}
                         </span>
                         {item.badge && (
-                          <span className="hidden sm:inline-block text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-800/90 text-slate-300 border border-slate-700/80 shrink-0">
+                          <span className="hidden sm:inline-block text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200/80 shrink-0">
                             {item.badge}
                           </span>
                         )}
                       </div>
-                      <p className="text-[11px] sm:text-xs text-slate-400 truncate mt-0.5">
+                      <p className="text-[11px] sm:text-xs text-slate-500 truncate mt-0.5 font-normal">
                         {item.subtitle}
                       </p>
                     </div>
@@ -829,12 +829,12 @@ export default function CommandPalette({
                   {/* Right Action Hint */}
                   <div className="flex items-center gap-2 shrink-0">
                     {isSelected ? (
-                      <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-amber-400 text-slate-950 font-bold text-[10px] shadow-xs">
+                      <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-600 text-white font-bold text-[10px] shadow-xs">
                         <span>Pilih</span>
                         <CornerDownLeft size={11} className="stroke-[3]" />
                       </div>
                     ) : (
-                      <ArrowRight size={14} className="text-slate-500 group-hover:text-slate-300 transition-colors" />
+                      <ArrowRight size={14} className="text-slate-300 group-hover:text-slate-600 transition-colors" />
                     )}
                   </div>
                 </div>
@@ -844,37 +844,37 @@ export default function CommandPalette({
         </div>
 
         {/* 4. Footer Bar with Shortcuts & Context info */}
-        <div className="px-4 py-2.5 bg-slate-950/90 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
+        <div className="px-4 py-2.5 bg-slate-50/90 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 font-mono text-[9px] bg-slate-800 border border-slate-700 rounded text-slate-300">
+              <kbd className="px-1.5 py-0.5 font-mono text-[9px] bg-white border border-slate-200 rounded text-slate-600 shadow-2xs font-bold">
                 ↑
               </kbd>
-              <kbd className="px-1.5 py-0.5 font-mono text-[9px] bg-slate-800 border border-slate-700 rounded text-slate-300">
+              <kbd className="px-1.5 py-0.5 font-mono text-[9px] bg-white border border-slate-200 rounded text-slate-600 shadow-2xs font-bold">
                 ↓
               </kbd>
-              <span className="hidden sm:inline">Navigasi</span>
+              <span className="hidden sm:inline font-medium">Navigasi</span>
             </span>
 
             <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 font-mono text-[9px] bg-slate-800 border border-slate-700 rounded text-slate-300">
+              <kbd className="px-1.5 py-0.5 font-mono text-[9px] bg-white border border-slate-200 rounded text-slate-600 shadow-2xs font-bold">
                 ↵
               </kbd>
-              <span className="hidden sm:inline">Buka</span>
+              <span className="hidden sm:inline font-medium">Buka</span>
             </span>
 
             <span className="hidden md:flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 font-mono text-[9px] bg-slate-800 border border-slate-700 rounded text-slate-300">
+              <kbd className="px-1.5 py-0.5 font-mono text-[9px] bg-white border border-slate-200 rounded text-slate-600 shadow-2xs font-bold">
                 ESC
               </kbd>
-              <span>Tutup</span>
+              <span className="font-medium">Tutup</span>
             </span>
           </div>
 
           <div className="flex items-center gap-2 font-medium">
-            <span className="hidden sm:inline text-slate-500">TeraDesk Spotlight</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-            <span className="text-slate-300 font-semibold truncate max-w-[150px]">
+            <span className="hidden sm:inline text-slate-400">TeraDesk Spotlight</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            <span className="text-slate-700 font-bold truncate max-w-[150px]">
               {authUser ? authUser.name : 'Tamu (Guest)'}
             </span>
           </div>

@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "src/App.jsx": {
-    "mtime": 1794083123.3150403,
-    "seen": 1794083233.4512107,
-    "ast_hash": "5dcb13c56e3a34ce30b02f63ebc8c466",
+    "mtime": 1794083650.356977,
+    "seen": 1794083877.4174592,
+    "ast_hash": "f8292407eb0a36c7b7c5a6c407397823",
     "semantic_hash": ""
   },
   "src/components/AboutUs.jsx": {
@@ -36,8 +36,8 @@
     "semantic_hash": ""
   },
   "src/components/FeaturesPortal.jsx": {
-    "mtime": 1794083261.5908217,
-    "seen": 1794083287.707271,
+    "mtime": 1794083427.861632,
+    "seen": 1794083877.4174592,
     "ast_hash": "d805c9989d76231554565108b53bd8af",
     "semantic_hash": ""
   },
@@ -48,9 +48,9 @@
     "semantic_hash": ""
   },
   "src/components/Hero.jsx": {
-    "mtime": 1794083167.586082,
-    "seen": 1794083233.4512107,
-    "ast_hash": "1c8f5ce3e633d0b7d142212ccaa2e428",
+    "mtime": 1794083599.342949,
+    "seen": 1794083877.4174592,
+    "ast_hash": "23240a41735b2dfbe7d96e6c3269b406",
     "semantic_hash": ""
   },
   "src/main.jsx": {
@@ -846,8 +846,8 @@
     "semantic_hash": ""
   },
   "src/components/services/ServicePageLayout.jsx": {
-    "mtime": 1794083187.9690118,
-    "seen": 1794083233.4512107,
+    "mtime": 1794083429.1039333,
+    "seen": 1794083877.4174592,
     "ast_hash": "b2b9f6e771e148f8622767bb58bae2d8",
     "semantic_hash": ""
   },
@@ -864,8 +864,8 @@
     "semantic_hash": ""
   },
   "src/components/admin/AdminDashboardPage.jsx": {
-    "mtime": 1794083204.4345567,
-    "seen": 1794083233.4512107,
+    "mtime": 1794083428.4985044,
+    "seen": 1794083877.4174592,
     "ast_hash": "c65ac6d4fc2ccf8fb95c4a93b53dddb1",
     "semantic_hash": ""
   },
@@ -1056,9 +1056,9 @@
     "semantic_hash": ""
   },
   "src/components/common/CommandPalette.jsx": {
-    "mtime": 1794082868.732291,
-    "seen": 1794083233.4512107,
-    "ast_hash": "813417231b6645e8638da496dc4de592",
+    "mtime": 1794083848.6463976,
+    "seen": 1794083877.4174592,
+    "ast_hash": "3f997a1b3d07b2c0c3c9f96c1879a0a8",
     "semantic_hash": ""
   }
 }

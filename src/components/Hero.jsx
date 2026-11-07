@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ArrowRight, Bookmark, ChevronLeft, ChevronRight, Menu, X, Search } from 'lucide-react';
+import { ArrowRight, Bookmark, ChevronLeft, ChevronRight, Menu, X } from 'lucide-react';
 import { initialDefaultProker } from '../data/defaultProker';
 
-const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [], onOpenCommandPalette }) => {
+const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [] }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState('beranda');
   const [activeProkerIndex, setActiveProkerIndex] = useState(0);
@@ -186,28 +186,8 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [], onOpenComman
             </a>
           </div>
 
-          {/* Right Action: Spotlight Search Pill, CTA Button & Mobile Hamburger Toggle */}
+          {/* Right Action: CTA Button & Mobile Hamburger Toggle */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Quick Spotlight Command Palette Trigger */}
-            <button
-              type="button"
-              onClick={() => {
-                if (onOpenCommandPalette) onOpenCommandPalette();
-              }}
-              title="Buka Spotlight Command Palette (Ctrl+K)"
-              className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-semibold transition-all border cursor-pointer active:scale-95 ${
-                activeSection === 'beranda'
-                  ? 'bg-white/10 hover:bg-white/20 text-slate-200 hover:text-white border-white/20 shadow-xs'
-                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 border-slate-300/80'
-              }`}
-            >
-              <Search size={13} className="text-amber-400 shrink-0" />
-              <span className="hidden xl:inline text-[11px]">Cari</span>
-              <kbd className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-black/30 border border-white/15 text-slate-300">
-                Ctrl K
-              </kbd>
-            </button>
-
             <button
               onClick={onOpenContact}
               className="bg-[#FFA000] hover:bg-[#ffaa1a] text-slate-950 font-bold px-4 sm:px-6 py-2 rounded-full text-xs sm:text-sm transition-all shadow-md active:scale-95 cursor-pointer min-h-[38px] sm:min-h-[40px] flex items-center justify-center shrink-0"
@@ -265,23 +245,6 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [], onOpenComman
                 <span>Tentang Kami</span>
                 {activeSection === 'tentang-kami' && <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />}
               </a>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  if (onOpenCommandPalette) onOpenCommandPalette();
-                }}
-                className="w-full text-left px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-amber-300 hover:bg-white/10 flex items-center justify-between transition-colors border-t border-white/10 pt-3 mt-1"
-              >
-                <div className="flex items-center gap-2">
-                  <Search size={15} className="text-amber-400" />
-                  <span>Pencarian Cepat Spotlight</span>
-                </div>
-                <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-black/40 border border-white/20 text-slate-300">
-                  Ctrl K
-                </kbd>
-              </button>
             </div>
           </div>
         )}
