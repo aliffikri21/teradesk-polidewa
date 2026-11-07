@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "src/App.jsx": {
-    "mtime": 1794070133.0964718,
-    "seen": 1794070167.336946,
-    "ast_hash": "bd1af886d84b395fe0bbf1c59d2bd521",
+    "mtime": 1794070703.843075,
+    "seen": 1794070770.0160267,
+    "ast_hash": "bad58f75e1990a7b2cda46d70f9029f0",
     "semantic_hash": ""
   },
   "src/components/AboutUs.jsx": {
@@ -864,9 +864,9 @@
     "semantic_hash": ""
   },
   "src/components/admin/AdminDashboardPage.jsx": {
-    "mtime": 1794057624.2204595,
-    "seen": 1794058676.269549,
-    "ast_hash": "ef356c1a8b8343c5abb798675da17c97",
+    "mtime": 1794070733.7402596,
+    "seen": 1794070770.0160267,
+    "ast_hash": "4bf12ac2697753b45a71c8f912738ec3",
     "semantic_hash": ""
   },
   "public/logo-teramedia.png": {
@@ -972,9 +972,9 @@
     "semantic_hash": ""
   },
   "src/data/defaultActivityLogs.js": {
-    "mtime": 1794057624.3073583,
-    "seen": 1794058676.269549,
-    "ast_hash": "ea8afaf4c32781b2d67983d2e984604c",
+    "mtime": 1794070742.8021061,
+    "seen": 1794070770.0160267,
+    "ast_hash": "fccca38cd1bfbe2404c8ded440365f8c",
     "semantic_hash": ""
   },
   "src/services/activityLogService.js": {
@@ -990,8 +990,8 @@
     "semantic_hash": ""
   },
   "src/services/firebase.js": {
-    "mtime": 1794070066.3793058,
-    "seen": 1794070167.336946,
+    "mtime": 1794070210.5453582,
+    "seen": 1794070770.0160267,
     "ast_hash": "2d61551413d2da52f7c7dea6978d66f8",
     "semantic_hash": ""
   },
@@ -1008,9 +1008,15 @@
     "semantic_hash": ""
   },
   "src/services/accountService.js": {
-    "mtime": 1794070049.3311584,
-    "seen": 1794070167.336946,
-    "ast_hash": "352d7b1cb593574b5a3c33753a1442dc",
+    "mtime": 1794070208.5245688,
+    "seen": 1794070770.0160267,
+    "ast_hash": "53788693b549bfe2e8a7bb6ab4458fb8",
+    "semantic_hash": ""
+  },
+  "src/utils/deviceDetector.js": {
+    "mtime": 1794070662.5436437,
+    "seen": 1794070770.0160267,
+    "ast_hash": "7e1a04c2398cd7eb4943f20a7dec3c5a",
     "semantic_hash": ""
   }
 }

@@ -20,6 +20,12 @@ export const initialDefaultActivityLogs = [
     module: 'Autentikasi Login',
     event: 'Login Berhasil ke Sistem',
     details: 'Autentikasi admin via kredensial resmi (Hak Akses Eksekutif aktif).',
+    device: {
+      os: 'Windows 10/11',
+      browser: 'Google Chrome',
+      type: 'Desktop',
+      summary: 'Google Chrome di Windows 10/11 (Desktop)',
+    },
   },
   {
     id: 'log-2',

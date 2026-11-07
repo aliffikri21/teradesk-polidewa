@@ -35,6 +35,7 @@ import {
   deleteAccountFromDb,
   resetAccountsInDb,
 } from './services/accountService';
+import { getDeviceInfo } from './utils/deviceDetector';
 
 function App() {
   const [pendingTarget, setPendingTarget] = useState(() => {
@@ -306,7 +307,9 @@ function App() {
     moduleName = 'Workspace',
     event = '',
     details = '',
+    device = null,
   }) => {
+    const currentDevice = device || getDeviceInfo();
     const now = new Date();
     const time = now.toLocaleTimeString('id-ID');
     const date = now.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -331,6 +334,7 @@ function App() {
       module: moduleName,
       event,
       details,
+      device: currentDevice,
     };
     setActivityLogs((prev) => {
       const updated = [newLog, ...prev.slice(0, 99)];
@@ -664,6 +668,8 @@ function App() {
       // ignore
     }
 
+    const deviceInfo = getDeviceInfo();
+
     handleAddActivityLog({
       category: 'login',
       type: 'success',
@@ -673,7 +679,8 @@ function App() {
       userDivision: userProfile.division || 'BPH',
       moduleName: 'Autentikasi Login',
       event: `Login Berhasil: ${userProfile.name}`,
-      details: `User NIM ${userProfile.nim} berhasil masuk dengan akses ${userProfile.canAccessAdmin ? 'Admin Executive' : 'Portal Mahasiswa'}.`,
+      details: `User NIM ${userProfile.nim} berhasil masuk via ${deviceInfo.summary} dengan akses ${userProfile.canAccessAdmin ? 'Admin Executive' : 'Portal Mahasiswa'}.`,
+      device: deviceInfo,
     });
 
     let target = pendingTarget || { page: 'portal', serviceId: null };
@@ -699,6 +706,7 @@ function App() {
 
   const handleLogout = () => {
     if (authUser) {
+      const deviceInfo = getDeviceInfo();
       handleAddActivityLog({
         category: 'login',
         type: 'info',
@@ -708,7 +716,8 @@ function App() {
         userDivision: authUser.division || 'BPH',
         moduleName: 'Autentikasi Login',
         event: `Logout Sesi: ${authUser.name}`,
-        details: `Sesi login pengguna NIM ${authUser.nim} telah diakhiri dengan aman.`,
+        details: `Sesi login pengguna NIM ${authUser.nim} telah diakhiri dengan aman dari ${deviceInfo.summary}.`,
+        device: deviceInfo,
       });
     }
     setAuthUser(null);

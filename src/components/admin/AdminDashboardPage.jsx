@@ -54,7 +54,10 @@ import {
   MessageSquare,
   CheckCircle2,
   LogIn,
-  Send
+  Send,
+  Laptop,
+  Smartphone,
+  Tablet
 } from 'lucide-react';
 
 const divisionsList = [
@@ -656,7 +659,8 @@ const AdminDashboardPage = ({
         const roleMatch = (log.actor?.role || log.userRole || '').toLowerCase().includes(q);
         const moduleMatch = (log.module || log.moduleName || '').toLowerCase().includes(q);
         const divMatch = (log.actor?.division || log.userDivision || '').toLowerCase().includes(q);
-        return eventMatch || nameMatch || nimMatch || roleMatch || moduleMatch || divMatch;
+        const deviceMatch = (log.device?.summary || log.details || '').toLowerCase().includes(q);
+        return eventMatch || nameMatch || nimMatch || roleMatch || moduleMatch || divMatch || deviceMatch;
       }
       return true;
     });
@@ -4701,6 +4705,22 @@ const AdminDashboardPage = ({
                                 <p className="text-xs text-slate-600 bg-slate-50/80 border border-slate-100 rounded-lg p-2 font-mono">
                                   {item.details}
                                 </p>
+                              )}
+
+                              {/* Device Information Pill */}
+                              {item.device && (
+                                <div className="flex items-center gap-1.5 pt-0.5">
+                                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200/70 text-[11px] font-medium">
+                                    {item.device.type === 'Mobile' ? (
+                                      <Smartphone size={12} className="text-blue-600 shrink-0" />
+                                    ) : item.device.type === 'Tablet' ? (
+                                      <Tablet size={12} className="text-blue-600 shrink-0" />
+                                    ) : (
+                                      <Laptop size={12} className="text-blue-600 shrink-0" />
+                                    )}
+                                    <span>Perangkat: {item.device.summary || `${item.device.browser} di ${item.device.os}`}</span>
+                                  </span>
+                                </div>
                               )}
 
                               {/* Actor Information Block */}
