@@ -238,6 +238,17 @@ const AdminDashboardPage = ({
   onAddTicket,
   onUpdateTicketStatus,
   onDeleteTicket,
+  parSubmissions: propParSubmissions,
+  onApproveProposal: propOnApproveProposal,
+  humasMedparts: propHumasMedparts,
+  onApproveMedpart: propOnApproveMedpart,
+  onRejectMedpart: propOnRejectMedpart,
+  kkmOrders: propKkmOrders,
+  onSetKkmLunas: propOnSetKkmLunas,
+  suratLog: propSuratLog,
+  onAddSuratLog: propOnAddSuratLog,
+  moduleStatuses: propModuleStatuses,
+  onToggleModuleStatus: propOnToggleModuleStatus,
 }) => {
   // Mobile Sidebar Drawer State
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -377,8 +388,8 @@ const AdminDashboardPage = ({
   // Notifications popup toggle
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
-  // Module active state toggles (simulation)
-  const [moduleStatuses, setModuleStatuses] = useState({
+  // Module active state toggles (simulation & persistent sync)
+  const [localModuleStatuses, setLocalModuleStatuses] = useState({
     par: true,
     archive: true,
     asset: true,
@@ -389,10 +400,12 @@ const AdminDashboardPage = ({
     helpdesk: true,
     humas: true,
     kkm: true,
+    activity: true,
   });
+  const moduleStatuses = propModuleStatuses || localModuleStatuses;
 
-  // Mock PAR Submissions
-  const [parSubmissions, setParSubmissions] = useState([
+  // Mock PAR Submissions (persistent sync)
+  const [localParSubmissions, setLocalParSubmissions] = useState([
     {
       id: 'PAR-2026-001',
       title: 'Latihan Dasar Kepemimpinan (LDK) 2026',
@@ -434,6 +447,7 @@ const AdminDashboardPage = ({
       pic: 'Ilham Ramadhan',
     },
   ]);
+  const parSubmissions = propParSubmissions || localParSubmissions;
 
   // 1. DIVISI KESEKRETARIATAN: State & Logic
   const [suratGenType, setSuratGenType] = useState('UND');
@@ -441,7 +455,7 @@ const AdminDashboardPage = ({
   const [suratGenPerihal, setSuratGenPerihal] = useState('Undangan Rapat Pleno Koordinasi');
   const [generatedSurat, setGeneratedSurat] = useState('024/TERA-UKM/UND/SEKRE/XI/2026');
   const [copiedSuratNum, setCopiedSuratNum] = useState(false);
-  const [suratLog, setSuratLog] = useState([
+  const [localSuratLog, setLocalSuratLog] = useState([
     {
       id: 1,
       no: '023/TERA-UKM/UND/BPH/XI/2026',
@@ -467,6 +481,7 @@ const AdminDashboardPage = ({
       status: 'Terdaftar Resmi',
     },
   ]);
+  const suratLog = propSuratLog || localSuratLog;
 
   // 2. DIVISI PUBLIKASI & DOKUMENTASI (PUBDOK): State & Logic
   const [localPubdokTickets, setLocalPubdokTickets] = useState(() => sortTicketsNewestFirst(initialDefaultTickets));
@@ -478,7 +493,7 @@ const AdminDashboardPage = ({
   const [formPubDeadline, setFormPubDeadline] = useState('');
 
   // 3. DIVISI HUMAS: State & Logic
-  const [humasMedparts, setHumasMedparts] = useState([
+  const [localHumasMedparts, setLocalHumasMedparts] = useState([
     {
       id: 'MP-01',
       event: 'Seminar Nasional AI & Web3 Ecosystem',
@@ -510,6 +525,7 @@ const AdminDashboardPage = ({
       statusColor: 'bg-blue-50 text-blue-700 border-blue-200',
     },
   ]);
+  const humasMedparts = propHumasMedparts || localHumasMedparts;
 
   // 4. DIVISI KADERISASI: State & Logic
   const [kaderRaporList] = useState([
@@ -591,7 +607,7 @@ const AdminDashboardPage = ({
   }, [accounts, kaderRaporList]);
 
   // 5. DIVISI KKM: State & Logic
-  const [kkmOrders, setKkmOrders] = useState([
+  const [localKkmOrders, setLocalKkmOrders] = useState([
     {
       id: 'PO-01',
       name: 'Alif Fikri (23404053)',
@@ -620,6 +636,7 @@ const AdminDashboardPage = ({
       statusColor: 'bg-amber-50 text-amber-700 border-amber-200',
     },
   ]);
+  const kkmOrders = propKkmOrders || localKkmOrders;
 
   // Activity Logs State & Filtering
   const [localLogs, setLocalLogs] = useState([]);
@@ -825,8 +842,12 @@ const AdminDashboardPage = ({
       date: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }),
       status: 'Terdaftar Resmi',
     };
-    setSuratLog([newEntry, ...suratLog]);
-    addLog(`Penerbitan nomor surat resmi baru: ${newNum}`, 'success');
+    if (propOnAddSuratLog) {
+      propOnAddSuratLog(newEntry);
+    } else {
+      setLocalSuratLog([newEntry, ...suratLog]);
+      addLog(`Penerbitan nomor surat resmi baru: ${newNum}`, 'success');
+    }
   };
 
   const handleCopySurat = () => {
@@ -895,49 +916,61 @@ const AdminDashboardPage = ({
 
   // Divisi Humas handlers
   const handleApproveMedpart = (medpartId) => {
-    setHumasMedparts(
-      humasMedparts.map((m) =>
-        m.id === medpartId
-          ? {
-              ...m,
-              status: 'Disetujui - Forward Pubdok',
-              statusColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-            }
-          : m
-      )
-    );
-    addLog(`Pengajuan Medpart ${medpartId} disetujui & diteruskan ke Pubdok`, 'success');
+    if (propOnApproveMedpart) {
+      propOnApproveMedpart(medpartId);
+    } else {
+      setLocalHumasMedparts(
+        humasMedparts.map((m) =>
+          m.id === medpartId
+            ? {
+                ...m,
+                status: 'Disetujui - Forward Pubdok',
+                statusColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+              }
+            : m
+        )
+      );
+      addLog(`Pengajuan Medpart ${medpartId} disetujui & diteruskan ke Pubdok`, 'success');
+    }
   };
 
   const handleRejectMedpart = (medpartId) => {
-    setHumasMedparts(
-      humasMedparts.map((m) =>
-        m.id === medpartId
-          ? {
-              ...m,
-              status: 'Ditolak (Slot Penuh)',
-              statusColor: 'bg-rose-50 text-rose-700 border-rose-200',
-            }
-          : m
-      )
-    );
-    addLog(`Pengajuan Medpart ${medpartId} ditolak`, 'info');
+    if (propOnRejectMedpart) {
+      propOnRejectMedpart(medpartId);
+    } else {
+      setLocalHumasMedparts(
+        humasMedparts.map((m) =>
+          m.id === medpartId
+            ? {
+                ...m,
+                status: 'Ditolak (Slot Penuh)',
+                statusColor: 'bg-rose-50 text-rose-700 border-rose-200',
+              }
+            : m
+        )
+      );
+      addLog(`Pengajuan Medpart ${medpartId} ditolak`, 'info');
+    }
   };
 
   // Divisi KKM handlers
   const handleSetKkmLunas = (orderId) => {
-    setKkmOrders(
-      kkmOrders.map((o) =>
-        o.id === orderId
-          ? {
-              ...o,
-              status: 'Lunas',
-              statusColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-            }
-          : o
-      )
-    );
-    addLog(`Pesanan Pre-Order ${orderId} diverifikasi lunas`, 'success');
+    if (propOnSetKkmLunas) {
+      propOnSetKkmLunas(orderId);
+    } else {
+      setLocalKkmOrders(
+        kkmOrders.map((o) =>
+          o.id === orderId
+            ? {
+                ...o,
+                status: 'Lunas',
+                statusColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+              }
+            : o
+        )
+      );
+      addLog(`Pesanan Pre-Order ${orderId} diverifikasi lunas`, 'success');
+    }
   };
 
   const handleAddSubmit = (e) => {
@@ -1295,22 +1328,30 @@ const AdminDashboardPage = ({
   };
 
   const toggleModuleStatus = (modId) => {
-    setModuleStatuses((prev) => {
-      const updated = !prev[modId];
-      addLog(`Status modul ${modId.toUpperCase()} diubah menjadi ${updated ? 'AKTIF' : 'MAINTENANCE'}`, 'info');
-      return { ...prev, [modId]: updated };
-    });
+    if (propOnToggleModuleStatus) {
+      propOnToggleModuleStatus(modId);
+    } else {
+      setLocalModuleStatuses((prev) => {
+        const updated = !prev[modId];
+        addLog(`Status modul ${modId.toUpperCase()} diubah menjadi ${updated ? 'AKTIF' : 'MAINTENANCE'}`, 'info');
+        return { ...prev, [modId]: updated };
+      });
+    }
   };
 
   const handleApproveProposal = (id) => {
-    setParSubmissions((prev) =>
-      prev.map((sub) =>
-        sub.id === id
-          ? { ...sub, status: 'Disetujui', statusColor: 'bg-emerald-50 text-emerald-700 border-emerald-200' }
-          : sub
-      )
-    );
-    addLog(`Proposal ${id} disetujui oleh Administrator Alif Fikri`, 'success');
+    if (propOnApproveProposal) {
+      propOnApproveProposal(id);
+    } else {
+      setLocalParSubmissions((prev) =>
+        prev.map((sub) =>
+          sub.id === id
+            ? { ...sub, status: 'Disetujui', statusColor: 'bg-emerald-50 text-emerald-700 border-emerald-200' }
+            : sub
+        )
+      );
+      addLog(`Proposal ${id} disetujui oleh Administrator Alif Fikri`, 'success');
+    }
   };
 
   // Filtered accounts based on search query, division, and access rights
@@ -3303,20 +3344,20 @@ const AdminDashboardPage = ({
                       {humasMedparts.map((m) => (
                         <tr key={m.id} className="hover:bg-slate-50/60 transition-colors">
                           <td className="py-3 px-3">
-                            <span className="font-bold text-slate-900 block">{m.event}</span>
+                            <span className="font-bold text-slate-900 block">{m.event || m.eventName}</span>
                             <span className="font-mono text-[11px] text-slate-400">{m.id}</span>
                           </td>
                           <td className="py-3 px-3 font-semibold text-slate-800">{m.organizer}</td>
-                          <td className="py-3 px-3 font-medium text-slate-700">{m.package}</td>
-                          <td className="py-3 px-3 text-slate-600">{m.date}</td>
-                          <td className="py-3 px-3 text-slate-500">{m.pic}</td>
+                          <td className="py-3 px-3 font-medium text-slate-700">{m.package || m.packageType}</td>
+                          <td className="py-3 px-3 text-slate-600">{m.date || m.eventDate}</td>
+                          <td className="py-3 px-3 text-slate-500">{m.pic || (m.picName ? `${m.picName} (${m.picContact})` : '-')}</td>
                           <td className="py-3 px-3">
                             <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${m.statusColor}`}>
                               {m.status}
                             </span>
                           </td>
                           <td className="py-3 px-3 text-right">
-                            {m.status === 'Menunggu Review' ? (
+                            {m.status === 'Menunggu Review' || m.status === 'Menunggu Tinjauan' ? (
                               <div className="flex items-center justify-end gap-1.5">
                                 <button
                                   onClick={() => handleApproveMedpart(m.id)}
@@ -3429,17 +3470,17 @@ const AdminDashboardPage = ({
                       {kkmOrders.map((o) => (
                         <tr key={o.id} className="hover:bg-slate-50/60 transition-colors">
                           <td className="py-3 px-3 font-mono font-bold text-slate-700">{o.id}</td>
-                          <td className="py-3 px-3 font-semibold text-slate-900">{o.name}</td>
+                          <td className="py-3 px-3 font-semibold text-slate-900">{o.name || (o.customerName ? `${o.customerName} (${o.nim || '-'})` : 'Pelanggan')}</td>
                           <td className="py-3 px-3 font-medium text-slate-800">{o.item}</td>
                           <td className="py-3 px-3 text-slate-600">{o.size}</td>
-                          <td className="py-3 px-3 font-bold text-slate-900">{o.total}</td>
+                          <td className="py-3 px-3 font-bold text-slate-900">{typeof o.total === 'number' ? 'Rp ' + o.total.toLocaleString('id-ID') : o.total}</td>
                           <td className="py-3 px-3">
-                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${o.statusColor}`}>
-                              {o.status}
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${o.statusColor || o.paymentColor}`}>
+                              {o.status || o.paymentStatus}
                             </span>
                           </td>
                           <td className="py-3 px-3 text-right">
-                            {o.status !== 'Lunas' ? (
+                            {o.status !== 'Lunas' && o.paymentStatus !== 'Lunas' ? (
                               <button
                                 onClick={() => handleSetKkmLunas(o.id)}
                                 className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-semibold cursor-pointer"

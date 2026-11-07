@@ -43,6 +43,36 @@ import {
   deleteTicketFromDb,
 } from './services/ticketService';
 import { getDeviceInfo } from './utils/deviceDetector';
+import {
+  STORAGE_KEYS,
+  loadLocalData,
+  saveLocalData,
+  parSync,
+  humasSync,
+  kkmOrdersSync,
+  kkmCashflowSync,
+  archiveDocsSync,
+  suratLogSync,
+  assetsSync,
+  financeSync,
+  attendanceSync,
+  activitiesSync,
+  subscribeModuleStatuses,
+  updateModuleStatusInDb,
+} from './services/moduleSyncService';
+import {
+  defaultParSubmissions,
+  defaultHumasMedparts,
+  defaultKkmOrders,
+  defaultKkmCashflow,
+  defaultArchiveDocs,
+  defaultSuratLog,
+  defaultAssets,
+  defaultFinanceTransactions,
+  defaultAttendanceList,
+  defaultActivities,
+  defaultModuleStatuses,
+} from './data/defaultModulesData';
 
 function App() {
   const [pendingTarget, setPendingTarget] = useState(() => {
@@ -288,6 +318,369 @@ function App() {
     });
   };
 
+  // Handlers for PAR
+  const handleAddParSubmission = (newPar) => {
+    setParSubmissions((prev) => [newPar, ...prev]);
+    saveLocalData(STORAGE_KEYS.PAR, [newPar, ...parSubmissions]);
+    parSync.addItem(newPar);
+    handleAddActivityLog({
+      category: 'module_submit',
+      type: 'info',
+      userName: authUser?.name || newPar.pic || 'Pengaju PAR',
+      userNim: authUser?.nim || '-',
+      userRole: authUser?.role || 'Pengurus',
+      userDivision: newPar.division || 'BPH',
+      moduleName: 'Persetujuan Proker (PAR)',
+      event: `Submit Proposal: ${newPar.title}`,
+      details: `Proposal anggaran ${newPar.budget} diajukan untuk kegiatan ${newPar.date}.`,
+    });
+  };
+
+  const handleApproveParSubmission = (id) => {
+    setParSubmissions((prev) =>
+      prev.map((sub) =>
+        sub.id === id
+          ? {
+              ...sub,
+              status: 'Disetujui',
+              statusColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+              step: 4,
+              slaRemaining: 'Selesai',
+            }
+          : sub
+      )
+    );
+    parSync.updateItem(id, {
+      status: 'Disetujui',
+      statusColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      step: 4,
+      slaRemaining: 'Selesai',
+    });
+    handleAddActivityLog({
+      category: 'module_submit',
+      type: 'success',
+      userName: authUser?.name || 'Administrator',
+      userNim: authUser?.nim || '23404053',
+      userRole: authUser?.role || 'BPH',
+      userDivision: 'BPH',
+      moduleName: 'Persetujuan Proker (PAR)',
+      event: `Persetujuan Proposal: ${id}`,
+      details: `Proposal ID ${id} disetujui resmi oleh Administrator.`,
+    });
+  };
+
+  const handleUpdateParStatus = (id, step, status) => {
+    setParSubmissions((prev) =>
+      prev.map((sub) => (sub.id === id ? { ...sub, step, status } : sub))
+    );
+    parSync.updateItem(id, { step, status });
+  };
+
+  // Handlers for Humas Medpart
+  const handleAddHumasMedpart = (newMedpart) => {
+    setHumasMedparts((prev) => [newMedpart, ...prev]);
+    saveLocalData(STORAGE_KEYS.HUMAS, [newMedpart, ...humasMedparts]);
+    humasSync.addItem(newMedpart);
+    handleAddActivityLog({
+      category: 'module_submit',
+      type: 'info',
+      userName: newMedpart.picName || authUser?.name || 'Mitra Humas',
+      userNim: authUser?.nim || '-',
+      userRole: 'Mitra Kampus',
+      userDivision: newMedpart.organizer || 'Humas',
+      moduleName: 'Humas & Media Partner',
+      event: `Permohonan Medpart: ${newMedpart.eventName}`,
+      details: `Pengajuan ${newMedpart.packageType} dari ${newMedpart.organizer}.`,
+    });
+  };
+
+  const handleApproveHumasMedpart = (id) => {
+    setHumasMedparts((prev) =>
+      prev.map((m) =>
+        m.id === id
+          ? {
+              ...m,
+              status: 'Disetujui - Forward Pubdok',
+              statusColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+            }
+          : m
+      )
+    );
+    humasSync.updateItem(id, {
+      status: 'Disetujui - Forward Pubdok',
+      statusColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    });
+    handleAddActivityLog({
+      category: 'module_submit',
+      type: 'success',
+      userName: authUser?.name || 'Administrator',
+      userNim: authUser?.nim || '23404053',
+      userRole: authUser?.role || 'BPH',
+      userDivision: 'BPH',
+      moduleName: 'Humas & Media Partner',
+      event: `Approve Medpart: ${id}`,
+      details: `Permohonan kerja sama media partner ID ${id} disetujui & diteruskan ke Pubdok.`,
+    });
+  };
+
+  const handleRejectHumasMedpart = (id) => {
+    setHumasMedparts((prev) =>
+      prev.map((m) =>
+        m.id === id
+          ? {
+              ...m,
+              status: 'Ditolak (Slot Penuh)',
+              statusColor: 'bg-rose-50 text-rose-700 border-rose-200',
+            }
+          : m
+      )
+    );
+    humasSync.updateItem(id, {
+      status: 'Ditolak (Slot Penuh)',
+      statusColor: 'bg-rose-50 text-rose-700 border-rose-200',
+    });
+  };
+
+  // Handlers for KKM
+  const handleAddKkmOrder = (newOrder) => {
+    setKkmOrders((prev) => [newOrder, ...prev]);
+    saveLocalData(STORAGE_KEYS.KKM_ORDERS, [newOrder, ...kkmOrders]);
+    kkmOrdersSync.addItem(newOrder);
+    handleAddActivityLog({
+      category: 'module_submit',
+      type: 'info',
+      userName: newOrder.customerName || authUser?.name || 'Pelanggan KKM',
+      userNim: newOrder.nim || authUser?.nim || '-',
+      userRole: 'Pemesan Merchandise',
+      userDivision: newOrder.division || 'KKM',
+      moduleName: 'KKM (Kewirausahaan)',
+      event: `Pre-Order: ${newOrder.item}`,
+      details: `Pesanan baru ${newOrder.qty}x ${newOrder.item} (${newOrder.size}) senilai Rp ${newOrder.total?.toLocaleString('id-ID')}.`,
+    });
+  };
+
+  const handleSetKkmLunas = (orderId) => {
+    setKkmOrders((prev) =>
+      prev.map((o) =>
+        o.id === orderId
+          ? {
+              ...o,
+              paymentStatus: 'Lunas',
+              paymentColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+              pickupStatus: 'Siap Diambil di Sekre',
+            }
+          : o
+      )
+    );
+    kkmOrdersSync.updateItem(orderId, {
+      paymentStatus: 'Lunas',
+      paymentColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      pickupStatus: 'Siap Diambil di Sekre',
+    });
+    handleAddActivityLog({
+      category: 'module_submit',
+      type: 'success',
+      userName: authUser?.name || 'Administrator',
+      userNim: authUser?.nim || '23404053',
+      userRole: authUser?.role || 'BPH',
+      userDivision: 'Divisi KKM',
+      moduleName: 'KKM (Kewirausahaan)',
+      event: `Pelunasan PO: ${orderId}`,
+      details: `Pembayaran pesanan merchandise #${orderId} telah diverifikasi lunas.`,
+    });
+  };
+
+  const handleAddKkmCashflow = (newTx) => {
+    setKkmCashflow((prev) => [newTx, ...prev]);
+    saveLocalData(STORAGE_KEYS.KKM_CASHFLOW, [newTx, ...kkmCashflow]);
+    kkmCashflowSync.addItem(newTx);
+    handleAddActivityLog({
+      category: 'module_submit',
+      type: 'info',
+      userName: authUser?.name || 'Pengurus KKM',
+      userNim: authUser?.nim || '23404053',
+      userRole: authUser?.role || 'Divisi KKM',
+      userDivision: 'Divisi KKM',
+      moduleName: 'KKM (Kewirausahaan)',
+      event: `Kas Usaha KKM: ${newTx.desc}`,
+      details: `${newTx.type === 'in' ? 'Pemasukan' : 'Pengeluaran'} senilai Rp ${Number(newTx.amount).toLocaleString('id-ID')} (${newTx.category}).`,
+    });
+  };
+
+  // Handlers for Archive & Surat
+  const handleAddArchiveDoc = (newDoc) => {
+    setArchiveDocs((prev) => [newDoc, ...prev]);
+    saveLocalData(STORAGE_KEYS.ARCHIVE_DOCS, [newDoc, ...archiveDocs]);
+    archiveDocsSync.addItem(newDoc);
+    handleAddActivityLog({
+      category: 'module_submit',
+      type: 'info',
+      userName: authUser?.name || newDoc.author || 'Sekretariat',
+      userNim: authUser?.nim || '-',
+      userRole: authUser?.role || 'Kesekretariatan',
+      userDivision: 'Kesekretariatan',
+      moduleName: 'Digitalisasi E-Arsip',
+      event: `Upload Arsip: ${newDoc.title}`,
+      details: `Pengarsipan dokumen digital nomor ${newDoc.number} (${newDoc.category}).`,
+    });
+  };
+
+  const handleAddSuratLog = (newEntry) => {
+    setSuratLog((prev) => [newEntry, ...prev]);
+    saveLocalData(STORAGE_KEYS.SURAT_LOG, [newEntry, ...suratLog]);
+    suratLogSync.addItem(newEntry);
+    handleAddActivityLog({
+      category: 'module_submit',
+      type: 'info',
+      userName: authUser?.name || 'Administrator',
+      userNim: authUser?.nim || '23404053',
+      userRole: authUser?.role || 'BPH',
+      userDivision: newEntry.div || 'Kesekretariatan',
+      moduleName: 'Penomoran Surat Resmi',
+      event: `Generate Surat: ${newEntry.no}`,
+      details: `Nomor surat keluar diterbitkan: ${newEntry.perihal} (${newEntry.div}).`,
+    });
+  };
+
+  // Handlers for Assets
+  const handleBookAsset = (assetId, bookingForm) => {
+    setAssets((prev) =>
+      prev.map((ast) =>
+        ast.id === assetId
+          ? {
+              ...ast,
+              status: 'Dipinjam',
+              borrower: `${bookingForm.borrowerName} (${bookingForm.division})`,
+              returnDate: bookingForm.endDate || 'Besok',
+            }
+          : ast
+      )
+    );
+    assetsSync.updateItem(assetId, {
+      status: 'Dipinjam',
+      borrower: `${bookingForm.borrowerName} (${bookingForm.division})`,
+      returnDate: bookingForm.endDate || 'Besok',
+    });
+    handleAddActivityLog({
+      category: 'module_submit',
+      type: 'info',
+      userName: bookingForm.borrowerName || authUser?.name || 'Peminjam',
+      userNim: authUser?.nim || '-',
+      userRole: 'Peminjam Alat',
+      userDivision: bookingForm.division || 'Logistik',
+      moduleName: 'Digitalisasi Aset & Inventaris',
+      event: `Peminjaman Alat: ${assetId}`,
+      details: `Aset dipinjam oleh ${bookingForm.borrowerName} untuk keperluan: ${bookingForm.purpose}.`,
+    });
+  };
+
+  const handleReturnAsset = (assetId) => {
+    setAssets((prev) =>
+      prev.map((ast) =>
+        ast.id === assetId
+          ? {
+              ...ast,
+              status: 'Tersedia',
+              borrower: null,
+              returnDate: null,
+            }
+          : ast
+      )
+    );
+    assetsSync.updateItem(assetId, {
+      status: 'Tersedia',
+      borrower: null,
+      returnDate: null,
+    });
+    handleAddActivityLog({
+      category: 'module_submit',
+      type: 'success',
+      userName: authUser?.name || 'Administrator',
+      userNim: authUser?.nim || '23404053',
+      userRole: authUser?.role || 'Logistik',
+      userDivision: 'Logistik',
+      moduleName: 'Digitalisasi Aset & Inventaris',
+      event: `Pengembalian Alat: ${assetId}`,
+      details: `Aset ${assetId} telah dikembalikan dan diverifikasi siap pakai di gudang/sekre.`,
+    });
+  };
+
+  // Handlers for Finance
+  const handleAddFinanceTransaction = (newTx) => {
+    setFinanceTransactions((prev) => [newTx, ...prev]);
+    saveLocalData(STORAGE_KEYS.FINANCE, [newTx, ...financeTransactions]);
+    financeSync.addItem(newTx);
+    handleAddActivityLog({
+      category: 'module_submit',
+      type: 'info',
+      userName: authUser?.name || 'Pengurus Keuangan',
+      userNim: authUser?.nim || '23404053',
+      userRole: authUser?.role || 'Bendahara',
+      userDivision: newTx.division || 'Keuangan',
+      moduleName: 'Kas & Reimbursement',
+      event: `Transaksi Kas: ${newTx.title}`,
+      details: `Mutasi ${newTx.type} senilai ${newTx.amount} status "${newTx.status}".`,
+    });
+  };
+
+  // Handlers for Attendance
+  const handleAddAttendanceRecord = (record) => {
+    setAttendanceList((prev) => [record, ...prev]);
+    saveLocalData(STORAGE_KEYS.ATTENDANCE, [record, ...attendanceList]);
+    attendanceSync.addItem(record);
+    handleAddActivityLog({
+      category: 'module_submit',
+      type: 'success',
+      userName: record.name,
+      userNim: authUser?.nim || '-',
+      userRole: record.role || 'Anggota',
+      userDivision: record.division || 'Kaderisasi',
+      moduleName: 'Presensi Digital & QR Acara',
+      event: `Check-in Presensi: ${record.name}`,
+      details: `Presensi rapat/kegiatan tercatat pada ${record.time} (${record.status}).`,
+    });
+  };
+
+  // Handlers for Activity Archive
+  const handleAddActivity = (newActivity) => {
+    setActivities((prev) => [newActivity, ...prev]);
+    saveLocalData(STORAGE_KEYS.ACTIVITIES, [newActivity, ...activities]);
+    activitiesSync.addItem(newActivity);
+    handleAddActivityLog({
+      category: 'module_submit',
+      type: 'info',
+      userName: authUser?.name || newActivity.pic || 'PIC Kegiatan',
+      userNim: authUser?.nim || '23404053',
+      userRole: authUser?.role || 'BPH',
+      userDivision: newActivity.division || 'Lintas Divisi',
+      moduleName: 'Arsip Kegiatan & Dokumentasi',
+      event: `Arsip Baru: ${newActivity.title}`,
+      details: `Dokumentasi kegiatan terlaksana ${newActivity.date} di ${newActivity.location} (${newActivity.participants} peserta).`,
+    });
+  };
+
+  // Handlers for Module Status
+  const handleToggleModuleStatus = (modId) => {
+    setModuleStatuses((prev) => {
+      const updated = !prev[modId];
+      const next = { ...prev, [modId]: updated };
+      saveLocalData(STORAGE_KEYS.MODULE_STATUSES, next);
+      updateModuleStatusInDb(next);
+      handleAddActivityLog({
+        category: 'system',
+        type: updated ? 'success' : 'warning',
+        userName: authUser?.name || 'Administrator',
+        userNim: authUser?.nim || '23404053',
+        userRole: authUser?.role || 'BPH',
+        userDivision: 'BPH',
+        moduleName: 'Sistem Organisasi',
+        event: `Status Modul: ${modId.toUpperCase()}`,
+        details: `Modul layanan ${modId.toUpperCase()} dialihkan menjadi ${updated ? 'ONLINE / AKTIF' : 'MAINTENANCE'}.`,
+      });
+      return next;
+    });
+  };
+
   // Kotak Masuk Konsultasi (Inbox Kontak) state terintegrasi
   const [consultationMessages, setConsultationMessages] = useState(() => {
     try {
@@ -376,6 +769,97 @@ function App() {
     }
   }, [activityLogs]);
 
+  // ==========================================
+  // PERSISTENT & SYNCED MODULE STATES
+  // ==========================================
+  // 1. PAR Submissions
+  const [parSubmissions, setParSubmissions] = useState(() =>
+    loadLocalData(STORAGE_KEYS.PAR, defaultParSubmissions)
+  );
+  useEffect(() => {
+    saveLocalData(STORAGE_KEYS.PAR, parSubmissions);
+  }, [parSubmissions]);
+
+  // 2. Humas Medparts
+  const [humasMedparts, setHumasMedparts] = useState(() =>
+    loadLocalData(STORAGE_KEYS.HUMAS, defaultHumasMedparts)
+  );
+  useEffect(() => {
+    saveLocalData(STORAGE_KEYS.HUMAS, humasMedparts);
+  }, [humasMedparts]);
+
+  // 3. KKM Orders
+  const [kkmOrders, setKkmOrders] = useState(() =>
+    loadLocalData(STORAGE_KEYS.KKM_ORDERS, defaultKkmOrders)
+  );
+  useEffect(() => {
+    saveLocalData(STORAGE_KEYS.KKM_ORDERS, kkmOrders);
+  }, [kkmOrders]);
+
+  // 4. KKM Cashflow
+  const [kkmCashflow, setKkmCashflow] = useState(() =>
+    loadLocalData(STORAGE_KEYS.KKM_CASHFLOW, defaultKkmCashflow)
+  );
+  useEffect(() => {
+    saveLocalData(STORAGE_KEYS.KKM_CASHFLOW, kkmCashflow);
+  }, [kkmCashflow]);
+
+  // 5. Archive Docs
+  const [archiveDocs, setArchiveDocs] = useState(() =>
+    loadLocalData(STORAGE_KEYS.ARCHIVE_DOCS, defaultArchiveDocs)
+  );
+  useEffect(() => {
+    saveLocalData(STORAGE_KEYS.ARCHIVE_DOCS, archiveDocs);
+  }, [archiveDocs]);
+
+  // 6. Surat Log
+  const [suratLog, setSuratLog] = useState(() =>
+    loadLocalData(STORAGE_KEYS.SURAT_LOG, defaultSuratLog)
+  );
+  useEffect(() => {
+    saveLocalData(STORAGE_KEYS.SURAT_LOG, suratLog);
+  }, [suratLog]);
+
+  // 7. Assets Inventory
+  const [assets, setAssets] = useState(() =>
+    loadLocalData(STORAGE_KEYS.ASSETS, defaultAssets)
+  );
+  useEffect(() => {
+    saveLocalData(STORAGE_KEYS.ASSETS, assets);
+  }, [assets]);
+
+  // 8. Finance Transactions
+  const [financeTransactions, setFinanceTransactions] = useState(() =>
+    loadLocalData(STORAGE_KEYS.FINANCE, defaultFinanceTransactions)
+  );
+  useEffect(() => {
+    saveLocalData(STORAGE_KEYS.FINANCE, financeTransactions);
+  }, [financeTransactions]);
+
+  // 9. Attendance List
+  const [attendanceList, setAttendanceList] = useState(() =>
+    loadLocalData(STORAGE_KEYS.ATTENDANCE, defaultAttendanceList)
+  );
+  useEffect(() => {
+    saveLocalData(STORAGE_KEYS.ATTENDANCE, attendanceList);
+  }, [attendanceList]);
+
+  // 10. Activities Archive
+  const [activities, setActivities] = useState(() =>
+    loadLocalData(STORAGE_KEYS.ACTIVITIES, defaultActivities)
+  );
+  useEffect(() => {
+    saveLocalData(STORAGE_KEYS.ACTIVITIES, activities);
+  }, [activities]);
+
+  // 11. Module Statuses
+  const [moduleStatuses, setModuleStatuses] = useState(() =>
+    loadLocalData(STORAGE_KEYS.MODULE_STATUSES, defaultModuleStatuses)
+  );
+  useEffect(() => {
+    saveLocalData(STORAGE_KEYS.MODULE_STATUSES, moduleStatuses);
+  }, [moduleStatuses]);
+
   // Real-time Cloud Firestore synchronization (aktif otomatis jika kredensial Firebase terisi)
   useEffect(() => {
     if (!isFirebaseConfigured) return;
@@ -412,11 +896,56 @@ function App() {
       () => designTicketsRef.current
     );
 
+    const unsubPar = parSync.subscribe((data) => {
+      if (Array.isArray(data) && data.length > 0) setParSubmissions(data);
+    });
+    const unsubHumas = humasSync.subscribe((data) => {
+      if (Array.isArray(data) && data.length > 0) setHumasMedparts(data);
+    });
+    const unsubKkmOrders = kkmOrdersSync.subscribe((data) => {
+      if (Array.isArray(data) && data.length > 0) setKkmOrders(data);
+    });
+    const unsubKkmCashflow = kkmCashflowSync.subscribe((data) => {
+      if (Array.isArray(data) && data.length > 0) setKkmCashflow(data);
+    });
+    const unsubArchiveDocs = archiveDocsSync.subscribe((data) => {
+      if (Array.isArray(data) && data.length > 0) setArchiveDocs(data);
+    });
+    const unsubSuratLog = suratLogSync.subscribe((data) => {
+      if (Array.isArray(data) && data.length > 0) setSuratLog(data);
+    });
+    const unsubAssets = assetsSync.subscribe((data) => {
+      if (Array.isArray(data) && data.length > 0) setAssets(data);
+    });
+    const unsubFinance = financeSync.subscribe((data) => {
+      if (Array.isArray(data) && data.length > 0) setFinanceTransactions(data);
+    });
+    const unsubAttendance = attendanceSync.subscribe((data) => {
+      if (Array.isArray(data) && data.length > 0) setAttendanceList(data);
+    });
+    const unsubActivities = activitiesSync.subscribe((data) => {
+      if (Array.isArray(data) && data.length > 0) setActivities(data);
+    });
+    const unsubModuleStatuses = subscribeModuleStatuses((data) => {
+      if (data && typeof data === 'object') setModuleStatuses(data);
+    });
+
     return () => {
       unsubLogs();
       unsubConsultations();
       unsubAccounts();
       unsubTickets();
+      unsubPar();
+      unsubHumas();
+      unsubKkmOrders();
+      unsubKkmCashflow();
+      unsubArchiveDocs();
+      unsubSuratLog();
+      unsubAssets();
+      unsubFinance();
+      unsubAttendance();
+      unsubActivities();
+      unsubModuleStatuses();
     };
   }, []);
 
@@ -1028,6 +1557,21 @@ function App() {
           onAddTicket={handleAddTicket}
           onUpdateTicketStatus={handleUpdateTicketStatus}
           onDeleteTicket={handleDeleteTicket}
+          parSubmissions={parSubmissions}
+          onAddParSubmission={handleAddParSubmission}
+          onApproveProposal={handleApproveParSubmission}
+          onUpdateParStatus={handleUpdateParStatus}
+          humasMedparts={humasMedparts}
+          onAddHumasMedpart={handleAddHumasMedpart}
+          onApproveMedpart={handleApproveHumasMedpart}
+          onRejectMedpart={handleRejectHumasMedpart}
+          kkmOrders={kkmOrders}
+          onAddKkmOrder={handleAddKkmOrder}
+          onSetKkmLunas={handleSetKkmLunas}
+          suratLog={suratLog}
+          onAddSuratLog={handleAddSuratLog}
+          moduleStatuses={moduleStatuses}
+          onToggleModuleStatus={handleToggleModuleStatus}
         />
       ) : currentView.page === 'service' ? (
         /* Halaman Layanan Spesifik (PAR, Arsip, Aset, Kas, dsb.) */
@@ -1048,6 +1592,34 @@ function App() {
           tickets={designTickets}
           onAddTicket={handleAddTicket}
           onUpdateTicketStatus={handleUpdateTicketStatus}
+          parSubmissions={parSubmissions}
+          onAddParSubmission={handleAddParSubmission}
+          onApproveProposal={handleApproveParSubmission}
+          onUpdateParStatus={handleUpdateParStatus}
+          humasMedparts={humasMedparts}
+          onAddHumasMedpart={handleAddHumasMedpart}
+          onApproveMedpart={handleApproveHumasMedpart}
+          onRejectMedpart={handleRejectHumasMedpart}
+          kkmOrders={kkmOrders}
+          onAddKkmOrder={handleAddKkmOrder}
+          onSetKkmLunas={handleSetKkmLunas}
+          kkmCashflow={kkmCashflow}
+          onAddKkmCashflow={handleAddKkmCashflow}
+          archiveDocs={archiveDocs}
+          onAddArchiveDoc={handleAddArchiveDoc}
+          suratLog={suratLog}
+          onAddSuratLog={handleAddSuratLog}
+          assets={assets}
+          onBookAsset={handleBookAsset}
+          onReturnAsset={handleReturnAsset}
+          financeTransactions={financeTransactions}
+          onAddFinanceTransaction={handleAddFinanceTransaction}
+          attendanceList={attendanceList}
+          onAddAttendanceRecord={handleAddAttendanceRecord}
+          activities={activities}
+          onAddActivity={handleAddActivity}
+          moduleStatuses={moduleStatuses}
+          onToggleModuleStatus={handleToggleModuleStatus}
         />
       ) : (
         /* Halaman Khusus Portal Fitur & Katalog Aplikasi Organisasi */

@@ -23,11 +23,15 @@ const sampleAttendanceList = [
 ];
 
 const AttendanceServicePage = (props) => {
+  const { attendanceList: propAttendance, onAddAttendanceRecord } = props;
   const [activeTab, setActiveTab] = useState('qr'); // 'qr' | 'log' | 'rekap'
   const [searchQuery, setSearchQuery] = useState('');
   const [sessionActive] = useState(true);
   const [qrToken, setQrToken] = useState('TERA-QR-98214');
   const [pinCode, setPinCode] = useState('782910');
+  const [localAttendance, setLocalAttendance] = useState(sampleAttendanceList);
+  const attendanceList = propAttendance || localAttendance;
+  const [checkinSuccess, setCheckinSuccess] = useState('');
 
   const handleRefreshQr = () => {
     const randomToken = `TERA-QR-${Math.floor(10000 + Math.random() * 90000)}`;
@@ -36,7 +40,28 @@ const AttendanceServicePage = (props) => {
     setPinCode(randomPin);
   };
 
-  const filteredList = sampleAttendanceList.filter((item) =>
+  const handleSelfCheckin = () => {
+    const user = props.authUser || { name: 'Alif Fikri Haykal', division: 'BPH & Presidium', role: 'Demisioner Ketum' };
+    const now = new Date();
+    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')} WIB`;
+    const newRecord = {
+      id: `ATT-0${attendanceList.length + 1}`,
+      name: user.name,
+      division: user.division || 'BPH & Kesekretariatan',
+      role: user.role || 'Pengurus',
+      time: timeStr,
+      status: 'Tepat Waktu (Check-In Live)',
+    };
+    if (onAddAttendanceRecord) {
+      onAddAttendanceRecord(newRecord);
+    } else {
+      setLocalAttendance((prev) => [newRecord, ...prev]);
+    }
+    setCheckinSuccess(`Check-in presensi sukses untuk ${user.name} (${timeStr})!`);
+    setTimeout(() => setCheckinSuccess(''), 4000);
+  };
+
+  const filteredList = attendanceList.filter((item) =>
     item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.division.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -120,7 +145,7 @@ const AttendanceServicePage = (props) => {
           }`}
         >
           <Clock size={16} />
-          <span>Live Log Kehadiran ({sampleAttendanceList.length})</span>
+          <span>Live Log Kehadiran ({attendanceList.length})</span>
         </button>
 
         <button
@@ -158,7 +183,7 @@ const AttendanceServicePage = (props) => {
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center justify-center gap-3">
               <button
                 onClick={handleRefreshQr}
                 className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/15 text-white rounded-xl text-xs font-semibold transition-colors cursor-pointer"
@@ -166,7 +191,21 @@ const AttendanceServicePage = (props) => {
                 <RefreshCw size={14} />
                 <span>Perbarui Token QR</span>
               </button>
+              <button
+                onClick={handleSelfCheckin}
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer"
+              >
+                <CheckCircle2 size={14} />
+                <span>Simulasi Check-In Saya</span>
+              </button>
             </div>
+
+            {checkinSuccess && (
+              <div className="mt-4 p-3 bg-emerald-500/20 border border-emerald-500/40 rounded-xl text-emerald-300 text-xs font-semibold flex items-center gap-2 animate-in fade-in">
+                <CheckCircle2 size={16} />
+                <span>{checkinSuccess}</span>
+              </div>
+            )}
           </div>
 
           <div className="lg:col-span-6 space-y-6">

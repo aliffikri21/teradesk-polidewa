@@ -95,8 +95,10 @@ const initialAssets = [
 ];
 
 const AssetServicePage = (props) => {
+  const { assets: propAssets, onBookAsset } = props;
   const [activeTab, setActiveTab] = useState('katalog'); // 'katalog' | 'booking' | 'log' | 'jadwal'
-  const [assets, setAssets] = useState(initialAssets);
+  const [localAssets, setLocalAssets] = useState(initialAssets);
+  const assets = propAssets || localAssets;
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Semua');
 
@@ -132,19 +134,22 @@ const AssetServicePage = (props) => {
     e.preventDefault();
     if (!bookingForm.borrowerName || !bookingForm.purpose) return;
 
-    // Update asset status to 'Dipinjam'
-    setAssets((prev) =>
-      prev.map((ast) =>
-        ast.id === bookingForm.assetId
-          ? {
-              ...ast,
-              status: 'Dipinjam',
-              borrower: `${bookingForm.borrowerName} (${bookingForm.division})`,
-              returnDate: bookingForm.endDate || 'Besok',
-            }
-          : ast
-      )
-    );
+    if (onBookAsset) {
+      onBookAsset(bookingForm.assetId, bookingForm);
+    } else {
+      setLocalAssets((prev) =>
+        prev.map((ast) =>
+          ast.id === bookingForm.assetId
+            ? {
+                ...ast,
+                status: 'Dipinjam',
+                borrower: `${bookingForm.borrowerName} (${bookingForm.division})`,
+                returnDate: bookingForm.endDate || 'Besok',
+              }
+            : ast
+        )
+      );
+    }
 
     setBookingSuccess(true);
     setTimeout(() => {

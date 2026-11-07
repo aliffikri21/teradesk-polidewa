@@ -18,6 +18,12 @@ import {
 import ServicePageLayout from './ServicePageLayout';
 
 const KkmServicePage = (props) => {
+  const {
+    kkmOrders: propOrders,
+    onAddKkmOrder,
+    kkmCashflow: propCashflow,
+    onAddKkmCashflow,
+  } = props;
   const [activeTab, setActiveTab] = useState('merch'); // 'merch' | 'rental' | 'kas'
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('Semua');
@@ -67,7 +73,7 @@ const KkmServicePage = (props) => {
   ];
 
   // Pre-Order Orders List
-  const [orderList, setOrderList] = useState([
+  const [localOrderList, setLocalOrderList] = useState([
     {
       id: 'PO-2026-001',
       customerName: 'Alif Fikri',
@@ -121,6 +127,7 @@ const KkmServicePage = (props) => {
       paymentColor: 'bg-rose-50 text-rose-700 border-rose-200',
     },
   ]);
+  const orderList = propOrders || localOrderList;
 
   // Form New Order
   const [formCustomerName, setFormCustomerName] = useState('');
@@ -207,7 +214,7 @@ const KkmServicePage = (props) => {
   ]);
 
   // 3. Profit/Loss Cashflow Data
-  const [cashflowList, setCashflowList] = useState([
+  const [localCashflowList, setLocalCashflowList] = useState([
     {
       id: 'TX-KKM-01',
       date: '02 Nov 2026',
@@ -254,6 +261,7 @@ const KkmServicePage = (props) => {
       note: 'Plastik zip lock & label stiker Teramedia',
     },
   ]);
+  const cashflowList = propCashflow || localCashflowList;
 
   // Form Cashflow Transaction
   const [formTxDesc, setFormTxDesc] = useState('');
@@ -293,7 +301,11 @@ const KkmServicePage = (props) => {
           : 'bg-rose-50 text-rose-700 border-rose-200',
     };
 
-    setOrderList([newOrder, ...orderList]);
+    if (onAddKkmOrder) {
+      onAddKkmOrder(newOrder);
+    } else {
+      setLocalOrderList([newOrder, ...orderList]);
+    }
     setOrderSuccessMsg(`Pesanan untuk ${formCustomerName} berhasil dicatat!`);
     setFormCustomerName('');
     setFormNim('');
@@ -317,7 +329,11 @@ const KkmServicePage = (props) => {
       note: 'Dicatat via Panel Divisi KKM',
     };
 
-    setCashflowList([newTx, ...cashflowList]);
+    if (onAddKkmCashflow) {
+      onAddKkmCashflow(newTx);
+    } else {
+      setLocalCashflowList([newTx, ...cashflowList]);
+    }
     setFormTxDesc('');
     setFormTxAmount('');
   };

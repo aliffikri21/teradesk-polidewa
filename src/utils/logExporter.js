@@ -171,3 +171,4 @@ export const exportLogsToXLSX = (logsList = [], filename = 'teradesk_log_aktivit
 
   XLSX.writeFile(workbook, filename.endsWith('.xlsx') ? filename : `${filename}.xlsx`);
 };
+

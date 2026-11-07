@@ -17,12 +17,13 @@ import {
 import ServicePageLayout from './ServicePageLayout';
 
 const ParServicePage = (props) => {
+  const { parSubmissions: propSubmissions, onAddParSubmission } = props;
   const [activeTab, setActiveTab] = useState('simulasi'); // 'simulasi' | 'daftar' | 'form' | 'sop'
   const [approvalStep, setApprovalStep] = useState(2); // 1: Pengaju, 2: Kadiv, 3: BPH, 4: Pembina/Ketum
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('Semua');
 
-  const [submissions, setSubmissions] = useState([
+  const [localSubmissions, setLocalSubmissions] = useState([
     {
       id: 'PAR-2026-001',
       title: 'Latihan Dasar Kepemimpinan (LDK) 2026',
@@ -84,6 +85,7 @@ const ParServicePage = (props) => {
       slaRemaining: 'Selesai',
     },
   ]);
+  const submissions = propSubmissions || localSubmissions;
 
   const [formState, setFormState] = useState({
     title: '',
@@ -116,11 +118,15 @@ const ParServicePage = (props) => {
       status: 'Review Kadiv',
       statusColor: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
       step: 2,
-      pic: formState.pic || 'Ketua Panitia',
+      pic: formState.pic || (props.authUser?.name || 'Ketua Panitia'),
       slaRemaining: '24 Jam',
     };
 
-    setSubmissions([newPar, ...submissions]);
+    if (onAddParSubmission) {
+      onAddParSubmission(newPar);
+    } else {
+      setLocalSubmissions([newPar, ...submissions]);
+    }
     setFormSubmitted(true);
     setTimeout(() => {
       setFormSubmitted(false);

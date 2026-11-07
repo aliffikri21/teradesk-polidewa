@@ -152,7 +152,9 @@ const initialActivities = [
 ];
 
 const ActivityArchiveServicePage = (props) => {
-  const [activities, setActivities] = useState(initialActivities);
+  const { activities: propActivities, onAddActivity } = props;
+  const [localActivities, setLocalActivities] = useState(initialActivities);
+  const activities = propActivities || localActivities;
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDivision, setSelectedDivision] = useState('Semua');
   const [selectedCategory, setSelectedCategory] = useState('Semua');
@@ -229,7 +231,11 @@ const ActivityArchiveServicePage = (props) => {
       documentationUrl: '#'
     };
 
-    setActivities([created, ...activities]);
+    if (onAddActivity) {
+      onAddActivity(created);
+    } else {
+      setLocalActivities([created, ...activities]);
+    }
     setIsAddModalOpen(false);
     setNewActivity({
       title: '',

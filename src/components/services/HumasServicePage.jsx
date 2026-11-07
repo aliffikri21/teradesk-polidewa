@@ -15,12 +15,13 @@ import {
 import ServicePageLayout from './ServicePageLayout';
 
 const HumasServicePage = (props) => {
+  const { humasMedparts: propMedparts, onAddHumasMedpart, onApproveMedpart: propApproveMedpart } = props;
   const [activeTab, setActiveTab] = useState('medpart'); // 'medpart' | 'relasi' | 'form'
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('Semua');
 
   // Media Partner Requests Data
-  const [medpartList, setMedpartList] = useState([
+  const [localMedpartList, setLocalMedpartList] = useState([
     {
       id: 'MP-2026-001',
       eventName: 'Seminar Nasional AI & Creative Tech',
@@ -55,6 +56,7 @@ const HumasServicePage = (props) => {
       statusColor: 'bg-blue-50 text-blue-700 border-blue-200',
     },
   ]);
+  const medpartList = propMedparts || localMedpartList;
 
   // Form State for New Medpart Request
   const [formEventName, setFormEventName] = useState('');
@@ -102,13 +104,17 @@ const HumasServicePage = (props) => {
   ];
 
   const handleApproveMedpart = (id) => {
-    setMedpartList((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? { ...item, status: 'Disetujui', statusColor: 'bg-emerald-50 text-emerald-700 border-emerald-200' }
-          : item
-      )
-    );
+    if (propApproveMedpart) {
+      propApproveMedpart(id);
+    } else {
+      setLocalMedpartList((prev) =>
+        prev.map((item) =>
+          item.id === id
+            ? { ...item, status: 'Disetujui', statusColor: 'bg-emerald-50 text-emerald-700 border-emerald-200' }
+            : item
+        )
+      );
+    }
   };
 
   const handleCreateMedpart = (e) => {
@@ -127,7 +133,11 @@ const HumasServicePage = (props) => {
       statusColor: 'bg-amber-50 text-amber-700 border-amber-200',
     };
 
-    setMedpartList([newMedpart, ...medpartList]);
+    if (onAddHumasMedpart) {
+      onAddHumasMedpart(newMedpart);
+    } else {
+      setLocalMedpartList([newMedpart, ...medpartList]);
+    }
     setFormSubmitted(true);
     setFormEventName('');
     setFormOrganizer('');

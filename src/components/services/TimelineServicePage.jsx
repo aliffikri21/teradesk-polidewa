@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   CalendarRange,
   Calendar,
@@ -74,7 +74,27 @@ const sampleEvents = [
 const TimelineServicePage = (props) => {
   const { prokerList = [], onAddProker } = props;
   const [activeTab, setActiveTab] = useState('roadmap'); // 'roadmap' | 'agenda' | 'tambah'
-  const [localEvents, setLocalEvents] = useState(sampleEvents);
+  const [localEvents, setLocalEvents] = useState(() => {
+    try {
+      const saved = localStorage.getItem('teradesk_timeline_events_v1');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {
+      // ignore
+    }
+    return sampleEvents;
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('teradesk_timeline_events_v1', JSON.stringify(localEvents));
+    } catch {
+      // ignore
+    }
+  }, [localEvents]);
+
   const [searchQuery, setSearchQuery] = useState('');
 
   // Form State

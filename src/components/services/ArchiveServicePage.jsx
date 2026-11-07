@@ -78,11 +78,13 @@ const sampleDocs = [
 ];
 
 const ArchiveServicePage = (props) => {
+  const { archiveDocs: propDocs, onAddArchiveDoc } = props;
   const [activeTab, setActiveTab] = useState('explorer'); // 'explorer' | 'generator' | 'upload' | 'struktur'
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Semua');
   const [copied, setCopied] = useState(false);
-  const [docList, setDocList] = useState(sampleDocs);
+  const [localDocList, setLocalDocList] = useState(sampleDocs);
+  const docList = propDocs || localDocList;
 
   // Auto Numbering State
   const [generatorData, setGeneratorData] = useState({
@@ -144,7 +146,11 @@ const ArchiveServicePage = (props) => {
       type: 'PDF',
     };
 
-    setDocList([newDoc, ...docList]);
+    if (onAddArchiveDoc) {
+      onAddArchiveDoc(newDoc);
+    } else {
+      setLocalDocList([newDoc, ...docList]);
+    }
     setUploadSuccess(true);
     setTimeout(() => {
       setUploadSuccess(false);

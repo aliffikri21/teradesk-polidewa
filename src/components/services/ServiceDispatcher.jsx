@@ -11,41 +11,9 @@ import HumasServicePage from './HumasServicePage';
 import KkmServicePage from './KkmServicePage';
 import ActivityArchiveServicePage from './ActivityArchiveServicePage';
 
-const ServiceDispatcher = ({
-  serviceId,
-  onBackToPortal,
-  onBackToLanding,
-  onSelectService,
-  authUser,
-  onLogout,
-  prokerList = [],
-  onAddProker,
-  onUpdateProker,
-  onDeleteProker,
-  accounts = [],
-  onAddAccount,
-  onAddActivityLog,
-  tickets = [],
-  onAddTicket,
-  onUpdateTicketStatus,
-}) => {
-  const commonProps = {
-    onBackToPortal,
-    onBackToLanding,
-    onSelectService,
-    authUser,
-    onLogout,
-    prokerList,
-    onAddProker,
-    onUpdateProker,
-    onDeleteProker,
-    accounts,
-    onAddAccount,
-    onAddActivityLog,
-    tickets,
-    onAddTicket,
-    onUpdateTicketStatus,
-  };
+const ServiceDispatcher = (props) => {
+  const { serviceId } = props;
+  const commonProps = { ...props };
 
   switch (serviceId) {
     case 'par':

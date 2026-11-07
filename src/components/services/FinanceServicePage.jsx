@@ -74,10 +74,12 @@ const divisionBudgets = [
 ];
 
 const FinanceServicePage = (props) => {
+  const { financeTransactions: propTransactions, onAddFinanceTransaction } = props;
   const [activeTab, setActiveTab] = useState('kas'); // 'kas' | 'reimburse' | 'pagu'
   const [filterType, setFilterType] = useState('Semua');
   const [searchQuery, setSearchQuery] = useState('');
-  const [transactions, setTransactions] = useState(sampleTransactions);
+  const [localTransactions, setLocalTransactions] = useState(sampleTransactions);
+  const transactions = propTransactions || localTransactions;
 
   // Reimbursement Form
   const [reimburseForm, setReimburseForm] = useState({
@@ -114,7 +116,11 @@ const FinanceServicePage = (props) => {
       status: 'Menunggu Verifikasi Bendum',
     };
 
-    setTransactions([newTx, ...transactions]);
+    if (onAddFinanceTransaction) {
+      onAddFinanceTransaction(newTx);
+    } else {
+      setLocalTransactions([newTx, ...transactions]);
+    }
     setReimburseSuccess(true);
     setTimeout(() => {
       setReimburseSuccess(false);
