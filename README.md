@@ -163,19 +163,42 @@ Hasil build produksi siap deploy akan tersimpan pada direktori `dist/`.
 
 ---
 
-## 🚀 Panduan Deployment ke Vercel
+## 🚀 Panduan Deployment ke Cloudflare Pages (Rekomendasi Utama)
 
-TeraDesk sudah dilengkapi file [vercel.json](file:///d:/VSCode/teradesk-ui-slicing/vercel.json) sehingga rute SPA (`/admin`, `/login`, dll.) tidak akan error 404 saat di-refresh.
+TeraDesk sudah dilengkapi file [public/_redirects](file:///d:/VSCode/teradesk-ui-slicing/public/_redirects) untuk menangani routing SPA di Cloudflare Pages agar navigasi rute `/admin`, `/login`, dan 11 modul layanan tidak mengalami error 404 saat di-refresh.
 
 1. Push repository ke GitHub.
-2. Di dashboard [Vercel](https://vercel.com/), pilih **Add New ➔ Project**, lalu impor repository ini.
+2. Di dashboard [Cloudflare](https://dash.cloudflare.com/), pilih menu **Workers & Pages ➔ Create Application ➔ Pages ➔ Connect to Git**.
+3. Pilih repository GitHub Anda.
+4. Pada bagian **Build settings**:
+   - **Framework preset**: `Vite` (atau `None`)
+   - **Build command**: `npm run build`
+   - **Build output directory**: `dist`
+5. Pada bagian **Environment variables (advanced)**, tambahkan variabel lingkungan Firebase dari file `.env.local`:
+   - `VITE_FIREBASE_API_KEY`
+   - `VITE_FIREBASE_AUTH_DOMAIN`
+   - `VITE_FIREBASE_PROJECT_ID`
+   - `VITE_FIREBASE_STORAGE_BUCKET`
+   - `VITE_FIREBASE_MESSAGING_SENDER_ID`
+   - `VITE_FIREBASE_APP_ID`
+   - `VITE_FIREBASE_MEASUREMENT_ID`
+6. Klik **Save and Deploy**. Website Anda akan aktif dengan domain instan `https://<nama-project>.pages.dev` dengan **Unlimited Bandwidth** dan proteksi anti-DDoS gratis!
+
+---
+
+## ⚡ Panduan Alternatif Deployment ke Vercel
+
+TeraDesk juga mendukung deployment langsung ke [Vercel](https://vercel.com/) menggunakan file konfigurasi [vercel.json](file:///d:/VSCode/teradesk-ui-slicing/vercel.json):
+
+1. Push repository ke GitHub.
+2. Di dashboard Vercel, pilih **Add New ➔ Project**, lalu impor repository ini.
 3. Pada pengaturan proyek:
    - **Framework Preset**: `Vite`
    - **Root Directory**: `./` (Default root)
    - **Build Command**: `npm run build`
    - **Output Directory**: `dist`
-4. Di bagian **Environment Variables**, tambahkan variabel `VITE_FIREBASE_*` dari file `.env.local` Anda.
-5. Klik **Deploy**. Website TeraDesk akan langsung online dan dapat diakses bersama oleh seluruh anggota organisasi.
+4. Di bagian **Environment Variables**, tambahkan variabel `VITE_FIREBASE_*`.
+5. Klik **Deploy**.
 
 ---
 
