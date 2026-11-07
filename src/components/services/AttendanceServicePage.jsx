@@ -19,6 +19,7 @@ import {
   Camera,
   X,
   ChevronDown,
+  ChevronUp,
   Filter,
   Radio,
   Copy,
@@ -32,8 +33,18 @@ import {
   defaultAttendanceSessions,
   defaultAttendanceList,
 } from '../../data/defaultModulesData';
+import { OFFICIAL_DIVISIONS } from '../../data/defaultAccounts';
 import { playNotificationChime } from '../../utils/notificationSound';
 import { PALOPO_LOCATION_PRESETS } from '../../utils/geoDistance';
+
+const DIVISION_COLORS = {
+  'BPH (Badan Pengurus Harian)': 'bg-indigo-500',
+  'Divisi Kesekretariatan': 'bg-emerald-500',
+  'Divisi Publikasi dan Dokumentasi': 'bg-rose-500',
+  'Divisi Humas': 'bg-sky-500',
+  'Divisi Kaderisasi': 'bg-blue-500',
+  'Divisi KKM (Kewirausahaan)': 'bg-amber-500',
+};
 
 const AttendanceServicePage = (props) => {
   const {
@@ -61,7 +72,7 @@ const AttendanceServicePage = (props) => {
       sessions[0] || {
         id: 'SES-DEFAULT',
         title: 'Sesi Presensi Rapat',
-        division: 'BPH & Presidium',
+        division: OFFICIAL_DIVISIONS[0],
         date: '08 November 2026',
         timeStart: '13:30 WITA',
         timeEnd: '16:00 WITA',
@@ -70,7 +81,7 @@ const AttendanceServicePage = (props) => {
         status: 'active',
         qrToken: 'TERA-QR-98214',
         pinCode: '782910',
-        organizer: 'BPH',
+        organizer: OFFICIAL_DIVISIONS[0],
         agenda: 'Koordinasi teknis kegiatan organisasi',
         notula: { summary: '', keyDecisions: [], actionItems: [] },
       }
@@ -93,6 +104,17 @@ const AttendanceServicePage = (props) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('Semua');
 
+  // Filter Agenda & Collapse state khusus Tab 2: Live Log Kehadiran
+  const [logAgendaFilter, setLogAgendaFilter] = useState('all'); // 'all' | sessionId
+  const [collapsedSessionIds, setCollapsedSessionIds] = useState({});
+
+  const toggleSessionCollapse = (sessionId) => {
+    setCollapsedSessionIds((prev) => ({
+      ...prev,
+      [sessionId]: !prev[sessionId],
+    }));
+  };
+
   // Interactive Check-In Modal State
   const [isCheckinModalOpen, setIsCheckinModalOpen] = useState(false);
   const [checkinMethodTab, setCheckinMethodTab] = useState('pin'); // 'pin' | 'qr'
@@ -114,7 +136,7 @@ const AttendanceServicePage = (props) => {
   const [copiedQrLink, setCopiedQrLink] = useState(false);
   const [newSessionForm, setNewSessionForm] = useState({
     title: '',
-    division: 'BPH & Presidium',
+    division: OFFICIAL_DIVISIONS[0],
     date: '08 November 2026',
     timeStart: '14:00 WITA',
     timeEnd: '16:30 WITA',
@@ -247,7 +269,7 @@ const AttendanceServicePage = (props) => {
     const user = authUser || {
       name: 'Alif Fikri Haykal',
       nim: '23404053',
-      division: 'BPH & Kesekretariatan',
+      division: 'BPH (Badan Pengurus Harian)',
       role: 'Demisioner Ketum',
     };
 
@@ -273,7 +295,7 @@ const AttendanceServicePage = (props) => {
       sessionId: currentSession.id,
       name: user.name,
       nim: user.nim || '23404053',
-      division: user.division || 'BPH & Kesekretariatan',
+      division: user.division || 'BPH (Badan Pengurus Harian)',
       role: user.role || 'Pengurus',
       time: timeStr,
       status: statusText,
@@ -331,7 +353,7 @@ const AttendanceServicePage = (props) => {
     const user = authUser || {
       name: 'Alif Fikri Haykal',
       nim: '23404053',
-      division: 'BPH & Kesekretariatan',
+      division: 'BPH (Badan Pengurus Harian)',
       role: 'Pengurus',
     };
 
@@ -343,7 +365,7 @@ const AttendanceServicePage = (props) => {
       sessionId: currentSession.id,
       name: user.name,
       nim: user.nim || '23404053',
-      division: user.division || 'BPH & Kesekretariatan',
+      division: user.division || 'BPH (Badan Pengurus Harian)',
       role: user.role || 'Pengurus',
       time: timeStr,
       status: leaveForm.type,
@@ -536,14 +558,26 @@ const AttendanceServicePage = (props) => {
     ];
 
     // Sheet 2: Rekapitulasi Partisipasi Divisi
-    const divisionRecapData = [
-      { div: 'BPH / Presidium & Kesekretariatan', total: 6, hadir: 6, tepat: 5, lambat: 1, izin: 0, percent: 100 },
-      { div: 'Divisi Kaderisasi & SDM', total: 18, hadir: 17, tepat: 16, lambat: 1, izin: 1, percent: 94 },
-      { div: 'Divisi Publikasi & Dokumentasi', total: 14, hadir: 13, tepat: 13, lambat: 0, izin: 1, percent: 93 },
-      { div: 'Divisi Dana Usaha (KKM)', total: 12, hadir: 11, tepat: 10, lambat: 1, izin: 1, percent: 92 },
-      { div: 'Divisi Minat & Bakat', total: 16, hadir: 14, tepat: 13, lambat: 1, izin: 2, percent: 88 },
-      { div: 'Divisi Humas & Jaringan Eksternal', total: 15, hadir: 14, tepat: 14, lambat: 0, izin: 1, percent: 93 },
-    ];
+    const divisionRecapData = OFFICIAL_DIVISIONS.map((divName) => {
+      const recordsForDiv = allRecords.filter((r) => r.division === divName);
+      const hadirCount = recordsForDiv.filter(
+        (r) => r.status?.includes('Tepat') || r.status?.includes('Terlambat') || r.status === 'Hadir'
+      ).length;
+      const tepatCount = recordsForDiv.filter((r) => r.status?.includes('Tepat')).length;
+      const lambatCount = recordsForDiv.filter((r) => r.status?.includes('Terlambat')).length;
+      const izinCount = recordsForDiv.filter((r) => r.status === 'Izin' || r.status === 'Sakit').length;
+      const totalRecorded = recordsForDiv.length;
+      const percent = totalRecorded > 0 ? Math.round((hadirCount / totalRecorded) * 100) : 0;
+      return {
+        div: divName,
+        total: totalRecorded,
+        hadir: hadirCount,
+        tepat: tepatCount,
+        lambat: lambatCount,
+        izin: izinCount,
+        percent,
+      };
+    });
     const rowsRecap = divisionRecapData.map((d, idx) => ({
       No: idx + 1,
       'Divisi Pengurus': d.div,
@@ -603,34 +637,59 @@ const AttendanceServicePage = (props) => {
     setTimeout(() => setCheckinSuccess(''), 4500);
   };
 
-  // Filtered List for Table (Diurutkan dari yang terbaru di paling atas)
-  const filteredList = useMemo(() => {
-    const matched = sessionRecords.filter((item) => {
-      const matchSearch =
-        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.division.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (item.nim && item.nim.includes(searchQuery));
-      const matchStatus =
-        statusFilter === 'Semua' ||
-        (statusFilter === 'Hadir' && (item.status.includes('Tepat') || item.status.includes('Terlambat'))) ||
-        (statusFilter === 'Tepat Waktu' && item.status.includes('Tepat')) ||
-        (statusFilter === 'Terlambat' && item.status.includes('Terlambat')) ||
-        (statusFilter === 'Izin/Sakit' && (item.status.includes('Izin') || item.status.includes('Sakit')));
-      return matchSearch && matchStatus;
-    });
+  // Data Pengelompokan Presensi per Agenda Rapat untuk Tab 2 (Live Log Kehadiran)
+  const groupedSessionsWithRecords = useMemo(() => {
+    const targetSessions = logAgendaFilter === 'all'
+      ? sessions
+      : sessions.filter((s) => s.id === logAgendaFilter);
 
-    return [...matched].sort((a, b) => {
-      const matchA = String(a.time).match(/(\d{1,2}):(\d{2})/);
-      const matchB = String(b.time).match(/(\d{1,2}):(\d{2})/);
-      if (matchA && matchB) {
-        const minA = parseInt(matchA[1], 10) * 60 + parseInt(matchA[2], 10);
-        const minB = parseInt(matchB[1], 10) * 60 + parseInt(matchB[2], 10);
-        if (minA !== minB) return minB - minA; // Jam terbaru berada di atas
-      }
-      const parseId = (id) => parseInt(String(id).replace(/\D/g, ''), 10) || 0;
-      return parseId(b.id) - parseId(a.id);
+    return targetSessions.map((sess) => {
+      // Ambil seluruh presensi milik agenda ini
+      const recordsForSess = allRecords.filter(
+        (rec) => rec.sessionId === sess.id || (!rec.sessionId && sess.id === 'SES-2026-001')
+      );
+
+      // Filter berdasarkan pencarian & filter status
+      const matched = recordsForSess.filter((item) => {
+        const matchSearch =
+          item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.division.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (item.nim && item.nim.includes(searchQuery));
+        const matchStatus =
+          statusFilter === 'Semua' ||
+          (statusFilter === 'Hadir' && (item.status.includes('Tepat') || item.status.includes('Terlambat'))) ||
+          (statusFilter === 'Tepat Waktu' && item.status.includes('Tepat')) ||
+          (statusFilter === 'Terlambat' && item.status.includes('Terlambat')) ||
+          (statusFilter === 'Izin/Sakit' && (item.status.includes('Izin') || item.status.includes('Sakit')));
+        return matchSearch && matchStatus;
+      });
+
+      // Urutkan dari yang terbaru di paling atas
+      const sorted = [...matched].sort((a, b) => {
+        const matchA = String(a.time).match(/(\d{1,2}):(\d{2})/);
+        const matchB = String(b.time).match(/(\d{1,2}):(\d{2})/);
+        if (matchA && matchB) {
+          const minA = parseInt(matchA[1], 10) * 60 + parseInt(matchA[2], 10);
+          const minB = parseInt(matchB[1], 10) * 60 + parseInt(matchB[2], 10);
+          if (minA !== minB) return minB - minA;
+        }
+        const parseId = (id) => parseInt(String(id).replace(/\D/g, ''), 10) || 0;
+        return parseId(b.id) - parseId(a.id);
+      });
+
+      const total = recordsForSess.length;
+      const tepat = recordsForSess.filter((r) => r.status.includes('Tepat')).length;
+      const lambat = recordsForSess.filter((r) => r.status.includes('Terlambat')).length;
+      const izin = recordsForSess.filter((r) => r.status.includes('Izin') || r.status.includes('Sakit')).length;
+
+      return {
+        session: sess,
+        records: sorted,
+        rawRecordsCount: recordsForSess.length,
+        stats: { total, tepat, lambat, izin },
+      };
     });
-  }, [sessionRecords, searchQuery, statusFilter]);
+  }, [sessions, allRecords, logAgendaFilter, searchQuery, statusFilter]);
 
   // Statistics for Current Session
   const stats = useMemo(() => {
@@ -642,6 +701,31 @@ const AttendanceServicePage = (props) => {
     const percentage = totalTarget > 0 ? Math.round((total / totalTarget) * 100) : 0;
     return { total, tepat, lambat, izin, percentage, totalTarget };
   }, [sessionRecords]);
+
+  // Dynamic Division Participation Recap (100% synchronized with OFFICIAL_DIVISIONS)
+  const divisionParticipationRecap = useMemo(() => {
+    return OFFICIAL_DIVISIONS.map((divName) => {
+      const recordsForDiv = allRecords.filter((r) => r.division === divName);
+      const hadir = recordsForDiv.filter(
+        (r) => r.status?.includes('Tepat') || r.status?.includes('Terlambat') || r.status === 'Hadir'
+      ).length;
+      const tepat = recordsForDiv.filter((r) => r.status?.includes('Tepat')).length;
+      const lambat = recordsForDiv.filter((r) => r.status?.includes('Terlambat')).length;
+      const izin = recordsForDiv.filter((r) => r.status === 'Izin' || r.status === 'Sakit').length;
+      const total = recordsForDiv.length;
+      const percent = total > 0 ? Math.round((hadir / total) * 100) : 0;
+      return {
+        div: divName,
+        percent,
+        total,
+        hadir,
+        tepat,
+        lambat,
+        izin,
+        color: DIVISION_COLORS[divName] || 'bg-blue-500',
+      };
+    });
+  }, [allRecords]);
 
   return (
     <ServicePageLayout
@@ -806,7 +890,7 @@ const AttendanceServicePage = (props) => {
           }`}
         >
           <Clock size={16} />
-          <span>Live Log Kehadiran ({sessionRecords.length})</span>
+          <span>Live Log Kehadiran ({allRecords.length})</span>
         </button>
 
         <button
@@ -1041,121 +1125,282 @@ const AttendanceServicePage = (props) => {
       })()}
 
       {/* =========================================================================
-          TAB 2: LIVE LOG KEHADIRAN
+          TAB 2: LIVE LOG KEHADIRAN (DIPISAHKAN PER AGENDA RAPAT)
           ========================================================================= */}
       {activeTab === 'log' && (
         <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            {/* Search Bar */}
-            <div className="relative flex-1 max-w-md">
-              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari nama anggota, NIM, atau divisi..."
-                className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+          {/* Top Controls: Search, Status Filter & Agenda Filter Bar */}
+          <div className="bg-white border border-slate-200/80 rounded-3xl p-5 sm:p-6 shadow-xs space-y-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              {/* Search Bar */}
+              <div className="relative flex-1 max-w-md">
+                <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Cari nama pengurus, NIM, atau divisi lintas agenda..."
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
+                />
+              </div>
+
+              {/* Status Filter Buttons */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-xs text-slate-500 font-medium flex items-center gap-1 mr-1">
+                  <Filter size={13} />
+                  <span>Status:</span>
+                </span>
+                {['Semua', 'Tepat Waktu', 'Terlambat', 'Izin/Sakit'].map((st) => (
+                  <button
+                    key={st}
+                    onClick={() => setStatusFilter(st)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                      statusFilter === st
+                        ? 'bg-blue-600 text-white shadow-xs'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    {st}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* Filter Status Buttons */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs text-slate-500 font-medium flex items-center gap-1">
-                <Filter size={13} />
-                <span>Status:</span>
+            {/* Pemisah Agenda / Pill Selector */}
+            <div className="pt-3 border-t border-slate-100 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+              <span className="text-xs font-bold text-slate-600 shrink-0 flex items-center gap-1 mr-1">
+                <span>Pilih Tampilan:</span>
               </span>
-              {['Semua', 'Tepat Waktu', 'Terlambat', 'Izin/Sakit'].map((st) => (
-                <button
-                  key={st}
-                  onClick={() => setStatusFilter(st)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
-                    statusFilter === st
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
-                  }`}
-                >
-                  {st}
-                </button>
-              ))}
+              <button
+                type="button"
+                onClick={() => setLogAgendaFilter('all')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                  logAgendaFilter === 'all'
+                    ? 'bg-purple-600 text-white shadow-xs'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                🌟 Tampilkan Semua Agenda ({sessions.length} Agenda)
+              </button>
+              {sessions.map((sess) => {
+                const count = allRecords.filter((r) => r.sessionId === sess.id || (!r.sessionId && sess.id === 'SES-2026-001')).length;
+                return (
+                  <button
+                    key={sess.id}
+                    type="button"
+                    onClick={() => setLogAgendaFilter(sess.id)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                      logAgendaFilter === sess.id
+                        ? 'bg-slate-900 text-white shadow-xs'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    <span className={`w-1.5 h-1.5 rounded-full ${sess.status === 'active' ? 'bg-emerald-400' : 'bg-slate-400'}`} />
+                    <span>{sess.title.length > 26 ? `${sess.title.slice(0, 26)}...` : sess.title}</span>
+                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                      logAgendaFilter === sess.id ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'
+                    }`}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {/* Table */}
-          <div className="bg-white border border-slate-200/80 rounded-3xl overflow-hidden shadow-xs">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[10px] tracking-wider font-bold">
-                  <tr>
-                    <th className="py-4 px-6">Nama Pengurus</th>
-                    <th className="py-4 px-6">Divisi & Peran</th>
-                    <th className="py-4 px-6">Waktu Presensi (WITA)</th>
-                    <th className="py-4 px-6">Metode</th>
-                    <th className="py-4 px-6">Status Kehadiran</th>
-                    <th className="py-4 px-6">Catatan</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {filteredList.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="py-12 text-center text-slate-400">
-                        <Users size={32} className="mx-auto mb-2 text-slate-300" />
-                        <p className="font-semibold text-slate-600">Belum ada data presensi yang sesuai</p>
-                        <p className="text-xs text-slate-400 mt-1">Gunakan tombol "Check-In Presensi" untuk mencatat presensi baru.</p>
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredList.map((item) => {
-                      const isTepat = item.status.includes('Tepat');
-                      const isTerlambat = item.status.includes('Terlambat');
+          {/* List of Separated Agenda Cards */}
+          <div className="space-y-6">
+            {groupedSessionsWithRecords.length === 0 ? (
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-12 text-center text-slate-400 shadow-xs">
+                <Users size={36} className="mx-auto mb-2 text-slate-300" />
+                <p className="font-bold text-slate-700">Tidak ada agenda rapat yang ditemukan</p>
+                <p className="text-xs text-slate-400 mt-1">Coba sesuaikan kata kunci pencarian atau filter status.</p>
+              </div>
+            ) : (
+              groupedSessionsWithRecords.map(({ session: sess, records, stats: sessStats }) => {
+                const isCollapsed = Boolean(collapsedSessionIds[sess.id]);
 
-                      return (
-                        <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
-                          <td className="py-4 px-6">
-                            <p className="font-bold text-slate-900 text-xs sm:text-sm">{item.name}</p>
-                            <span className="text-[10px] text-slate-400 font-mono">NIM: {item.nim || '-'}</span>
-                          </td>
-                          <td className="py-4 px-6 text-slate-600">
-                            <p className="font-semibold text-slate-800">{item.division}</p>
-                            <span className="text-[10px] text-slate-400">{item.role}</span>
-                          </td>
-                          <td className="py-4 px-6 font-mono text-slate-800 font-medium">
-                            {item.time}
-                          </td>
-                          <td className="py-4 px-6">
-                            <span className="text-[11px] text-slate-700 bg-slate-100 px-2.5 py-1 rounded-md font-medium inline-flex items-center gap-1">
-                              {item.method === 'QR Scan (HP)' && <Smartphone size={12} className="text-purple-600" />}
-                              <span>{item.method || 'Manual'}</span>
-                            </span>
-                            {item.distanceInfo && (
-                              <span className="text-[10px] text-teal-800 bg-teal-50 border border-teal-200/70 px-1.5 py-0.5 rounded font-mono block w-fit mt-1">
-                                📍 {item.distanceInfo}
-                              </span>
-                            )}
-                          </td>
-                          <td className="py-4 px-6">
+                return (
+                  <div
+                    key={sess.id}
+                    className="bg-white border border-slate-200/80 rounded-3xl overflow-hidden shadow-xs transition-all duration-200"
+                  >
+                    {/* Header Sesi Agenda Rapat */}
+                    <div className="p-5 sm:p-6 bg-slate-50/80 border-b border-slate-200/80">
+                      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                        <div className="space-y-1.5">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <span
-                              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
-                                isTepat
+                              className={`text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full border tracking-wider flex items-center gap-1.5 ${
+                                sess.status === 'active'
                                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                  : isTerlambat
-                                  ? 'bg-amber-50 text-amber-700 border-amber-200'
-                                  : 'bg-purple-50 text-purple-700 border-purple-200'
+                                  : 'bg-slate-100 text-slate-600 border-slate-200'
                               }`}
                             >
-                              <CheckCircle2 size={12} />
-                              {item.status}
+                              <span
+                                className={`w-1.5 h-1.5 rounded-full ${
+                                  sess.status === 'active' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'
+                                }`}
+                              />
+                              {sess.status === 'active' ? 'Sesi Berjalan (Aktif)' : 'Agenda Selesai & Diarsipkan'}
                             </span>
-                          </td>
-                          <td className="py-4 px-6 text-slate-500 max-w-xs truncate">
-                            {item.note || '-'}
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
+                            <span className="text-xs font-semibold text-slate-500 bg-white px-2.5 py-0.5 rounded-md border border-slate-200">
+                              {sess.division}
+                            </span>
+                            <span className="text-xs font-mono text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200 font-bold">
+                              {sess.id}
+                            </span>
+                          </div>
+
+                          <h3 className="text-lg font-bold text-slate-900 leading-snug">
+                            {sess.title}
+                          </h3>
+
+                          <div className="flex items-center gap-3 text-xs text-slate-500 flex-wrap pt-0.5">
+                            <span className="flex items-center gap-1">
+                              <span>📅</span>
+                              <span>{sess.date}</span>
+                            </span>
+                            <span>•</span>
+                            <span className="flex items-center gap-1 font-mono text-slate-700 font-medium">
+                              <Clock size={12} className="text-blue-500" />
+                              <span>{sess.timeStart} - {sess.timeEnd} (WITA)</span>
+                            </span>
+                            <span>•</span>
+                            <span className="flex items-center gap-1">
+                              <MapPin size={12} className="text-red-500" />
+                              <strong className="text-slate-800">{sess.location}</strong>
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-2 text-xs text-slate-600 pt-1 flex-wrap">
+                            <span className="text-slate-400">Dibuat oleh:</span>
+                            <strong className="text-slate-900 font-semibold">{sess.createdBy?.name || sess.organizer || 'Pengurus'}</strong>
+                            <span className="font-mono text-purple-700 bg-purple-100/60 px-1.5 py-0.2 rounded text-[11px] font-bold">
+                              NIM: {sess.createdBy?.nim || '23404053'}
+                            </span>
+                            {sess.coordinates?.locationName && (
+                              <span className="text-[11px] text-teal-800 bg-teal-50 border border-teal-200 px-2 py-0.2 rounded-md font-medium">
+                                📍 Pusat: {sess.coordinates.locationName} (Radius {sess.coordinates.radiusMeters || 100}m)
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Right: Quick Stats & Toggle Button */}
+                        <div className="flex items-center gap-3 justify-between lg:justify-end flex-wrap">
+                          <div className="flex items-center gap-1.5 text-xs">
+                            <span className="bg-white border border-slate-200 px-2.5 py-1 rounded-xl font-bold text-slate-800 shadow-2xs">
+                              Total: {sessStats.total}
+                            </span>
+                            <span className="bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-xl font-bold text-emerald-700">
+                              ✓ {sessStats.tepat} Tepat
+                            </span>
+                            <span className="bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-xl font-bold text-amber-700">
+                              ⏳ {sessStats.lambat} Telat
+                            </span>
+                            <span className="bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-xl font-bold text-purple-700">
+                              📝 {sessStats.izin} Izin
+                            </span>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => toggleSessionCollapse(sess.id)}
+                            className="p-2 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl text-slate-600 transition-colors cursor-pointer flex items-center gap-1 text-xs font-bold"
+                            title={isCollapsed ? 'Buka Tabel Presensi' : 'Tutup Tabel Presensi'}
+                          >
+                            <span>{isCollapsed ? 'Buka' : 'Tutup'}</span>
+                            {isCollapsed ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Table Kehadiran Sesi Agenda Ini */}
+                    {!isCollapsed && (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left text-xs">
+                          <thead className="bg-white text-slate-500 uppercase text-[10px] tracking-wider font-bold border-b border-slate-100">
+                            <tr>
+                              <th className="py-3.5 px-6">Nama Pengurus</th>
+                              <th className="py-3.5 px-6">Divisi & Peran</th>
+                              <th className="py-3.5 px-6">Waktu Presensi (WITA)</th>
+                              <th className="py-3.5 px-6">Metode & Jarak GPS</th>
+                              <th className="py-3.5 px-6">Status Kehadiran</th>
+                              <th className="py-3.5 px-6">Catatan</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100">
+                            {records.length === 0 ? (
+                              <tr>
+                                <td colSpan={6} className="py-8 text-center text-slate-400">
+                                  <p className="font-semibold text-slate-600">Belum ada data presensi yang sesuai untuk agenda ini</p>
+                                  <p className="text-[11px] text-slate-400 mt-0.5">Peserta belum mencatatkan kehadiran atau tidak cocok dengan filter pencarian.</p>
+                                </td>
+                              </tr>
+                            ) : (
+                              records.map((item) => {
+                                const isTepat = item.status && item.status.includes('Tepat');
+                                const isTerlambat = item.status && item.status.includes('Terlambat');
+
+                                return (
+                                  <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
+                                    <td className="py-3.5 px-6">
+                                      <p className="font-bold text-slate-900 text-xs sm:text-sm">{item.name}</p>
+                                      <span className="text-[10px] text-slate-400 font-mono">NIM: {item.nim || '-'}</span>
+                                    </td>
+                                    <td className="py-3.5 px-6 text-slate-600">
+                                      <p className="font-semibold text-slate-800">{item.division}</p>
+                                      <span className="text-[10px] text-slate-400">{item.role}</span>
+                                    </td>
+                                    <td className="py-3.5 px-6 font-mono text-slate-800 font-medium">
+                                      {item.time}
+                                    </td>
+                                    <td className="py-3.5 px-6">
+                                      <span className="text-[11px] text-slate-700 bg-slate-100 px-2.5 py-1 rounded-md font-medium inline-flex items-center gap-1">
+                                        {item.method === 'QR Scan (HP)' && <Smartphone size={12} className="text-purple-600" />}
+                                        <span>{item.method || 'Manual'}</span>
+                                      </span>
+                                      {item.distanceInfo && (
+                                        <span className="text-[10px] text-teal-800 bg-teal-50 border border-teal-200/70 px-1.5 py-0.5 rounded font-mono block w-fit mt-1">
+                                          📍 {item.distanceInfo}
+                                        </span>
+                                      )}
+                                    </td>
+                                    <td className="py-3.5 px-6">
+                                      <span
+                                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
+                                          isTepat
+                                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                            : isTerlambat
+                                            ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                            : 'bg-purple-50 text-purple-700 border-purple-200'
+                                        }`}
+                                      >
+                                        <CheckCircle2 size={12} />
+                                        {item.status}
+                                      </span>
+                                    </td>
+                                    <td className="py-3.5 px-6 text-slate-500 max-w-xs truncate">
+                                      {item.note || '-'}
+                                    </td>
+                                  </tr>
+                                );
+                              })
+                            )}
+                          </tbody>
+                        </table>
+                        <div className="bg-slate-50 px-6 py-2.5 border-t border-slate-100 text-[11px] text-slate-500 flex justify-between items-center">
+                          <span>Menampilkan <strong>{records.length}</strong> pengurus untuk agenda "{sess.title}"</span>
+                          <span className="font-mono text-slate-400">Toleransi: {sess.toleranceTime}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
       )}
@@ -1351,20 +1596,13 @@ const AttendanceServicePage = (props) => {
 
             {/* List Division Participation */}
             <div className="space-y-4 mt-6">
-              {[
-                { div: 'BPH / Sekretariat & Bendahara', percent: 98, total: 6, hadir: 6, tepat: 5, lambat: 1, color: 'bg-indigo-500' },
-                { div: 'Divisi Kaderisasi & SDM', percent: 96, total: 18, hadir: 17, tepat: 16, lambat: 1, color: 'bg-blue-500' },
-                { div: 'Divisi Media & Informasi (Pubdok)', percent: 94, total: 14, hadir: 13, tepat: 13, lambat: 0, color: 'bg-rose-500' },
-                { div: 'Divisi Dana Usaha (KKM)', percent: 92, total: 12, hadir: 11, tepat: 10, lambat: 1, color: 'bg-amber-500' },
-                { div: 'Divisi Minat & Bakat', percent: 90, total: 16, hadir: 14, tepat: 13, lambat: 1, color: 'bg-purple-500' },
-                { div: 'Divisi Humas & Jaringan', percent: 93, total: 15, hadir: 14, tepat: 14, lambat: 0, color: 'bg-sky-500' },
-              ].map((row, idx) => (
+              {divisionParticipationRecap.map((row, idx) => (
                 <div key={idx} className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 sm:p-5">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                     <div>
                       <p className="font-bold text-slate-900 text-xs sm:text-sm">{row.div}</p>
                       <p className="text-[11px] text-slate-500">
-                        {row.hadir} Hadir ({row.tepat} Tepat, {row.lambat} Terlambat) dari {row.total} Pengurus
+                        {row.hadir} Hadir ({row.tepat} Tepat, {row.lambat} Terlambat) {row.izin > 0 ? `• ${row.izin} Izin/Sakit ` : ''}dari {row.total} Tercatat
                       </p>
                     </div>
                     <div className="sm:text-right">
@@ -1682,14 +1920,13 @@ const AttendanceServicePage = (props) => {
                   <select
                     value={newSessionForm.division}
                     onChange={(e) => setNewSessionForm({ ...newSessionForm, division: e.target.value })}
-                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
                   >
-                    <option value="BPH & Presidium">BPH & Presidium</option>
-                    <option value="Divisi Kaderisasi & SDM">Divisi Kaderisasi & SDM</option>
-                    <option value="Divisi Publikasi & Dokumentasi">Divisi Publikasi & Dokumentasi</option>
-                    <option value="Divisi Dana Usaha (KKM)">Divisi Dana Usaha (KKM)</option>
-                    <option value="Divisi Minat & Bakat">Divisi Minat & Bakat</option>
-                    <option value="Divisi Humas & Jaringan">Divisi Humas & Jaringan</option>
+                    {OFFICIAL_DIVISIONS.map((div) => (
+                      <option key={div} value={div}>
+                        {div}
+                      </option>
+                    ))}
                   </select>
                 </div>
 

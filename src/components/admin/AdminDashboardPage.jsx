@@ -68,6 +68,7 @@ import * as XLSX from 'xlsx';
 import { playNotificationChime, getSoundMuted, setSoundMuted } from '../../utils/notificationSound';
 import { initialDefaultTickets, sortTicketsNewestFirst } from '../../data/defaultTickets';
 import { getLogDateInfo, getAvailableLogMonths, exportLogsToXLSX } from '../../utils/logExporter';
+import { OFFICIAL_DIVISIONS } from '../../data/defaultAccounts';
 import {
   defaultAttendanceSessions,
   defaultAttendanceList,
@@ -75,12 +76,7 @@ import {
 
 const divisionsList = [
   'Semua Divisi',
-  'BPH (Badan Pengurus Harian)',
-  'Divisi Kesekretariatan',
-  'Divisi Publikasi dan Dokumentasi',
-  'Divisi Humas',
-  'Divisi Kaderisasi',
-  'Divisi KKM (Kewirausahaan)',
+  ...OFFICIAL_DIVISIONS,
 ];
 
 const availableServices = [

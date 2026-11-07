@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { calculateDistanceInMeters, formatDistance } from '../../utils/geoDistance';
 import { playNotificationChime } from '../../utils/notificationSound';
+import { OFFICIAL_DIVISIONS } from '../../data/defaultAccounts';
 
 /**
  * PublicAttendanceModal
@@ -45,7 +46,7 @@ export default function PublicAttendanceModal({
   const [form, setForm] = useState({
     name: '',
     nim: '',
-    division: 'Divisi Kaderisasi & SDM',
+    division: OFFICIAL_DIVISIONS[0],
     statusType: 'Hadir', // 'Hadir' | 'Izin' | 'Sakit'
     note: '',
   });
@@ -552,13 +553,11 @@ export default function PublicAttendanceModal({
                       onChange={(e) => setForm({ ...form, division: e.target.value })}
                       className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all cursor-pointer"
                     >
-                      <option value="BPH (Badan Pengurus Harian)">BPH (Badan Pengurus Harian)</option>
-                      <option value="Divisi Kesekretariatan">Divisi Kesekretariatan</option>
-                      <option value="Divisi Publikasi dan Dokumentasi">Divisi Publikasi & Dok</option>
-                      <option value="Divisi Humas & Jaringan">Divisi Humas & Jaringan</option>
-                      <option value="Divisi Kaderisasi & SDM">Divisi Kaderisasi & SDM</option>
-                      <option value="Divisi Logistik & Aset">Divisi Logistik & Aset</option>
-                      <option value="Divisi Dana Usaha (KKM)">Divisi Dana Usaha (KKM)</option>
+                      {OFFICIAL_DIVISIONS.map((div) => (
+                        <option key={div} value={div}>
+                          {div}
+                        </option>
+                      ))}
                       <option value="Anggota Muda / Magang">Anggota Muda / Magang</option>
                       <option value="Tamu Undangan / Umum">Tamu Undangan / Umum</option>
                     </select>

@@ -31,8 +31,8 @@ export const STORAGE_KEYS = {
   SURAT_LOG: 'teradesk_surat_log_v1',
   ASSETS: 'teradesk_assets_v1',
   FINANCE: 'teradesk_finance_v1',
-  ATTENDANCE: 'teradesk_attendance_v1',
-  ATTENDANCE_SESSIONS: 'teradesk_attendance_sessions_v1',
+  ATTENDANCE: 'teradesk_attendance_v2',
+  ATTENDANCE_SESSIONS: 'teradesk_attendance_sessions_v2',
   ACTIVITIES: 'teradesk_activities_archive_v1',
   MODULE_STATUSES: 'teradesk_module_statuses_v1',
 };
@@ -41,6 +41,12 @@ export const STORAGE_KEYS = {
 export const loadLocalData = (key, fallback) => {
   if (typeof window === 'undefined') return fallback;
   try {
+    if (key === STORAGE_KEYS.ATTENDANCE) {
+      localStorage.removeItem('teradesk_attendance_v1');
+    }
+    if (key === STORAGE_KEYS.ATTENDANCE_SESSIONS) {
+      localStorage.removeItem('teradesk_attendance_sessions_v1');
+    }
     const saved = localStorage.getItem(key);
     if (saved) {
       const parsed = JSON.parse(saved);
