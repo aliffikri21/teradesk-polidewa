@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "src/App.jsx": {
-    "mtime": 1794072581.7323086,
-    "seen": 1794072851.1298308,
-    "ast_hash": "9712711550410f4bed032c03e7409b64",
+    "mtime": 1794073237.1323566,
+    "seen": 1794073292.575924,
+    "ast_hash": "b9c8be85d568fffb4e6f362c1f25a058",
     "semantic_hash": ""
   },
   "src/components/AboutUs.jsx": {
@@ -822,8 +822,8 @@
     "semantic_hash": ""
   },
   "src/components/services/HelpdeskServicePage.jsx": {
-    "mtime": 1794072680.2084494,
-    "seen": 1794072851.1298308,
+    "mtime": 1794072901.0156286,
+    "seen": 1794073292.575924,
     "ast_hash": "56d79ef5093fc5dd1834bb0d2af98f70",
     "semantic_hash": ""
   },
@@ -864,8 +864,8 @@
     "semantic_hash": ""
   },
   "src/components/admin/AdminDashboardPage.jsx": {
-    "mtime": 1794072824.4812877,
-    "seen": 1794072851.1298308,
+    "mtime": 1794072900.6122901,
+    "seen": 1794073292.575924,
     "ast_hash": "1901fb551bed1add274a1fb451345657",
     "semantic_hash": ""
   },
@@ -1026,15 +1026,15 @@
     "semantic_hash": ""
   },
   "src/data/defaultTickets.js": {
-    "mtime": 1794072495.8358471,
-    "seen": 1794072851.1298308,
+    "mtime": 1794072901.1476183,
+    "seen": 1794073292.575924,
     "ast_hash": "08dab7c7deda63b23eb9c21304de4a1f",
     "semantic_hash": ""
   },
   "src/services/ticketService.js": {
-    "mtime": 1794072527.518064,
-    "seen": 1794072851.1298308,
-    "ast_hash": "daa8ff96a7ccb2e8ba74a7c990d370e1",
+    "mtime": 1794073261.8728783,
+    "seen": 1794073292.575924,
+    "ast_hash": "ffee1f994da125fde7bab782d6f1c84c",
     "semantic_hash": ""
   }
 }

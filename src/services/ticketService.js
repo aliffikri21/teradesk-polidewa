@@ -3,7 +3,6 @@ import {
   doc,
   setDoc,
   deleteDoc,
-  updateDoc,
   onSnapshot,
   getDocs,
   writeBatch,
@@ -118,16 +117,27 @@ export const addTicketToDb = async (ticket) => {
 
 /**
  * Memperbarui status / desainer tiket di Firestore.
+ * Memastikan nilai undefined dibersihkan dan menggunakan setDoc merge agar selalu tersimpan di cloud.
  */
 export const updateTicketInDb = async (ticketId, updatedFields) => {
-  if (!isFirebaseConfigured || !db || !ticketId) return;
+  if (!isFirebaseConfigured || !db || !ticketId || !updatedFields) return;
 
   try {
     const docRef = doc(db, COLLECTION_NAME, String(ticketId));
-    await updateDoc(docRef, {
-      ...updatedFields,
-      updatedAt: serverTimestamp(),
-    });
+
+    // Bersihkan semua field dengan nilai undefined agar tidak menyebabkan error pada Firestore SDK
+    const cleanFields = {};
+    for (const [key, value] of Object.entries(updatedFields)) {
+      if (value !== undefined) {
+        cleanFields[key] = value;
+      }
+    }
+
+    await setDoc(docRef, {
+      ...cleanFields,
+      updatedAt: new Date().toISOString(),
+      updatedTimestamp: Date.now(),
+    }, { merge: true });
   } catch (error) {
     console.error('❌ [Firestore Tickets] Gagal memperbarui status tiket di cloud:', error);
   }

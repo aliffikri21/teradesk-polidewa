@@ -230,25 +230,35 @@ function App() {
   };
 
   const handleUpdateTicketStatus = (ticketId, nextStatus, nextStatusColor, designer) => {
-    setDesignTickets((prev) =>
-      prev.map((t) =>
+    setDesignTickets((prev) => {
+      const updated = prev.map((t) =>
         t.id === ticketId
           ? {
               ...t,
               status: nextStatus,
               statusColor: nextStatusColor || t.statusColor,
-              designer: designer !== undefined ? designer : t.designer,
-              assignedTo: designer !== undefined ? designer : t.assignedTo,
+              ...(designer !== undefined ? { designer, assignedTo: designer } : {}),
             }
           : t
-      )
-    );
-    updateTicketInDb(ticketId, {
-      status: nextStatus,
-      statusColor: nextStatusColor,
-      designer: designer,
-      assignedTo: designer,
+      );
+      try {
+        localStorage.setItem('teradesk_design_tickets_v1', JSON.stringify(updated));
+      } catch {
+        // ignore
+      }
+      return updated;
     });
+
+    const updatePayload = {
+      status: nextStatus,
+    };
+    if (nextStatusColor) updatePayload.statusColor = nextStatusColor;
+    if (designer !== undefined) {
+      updatePayload.designer = designer;
+      updatePayload.assignedTo = designer;
+    }
+
+    updateTicketInDb(ticketId, updatePayload);
     handleAddActivityLog({
       category: 'system',
       type: 'success',
