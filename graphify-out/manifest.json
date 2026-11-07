@@ -6,14 +6,14 @@
     "semantic_hash": ""
   },
   "package.json": {
-    "mtime": 1794058386.2094803,
-    "seen": 1794058676.269549,
-    "ast_hash": "7057cee1b6bb1bcfb8c9f1de5fe867e8",
+    "mtime": 1794073516.4803984,
+    "seen": 1794073911.0938282,
+    "ast_hash": "1fbc2b90475a96f74431b53264a113ff",
     "semantic_hash": ""
   },
   "src/App.jsx": {
-    "mtime": 1794073237.1323566,
-    "seen": 1794073292.575924,
+    "mtime": 1794073336.2442377,
+    "seen": 1794073911.0938282,
     "ast_hash": "b9c8be85d568fffb4e6f362c1f25a058",
     "semantic_hash": ""
   },
@@ -864,9 +864,9 @@
     "semantic_hash": ""
   },
   "src/components/admin/AdminDashboardPage.jsx": {
-    "mtime": 1794072900.6122901,
-    "seen": 1794073292.575924,
-    "ast_hash": "1901fb551bed1add274a1fb451345657",
+    "mtime": 1794073880.731388,
+    "seen": 1794073911.0938282,
+    "ast_hash": "a900f9fa5cf8ee0d3422749c24d9b486",
     "semantic_hash": ""
   },
   "public/logo-teramedia.png": {
@@ -1032,9 +1032,15 @@
     "semantic_hash": ""
   },
   "src/services/ticketService.js": {
-    "mtime": 1794073261.8728783,
-    "seen": 1794073292.575924,
+    "mtime": 1794073336.414736,
+    "seen": 1794073911.0938282,
     "ast_hash": "ffee1f994da125fde7bab782d6f1c84c",
+    "semantic_hash": ""
+  },
+  "src/utils/logExporter.js": {
+    "mtime": 1794073624.755061,
+    "seen": 1794073911.0938282,
+    "ast_hash": "1868c391c04e011a7afd4b00a5a22f1b",
     "semantic_hash": ""
   }
 }

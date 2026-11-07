@@ -60,10 +60,12 @@ import {
   Tablet,
   Volume2,
   VolumeX,
-  Menu
+  Menu,
+  FileSpreadsheet
 } from 'lucide-react';
 import { playNotificationChime, getSoundMuted, setSoundMuted } from '../../utils/notificationSound';
 import { initialDefaultTickets, sortTicketsNewestFirst } from '../../data/defaultTickets';
+import { getLogDateInfo, getAvailableLogMonths, exportLogsToXLSX } from '../../utils/logExporter';
 
 const divisionsList = [
   'Semua Divisi',
@@ -623,6 +625,8 @@ const AdminDashboardPage = ({
   const [localLogs, setLocalLogs] = useState([]);
   const [logSearchQuery, setLogSearchQuery] = useState('');
   const [logFilterCategory, setLogFilterCategory] = useState('all'); // 'all' | 'login' | 'module_submit' | 'system'
+  const [selectedLogMonth, setSelectedLogMonth] = useState('all'); // 'all' | '2026-11' | '2026-10' ...
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
 
   // Prioritize global persistent activityLogs if available, fallback to local
   const currentLogs = useMemo(() => {
@@ -647,6 +651,17 @@ const AdminDashboardPage = ({
       },
     ];
   }, [activityLogs, localLogs]);
+
+  // Daftar bulan yang tersedia dalam riwayat log aktivitas
+  const availableLogMonths = useMemo(() => {
+    return getAvailableLogMonths(currentLogs);
+  }, [currentLogs]);
+
+  // Log yang difilter berdasarkan bulan terpilih
+  const monthLogs = useMemo(() => {
+    if (selectedLogMonth === 'all') return currentLogs;
+    return currentLogs.filter((log) => getLogDateInfo(log).monthKey === selectedLogMonth);
+  }, [currentLogs, selectedLogMonth]);
 
   const addLog = (event, type = 'info', extra = {}) => {
     const time = getTimestamp();
@@ -681,10 +696,19 @@ const AdminDashboardPage = ({
 
   const filteredActivityLogs = useMemo(() => {
     return currentLogs.filter((log) => {
+      // Month filter
+      if (selectedLogMonth !== 'all') {
+        const dateInfo = getLogDateInfo(log);
+        if (dateInfo.monthKey !== selectedLogMonth) {
+          return false;
+        }
+      }
+
       // Category filter
       if (logFilterCategory !== 'all' && log.category !== logFilterCategory) {
         return false;
       }
+
       // Search filter
       if (logSearchQuery.trim()) {
         const q = logSearchQuery.toLowerCase();
@@ -699,20 +723,21 @@ const AdminDashboardPage = ({
       }
       return true;
     });
-  }, [currentLogs, logFilterCategory, logSearchQuery]);
+  }, [currentLogs, selectedLogMonth, logFilterCategory, logSearchQuery]);
 
   const loginCount = useMemo(() => {
-    return currentLogs.filter((l) => l.category === 'login').length;
-  }, [currentLogs]);
+    return monthLogs.filter((l) => l.category === 'login').length;
+  }, [monthLogs]);
 
   const moduleSubmitCount = useMemo(() => {
-    return currentLogs.filter((l) => l.category === 'module_submit').length;
-  }, [currentLogs]);
+    return monthLogs.filter((l) => l.category === 'module_submit').length;
+  }, [monthLogs]);
 
   const systemCount = useMemo(() => {
-    return currentLogs.filter((l) => l.category === 'system' || !l.category).length;
-  }, [currentLogs]);
+    return monthLogs.filter((l) => l.category === 'system' || !l.category).length;
+  }, [monthLogs]);
 
+  // Ekspor JSON
   const handleExportLogsJson = () => {
     const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(currentLogs, null, 2));
     const downloadAnchor = document.createElement('a');
@@ -722,6 +747,53 @@ const AdminDashboardPage = ({
     downloadAnchor.click();
     downloadAnchor.remove();
     addLog('Ekspor riwayat aktivitas log berhasil diunduh (JSON)', 'info');
+  };
+
+  // Ekspor Bulanan (.xlsx)
+  const handleExportMonthlyXlsx = (monthKeyToExport = selectedLogMonth) => {
+    let targetLogs = currentLogs;
+    let label = 'seluruh_bulan';
+
+    if (monthKeyToExport !== 'all') {
+      targetLogs = currentLogs.filter((l) => getLogDateInfo(l).monthKey === monthKeyToExport);
+      const foundMonth = availableLogMonths.find((m) => m.key === monthKeyToExport);
+      label = foundMonth ? foundMonth.label.toLowerCase().replace(/\s+/g, '_') : monthKeyToExport;
+    } else {
+      const currentMonthInfo = getLogDateInfo({ createdAt: new Date() });
+      targetLogs = currentLogs.filter((l) => getLogDateInfo(l).monthKey === currentMonthInfo.monthKey);
+      label = currentMonthInfo.monthLabel.toLowerCase().replace(/\s+/g, '_');
+    }
+
+    exportLogsToXLSX(
+      targetLogs,
+      `teradesk_log_aktivitas_${label}.xlsx`,
+      `Log ${label}`
+    );
+    addLog(`Ekspor log bulanan (${label}) berhasil diunduh (.xlsx)`, 'info');
+    setIsExportMenuOpen(false);
+  };
+
+  // Ekspor Tahunan (.xlsx)
+  const handleExportYearlyXlsx = (yearToExport = 2026) => {
+    const targetLogs = currentLogs.filter((l) => getLogDateInfo(l).year === Number(yearToExport));
+    exportLogsToXLSX(
+      targetLogs.length > 0 ? targetLogs : currentLogs,
+      `teradesk_log_aktivitas_tahunan_${yearToExport}.xlsx`,
+      `Log Tahun ${yearToExport}`
+    );
+    addLog(`Ekspor log tahunan (${yearToExport}) berhasil diunduh (.xlsx)`, 'info');
+    setIsExportMenuOpen(false);
+  };
+
+  // Ekspor Seluruh Log (.xlsx)
+  const handleExportAllXlsx = () => {
+    exportLogsToXLSX(
+      currentLogs,
+      `teradesk_log_aktivitas_keseluruhan_${new Date().toISOString().slice(0, 10)}.xlsx`,
+      'Semua Log'
+    );
+    addLog('Ekspor seluruh log aktivitas berhasil diunduh (.xlsx)', 'info');
+    setIsExportMenuOpen(false);
   };
 
   const togglePasswordVisibility = (nim) => {
@@ -4690,13 +4762,91 @@ const AdminDashboardPage = ({
                   </p>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
+                  {/* Dropdown Menu Ekspor XLSX (Bulanan / Tahunan / Semua) */}
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+                      title="Pilihan Ekspor Spreadsheet Excel (.xlsx)"
+                    >
+                      <FileSpreadsheet size={14} />
+                      <span>Ekspor Excel (.xlsx)</span>
+                      <ChevronDown size={13} className={`transition-transform duration-200 ${isExportMenuOpen ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {isExportMenuOpen && (
+                      <>
+                        <div className="fixed inset-0 z-20" onClick={() => setIsExportMenuOpen(false)} />
+                        <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-slate-200 p-2 z-30 animate-in fade-in zoom-in-95 duration-150">
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 py-1.5">
+                            PILIHAN EKSPOR EXCEL (.XLSX)
+                          </p>
+
+                        <button
+                          type="button"
+                          onClick={() => handleExportMonthlyXlsx(selectedLogMonth !== 'all' ? selectedLogMonth : 'all')}
+                          className="w-full text-left px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 transition-colors cursor-pointer flex items-center justify-between"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            <div className="truncate">
+                              <span className="block font-bold">Ekspor Bulanan</span>
+                              <span className="text-[10px] text-slate-400 block truncate">
+                                {selectedLogMonth !== 'all' ? availableLogMonths.find(m => m.key === selectedLogMonth)?.label : 'Bulan Berjalan (November 2026)'}
+                              </span>
+                            </div>
+                          </div>
+                          <span className="text-[10px] font-mono text-emerald-600 font-bold bg-emerald-100/70 px-1.5 py-0.5 rounded">
+                            .xlsx
+                          </span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleExportYearlyXlsx(2026)}
+                          className="w-full text-left px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-800 transition-colors cursor-pointer flex items-center justify-between"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                            <div>
+                              <span className="block font-bold">Ekspor Tahunan (2026)</span>
+                              <span className="text-[10px] text-slate-400 block">Seluruh log tahun 2026</span>
+                            </div>
+                          </div>
+                          <span className="text-[10px] font-mono text-blue-600 font-bold bg-blue-100/70 px-1.5 py-0.5 rounded">
+                            .xlsx
+                          </span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={handleExportAllXlsx}
+                          className="w-full text-left px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer flex items-center justify-between"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-slate-400"></span>
+                            <div>
+                              <span className="block font-bold">Ekspor Seluruh Log</span>
+                              <span className="text-[10px] text-slate-400 block">Semua riwayat sistem ({currentLogs.length} event)</span>
+                            </div>
+                          </div>
+                          <span className="text-[10px] font-mono text-slate-500 font-bold bg-slate-100 px-1.5 py-0.5 rounded">
+                            .xlsx
+                          </span>
+                        </button>
+                      </div>
+                    </>
+                  )}
+                  </div>
+
                   <button
                     onClick={handleExportLogsJson}
                     className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors shadow-2xs cursor-pointer"
                     title="Unduh log dalam format JSON"
                   >
                     <Download size={14} className="text-slate-500" />
-                    <span>Ekspor JSON</span>
+                    <span>JSON</span>
                   </button>
                   {onResetActivityLogs && (
                     <button
@@ -4727,13 +4877,13 @@ const AdminDashboardPage = ({
                 <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs flex items-center justify-between">
                   <div>
                     <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
-                      Total Jejak Audit
+                      Total Jejak Audit ({selectedLogMonth === 'all' ? 'Semua' : availableLogMonths.find(m => m.key === selectedLogMonth)?.label})
                     </span>
                     <span className="text-2xl font-black text-slate-900 mt-1 block">
-                      {currentLogs.length}
+                      {monthLogs.length}
                     </span>
                     <span className="text-[11px] text-slate-500 mt-0.5 block">
-                      Tersimpan di local storage
+                      {selectedLogMonth === 'all' ? 'Seluruh riwayat sistem' : `Aktivitas periode ${availableLogMonths.find(m => m.key === selectedLogMonth)?.label}`}
                     </span>
                   </div>
                   <div className="w-11 h-11 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700">
@@ -4776,13 +4926,63 @@ const AdminDashboardPage = ({
                 </div>
               </div>
 
-              {/* Filter and Search Bar */}
+              {/* Filter and Search Bar with Monthly Tabs */}
               <div className="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                {/* 1. Tab Per Bulan (Monthly Filter Tabs) */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-slate-100">
+                  <div className="flex items-center gap-2">
+                    <Calendar size={14} className="text-blue-600" />
+                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      Periode Bulan:
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 max-w-full">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedLogMonth('all')}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
+                        selectedLogMonth === 'all'
+                          ? 'bg-blue-600 text-white shadow-2xs'
+                          : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200/60'
+                      }`}
+                    >
+                      <span>Semua Periode</span>
+                      <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
+                        selectedLogMonth === 'all' ? 'bg-blue-700 text-white' : 'bg-slate-200/70 text-slate-600'
+                      }`}>
+                        {currentLogs.length}
+                      </span>
+                    </button>
+
+                    {availableLogMonths.map((m) => (
+                      <button
+                        key={m.key}
+                        type="button"
+                        onClick={() => setSelectedLogMonth(m.key)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
+                          selectedLogMonth === m.key
+                            ? 'bg-blue-600 text-white shadow-2xs'
+                            : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200/60'
+                        }`}
+                      >
+                        <span>{m.label}</span>
+                        <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
+                          selectedLogMonth === m.key ? 'bg-blue-700 text-white' : 'bg-slate-200/70 text-slate-600'
+                        }`}>
+                          {m.count}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 2. Category Filter & Search Bar */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-0.5">
                   {/* Category Pills */}
                   <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
                     {[
-                      { id: 'all', label: 'Semua Aktivitas', count: currentLogs.length },
+                      { id: 'all', label: 'Semua Aktivitas', count: monthLogs.length },
                       { id: 'login', label: 'Aktivitas Login', count: loginCount },
                       { id: 'module_submit', label: 'Submit Modul', count: moduleSubmitCount },
                       { id: 'system', label: 'Sistem & Akun', count: systemCount },
