@@ -13,6 +13,7 @@ import { initialDefaultAccounts } from './data/defaultAccounts';
 import { initialDefaultProker } from './data/defaultProker';
 import { initialDefaultConsultations } from './data/defaultConsultations';
 import { initialDefaultActivityLogs } from './data/defaultActivityLogs';
+import { initialDefaultTickets } from './data/defaultTickets';
 import { isFirebaseConfigured } from './services/firebase';
 import {
   subscribeActivityLogs,
@@ -35,6 +36,12 @@ import {
   deleteAccountFromDb,
   resetAccountsInDb,
 } from './services/accountService';
+import {
+  subscribeTickets,
+  addTicketToDb,
+  updateTicketInDb,
+  deleteTicketFromDb,
+} from './services/ticketService';
 import { getDeviceInfo } from './utils/deviceDetector';
 
 function App() {
@@ -132,6 +139,36 @@ function App() {
     }
   }, [prokerList]);
 
+  // Design Tickets state (Permohonan tiket request desain Pubdok & Helpdesk)
+  const [designTickets, setDesignTickets] = useState(() => {
+    try {
+      const saved = localStorage.getItem('teradesk_design_tickets_v1');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return initialDefaultTickets;
+  });
+
+  // Persist designTickets changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('teradesk_design_tickets_v1', JSON.stringify(designTickets));
+    } catch {
+      // ignore
+    }
+  }, [designTickets]);
+
+  const designTicketsRef = useRef(designTickets);
+  useEffect(() => {
+    designTicketsRef.current = designTickets;
+  }, [designTickets]);
+
   const handleAddProker = (newProker) => {
     setProkerList((prev) => [newProker, ...prev]);
     handleAddActivityLog({
@@ -174,6 +211,71 @@ function App() {
 
   const handleReorderProker = (newOrderList) => {
     setProkerList(newOrderList);
+  };
+
+  const handleAddTicket = (newTicket) => {
+    setDesignTickets((prev) => [newTicket, ...prev]);
+    addTicketToDb(newTicket);
+    handleAddActivityLog({
+      category: 'module_submit',
+      type: 'info',
+      userName: authUser?.name || newTicket.requester || 'Pengurus',
+      userNim: authUser?.nim || '-',
+      userRole: authUser?.role || 'Pengurus',
+      userDivision: newTicket.division || 'BPH',
+      moduleName: 'Tiket Desain Pubdok',
+      event: `Permohonan Desain: ${newTicket.title.length > 35 ? newTicket.title.slice(0, 35) + '...' : newTicket.title}`,
+      details: `Tiket #${newTicket.id} diajukan untuk kebutuhan ${newTicket.category || newTicket.canvas} oleh ${newTicket.requester}.`,
+    });
+  };
+
+  const handleUpdateTicketStatus = (ticketId, nextStatus, nextStatusColor, designer) => {
+    setDesignTickets((prev) =>
+      prev.map((t) =>
+        t.id === ticketId
+          ? {
+              ...t,
+              status: nextStatus,
+              statusColor: nextStatusColor || t.statusColor,
+              designer: designer !== undefined ? designer : t.designer,
+              assignedTo: designer !== undefined ? designer : t.assignedTo,
+            }
+          : t
+      )
+    );
+    updateTicketInDb(ticketId, {
+      status: nextStatus,
+      statusColor: nextStatusColor,
+      designer: designer,
+      assignedTo: designer,
+    });
+    handleAddActivityLog({
+      category: 'system',
+      type: 'success',
+      userName: authUser?.name || 'Administrator',
+      userNim: authUser?.nim || '23404053',
+      userRole: authUser?.role || 'BPH',
+      userDivision: 'Pubdok',
+      moduleName: 'Tiket Desain Pubdok',
+      event: `Update Tiket #${ticketId} ➔ ${nextStatus}`,
+      details: `Status tiket desain diperbarui menjadi "${nextStatus}"${designer ? ` (${designer})` : ''}.`,
+    });
+  };
+
+  const handleDeleteTicket = (ticketId) => {
+    setDesignTickets((prev) => prev.filter((t) => t.id !== ticketId));
+    deleteTicketFromDb(ticketId);
+    handleAddActivityLog({
+      category: 'system',
+      type: 'warning',
+      userName: authUser?.name || 'Administrator',
+      userNim: authUser?.nim || '23404053',
+      userRole: authUser?.role || 'BPH',
+      userDivision: 'Pubdok',
+      moduleName: 'Tiket Desain Pubdok',
+      event: `Hapus Tiket #${ticketId}`,
+      details: `Tiket request desain #${ticketId} telah dihapus dari antrean kerja.`,
+    });
   };
 
   // Kotak Masuk Konsultasi (Inbox Kontak) state terintegrasi
@@ -290,10 +392,21 @@ function App() {
       () => registeredAccountsRef.current
     );
 
+    const unsubTickets = subscribeTickets(
+      (cloudTickets) => {
+        if (Array.isArray(cloudTickets) && cloudTickets.length > 0) {
+          setDesignTickets(cloudTickets);
+        }
+      },
+      (err) => console.warn('⚠️ [Tickets Sync Error]:', err),
+      () => designTicketsRef.current
+    );
+
     return () => {
       unsubLogs();
       unsubConsultations();
       unsubAccounts();
+      unsubTickets();
     };
   }, []);
 
@@ -901,6 +1014,10 @@ function App() {
           onAddActivityLog={handleAddActivityLog}
           onClearActivityLogs={handleClearActivityLogs}
           onResetActivityLogs={handleResetActivityLogs}
+          tickets={designTickets}
+          onAddTicket={handleAddTicket}
+          onUpdateTicketStatus={handleUpdateTicketStatus}
+          onDeleteTicket={handleDeleteTicket}
         />
       ) : currentView.page === 'service' ? (
         /* Halaman Layanan Spesifik (PAR, Arsip, Aset, Kas, dsb.) */
@@ -918,6 +1035,9 @@ function App() {
           accounts={registeredAccounts}
           onAddAccount={handleAddAccount}
           onAddActivityLog={handleAddActivityLog}
+          tickets={designTickets}
+          onAddTicket={handleAddTicket}
+          onUpdateTicketStatus={handleUpdateTicketStatus}
         />
       ) : (
         /* Halaman Khusus Portal Fitur & Katalog Aplikasi Organisasi */

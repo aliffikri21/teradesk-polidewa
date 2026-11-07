@@ -9,53 +9,18 @@ import {
   Filter
 } from 'lucide-react';
 import ServicePageLayout from './ServicePageLayout';
-
-const sampleTickets = [
-  {
-    id: 'REQ-2026-081',
-    title: 'Desain Poster Utama & Feed Instagram Acara LDK 2026',
-    category: 'Desain Grafis / Poster',
-    requester: 'Fajar Nugraha (Kaderisasi)',
-    targetDate: '10 Nov 2026',
-    assignedTo: 'Nadia (Medinfo)',
-    status: 'Sedang Dikerjakan',
-    statusColor: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-  },
-  {
-    id: 'REQ-2026-080',
-    title: 'Publikasi Siaran Pers Kerjasama BEM Se-Kota',
-    category: 'Publikasi Media Sosial',
-    requester: 'Siti Aminah (Humas)',
-    targetDate: '05 Nov 2026',
-    assignedTo: 'Gilang (Medinfo)',
-    status: 'Sedang Dikerjakan',
-    statusColor: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-  },
-  {
-    id: 'REQ-2026-079',
-    title: 'Dokumentasi Video Teaser Turnamen Futsal',
-    category: 'Liputan Foto / Video',
-    requester: 'Rian Pratama (Mikat)',
-    targetDate: '25 Okt 2026',
-    assignedTo: 'Budi (Medinfo)',
-    status: 'Selesai',
-    statusColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-  },
-  {
-    id: 'REQ-2026-078',
-    title: 'Desain Sertifikat Peserta Webinar AI Kampus',
-    category: 'Desain Grafis / Poster',
-    requester: 'Annisa (Dana Usaha)',
-    targetDate: '20 Okt 2026',
-    assignedTo: 'Nadia (Medinfo)',
-    status: 'Selesai',
-    statusColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-  },
-];
+import { initialDefaultTickets } from '../../data/defaultTickets';
 
 const HelpdeskServicePage = (props) => {
+  const {
+    tickets: propTickets,
+    onAddTicket,
+    authUser,
+  } = props;
+
   const [activeTab, setActiveTab] = useState('tiket'); // 'tiket' | 'buat' | 'panduan'
-  const [tickets, setTickets] = useState(sampleTickets);
+  const [localTickets, setLocalTickets] = useState(initialDefaultTickets);
+  const tickets = (propTickets && propTickets.length > 0) ? propTickets : localTickets;
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState('Semua');
 
@@ -63,7 +28,7 @@ const HelpdeskServicePage = (props) => {
   const [ticketForm, setTicketForm] = useState({
     title: '',
     category: 'Desain Grafis / Poster',
-    requester: '',
+    requester: authUser?.name || '',
     targetDate: '',
     brief: '',
   });
@@ -74,17 +39,28 @@ const HelpdeskServicePage = (props) => {
     if (!ticketForm.title || !ticketForm.requester) return;
 
     const newTkt = {
-      id: `REQ-2026-0${tickets.length + 82}`,
+      id: `PUB-2026-${Date.now().toString().slice(-4)}`,
       title: ticketForm.title,
       category: ticketForm.category,
+      canvas: ticketForm.category,
       requester: ticketForm.requester,
+      division: authUser?.division || 'Divisi Pemohon',
       targetDate: ticketForm.targetDate || '3 Hari Lagi',
-      assignedTo: 'Tim Medinfo / Logistik',
+      deadline: ticketForm.targetDate || '3 Hari Lagi',
+      assignedTo: 'Antrean Tim Pubdok',
+      designer: 'Antrean Tim Pubdok',
       status: 'Diajukan',
-      statusColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+      statusColor: 'bg-amber-50 text-amber-700 border-amber-200',
+      brief: ticketForm.brief || '-',
+      createdAt: new Date().toISOString().slice(0, 10),
     };
 
-    setTickets([newTkt, ...tickets]);
+    if (onAddTicket) {
+      onAddTicket(newTkt);
+    } else {
+      setLocalTickets((prev) => [newTkt, ...prev]);
+    }
+
     setFormSuccess(true);
     setTimeout(() => {
       setFormSuccess(false);
@@ -92,7 +68,7 @@ const HelpdeskServicePage = (props) => {
       setTicketForm({
         title: '',
         category: 'Desain Grafis / Poster',
-        requester: '',
+        requester: authUser?.name || '',
         targetDate: '',
         brief: '',
       });

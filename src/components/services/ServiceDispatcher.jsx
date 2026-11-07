@@ -25,6 +25,9 @@ const ServiceDispatcher = ({
   accounts = [],
   onAddAccount,
   onAddActivityLog,
+  tickets = [],
+  onAddTicket,
+  onUpdateTicketStatus,
 }) => {
   const commonProps = {
     onBackToPortal,
@@ -39,6 +42,9 @@ const ServiceDispatcher = ({
     accounts,
     onAddAccount,
     onAddActivityLog,
+    tickets,
+    onAddTicket,
+    onUpdateTicketStatus,
   };
 
   switch (serviceId) {

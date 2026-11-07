@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "src/App.jsx": {
-    "mtime": 1794070820.4612925,
-    "seen": 1794071304.481903,
-    "ast_hash": "bad58f75e1990a7b2cda46d70f9029f0",
+    "mtime": 1794072012.8444798,
+    "seen": 1794072126.9666724,
+    "ast_hash": "3520114283c9882a7c3ba6c408de23bf",
     "semantic_hash": ""
   },
   "src/components/AboutUs.jsx": {
@@ -822,9 +822,9 @@
     "semantic_hash": ""
   },
   "src/components/services/HelpdeskServicePage.jsx": {
-    "mtime": 1793602287.5735812,
-    "seen": 1793602632.2620957,
-    "ast_hash": "9edf70245618a44c1d7f06f3a0fdeaf3",
+    "mtime": 1794071604.3532498,
+    "seen": 1794072126.9666724,
+    "ast_hash": "279c1895b9d0686f8dd41f37995c06c0",
     "semantic_hash": ""
   },
   "src/components/services/HrServicePage.jsx": {
@@ -840,9 +840,9 @@
     "semantic_hash": ""
   },
   "src/components/services/ServiceDispatcher.jsx": {
-    "mtime": 1793984796.048251,
-    "seen": 1794057580.4550753,
-    "ast_hash": "c3c28b0cccb7b1e0c49f1701bd3d5b5e",
+    "mtime": 1794071578.0766084,
+    "seen": 1794072126.9666724,
+    "ast_hash": "9334161e7f2aea85372317578802ff89",
     "semantic_hash": ""
   },
   "src/components/services/ServicePageLayout.jsx": {
@@ -864,9 +864,9 @@
     "semantic_hash": ""
   },
   "src/components/admin/AdminDashboardPage.jsx": {
-    "mtime": 1794071261.3468862,
-    "seen": 1794071304.481903,
-    "ast_hash": "a16c91d4310a8568a623f591112fe441",
+    "mtime": 1794072090.3659713,
+    "seen": 1794072126.9666724,
+    "ast_hash": "8309f0f6340a4afe861331450764389b",
     "semantic_hash": ""
   },
   "public/logo-teramedia.png": {
@@ -1020,9 +1020,21 @@
     "semantic_hash": ""
   },
   "src/utils/notificationSound.js": {
-    "mtime": 1794071124.8487203,
-    "seen": 1794071304.481903,
-    "ast_hash": "55de5e03054ee744cd3d022199c077d7",
+    "mtime": 1794071363.5475807,
+    "seen": 1794072126.9666724,
+    "ast_hash": "5dd7c5988f39cadf80f1edaa97a972a0",
+    "semantic_hash": ""
+  },
+  "src/data/defaultTickets.js": {
+    "mtime": 1794071556.3612008,
+    "seen": 1794072126.9666724,
+    "ast_hash": "7a32725c54977edeed32f1fe459753b7",
+    "semantic_hash": ""
+  },
+  "src/services/ticketService.js": {
+    "mtime": 1794071567.7454998,
+    "seen": 1794072126.9666724,
+    "ast_hash": "acf6a6f560f14784a204b4a0f65f2c07",
     "semantic_hash": ""
   }
 }

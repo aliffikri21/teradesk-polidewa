@@ -59,9 +59,11 @@ import {
   Smartphone,
   Tablet,
   Volume2,
-  VolumeX
+  VolumeX,
+  Menu
 } from 'lucide-react';
 import { playNotificationChime, getSoundMuted, setSoundMuted } from '../../utils/notificationSound';
+import { initialDefaultTickets } from '../../data/defaultTickets';
 
 const divisionsList = [
   'Semua Divisi',
@@ -230,7 +232,14 @@ const AdminDashboardPage = ({
   onAddActivityLog,
   onClearActivityLogs,
   onResetActivityLogs,
+  tickets = [],
+  onAddTicket,
+  onUpdateTicketStatus,
+  onDeleteTicket,
 }) => {
+  // Mobile Sidebar Drawer State
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
   // Navigation View:
   // 'dashboard' | 'proker' | 'students' | 'inbox' | 'par' | 'archive' | 'asset' | 'finance' | 'attendance' | 'timeline' | 'hr' | 'helpdesk' |
   // 'session' | 'backup' | 'logs' | 'settings'
@@ -457,38 +466,8 @@ const AdminDashboardPage = ({
   ]);
 
   // 2. DIVISI PUBLIKASI & DOKUMENTASI (PUBDOK): State & Logic
-  const [pubdokTickets, setPubdokTickets] = useState([
-    {
-      id: 'PUB-001',
-      title: 'Feed & Reels Open Recruitment Kader Muda 2026',
-      division: 'Divisi Kaderisasi',
-      canvas: 'Feed 1:1 + Reels 9:16',
-      deadline: '08 Nov 2026',
-      status: 'Dikerjakan',
-      statusColor: 'bg-amber-50 text-amber-700 border-amber-200',
-      designer: 'Bagas Aditya (Pubdok)',
-    },
-    {
-      id: 'PUB-002',
-      title: 'Backdrop Spanduk Panggung & Sertifikat Seminar',
-      division: 'BPH',
-      canvas: 'Spanduk 3x1m & A4 Cetak',
-      deadline: '14 Nov 2026',
-      status: 'Antrean',
-      statusColor: 'bg-blue-50 text-blue-700 border-blue-200',
-      designer: 'Menunggu Penugasan',
-    },
-    {
-      id: 'PUB-003',
-      title: 'Twibbon Mahasiswa Baru Dies Natalis Ke-12',
-      division: 'Divisi Kesekretariatan',
-      canvas: 'Twibbon PNG Transparan',
-      deadline: '20 Nov 2026',
-      status: 'Selesai',
-      statusColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-      designer: 'Nadia Safitri (Pubdok)',
-    },
-  ]);
+  const [localPubdokTickets, setLocalPubdokTickets] = useState(initialDefaultTickets);
+  const activePubdokTickets = (tickets && tickets.length > 0) ? tickets : localPubdokTickets;
   const [pubdokFilter, setPubdokFilter] = useState('Semua');
   const [formPubTitle, setFormPubTitle] = useState('');
   const [formPubDiv, setFormPubDiv] = useState('Divisi Kaderisasi');
@@ -791,17 +770,26 @@ const AdminDashboardPage = ({
     if (!formPubTitle.trim()) return;
 
     const newTicket = {
-      id: `PUB-00${pubdokTickets.length + 1}`,
+      id: `PUB-2026-${Date.now().toString().slice(-4)}`,
       title: formPubTitle.trim(),
       division: formPubDiv,
+      requester: formPubDiv,
+      category: formPubCanvas,
       canvas: formPubCanvas,
       deadline: formPubDeadline || '15 Nov 2026',
+      targetDate: formPubDeadline || '15 Nov 2026',
       status: 'Antrean',
       statusColor: 'bg-blue-50 text-blue-700 border-blue-200',
       designer: 'Antrean Pubdok',
+      assignedTo: 'Antrean Pubdok',
+      createdAt: new Date().toISOString().slice(0, 10),
     };
 
-    setPubdokTickets([newTicket, ...pubdokTickets]);
+    if (onAddTicket) {
+      onAddTicket(newTicket);
+    } else {
+      setLocalPubdokTickets((prev) => [newTicket, ...prev]);
+    }
     setFormPubTitle('');
     addLog(`Tiket request desain baru dibuat: ${newTicket.id} (${newTicket.title})`, 'info');
   };
@@ -809,17 +797,23 @@ const AdminDashboardPage = ({
   const handleToggleTicketStatus = (ticketId, nextStatus) => {
     const statusMap = {
       'Antrean': 'bg-blue-50 text-blue-700 border-blue-200',
+      'Diajukan': 'bg-amber-50 text-amber-700 border-amber-200',
       'Dikerjakan': 'bg-amber-50 text-amber-700 border-amber-200',
+      'Sedang Dikerjakan': 'bg-amber-50 text-amber-700 border-amber-200',
       'Selesai': 'bg-emerald-50 text-emerald-700 border-emerald-200',
     };
 
-    setPubdokTickets(
-      pubdokTickets.map((t) =>
-        t.id === ticketId
-          ? { ...t, status: nextStatus, statusColor: statusMap[nextStatus] || t.statusColor }
-          : t
-      )
-    );
+    if (onUpdateTicketStatus) {
+      onUpdateTicketStatus(ticketId, nextStatus, statusMap[nextStatus]);
+    } else {
+      setLocalPubdokTickets((prev) =>
+        prev.map((t) =>
+          t.id === ticketId
+            ? { ...t, status: nextStatus, statusColor: statusMap[nextStatus] || t.statusColor }
+            : t
+        )
+      );
+    }
     addLog(`Update status tiket desain ${ticketId} ➔ ${nextStatus}`, 'success');
   };
 
@@ -1261,11 +1255,15 @@ const AdminDashboardPage = ({
     return matchDivision && matchAccess && matchSearch;
   });
 
-  return (
-    <div className="w-full min-h-screen bg-[#F8FAFC] text-slate-800 flex font-sans antialiased selection:bg-blue-600 selection:text-white">
-      
-      {/* 1. LEFT SIDEBAR: REAL TERADESK SERVICES & MANAGEMENT TABS */}
-      <aside className="w-64 bg-white border-r border-slate-200/80 shrink-0 hidden lg:flex flex-col justify-between p-5 min-h-screen sticky top-0 h-screen z-20 overflow-y-auto">
+  // Render Sidebar Content (Shared between Desktop Aside & Mobile Drawer)
+  const renderSidebarContent = (isMobile = false) => {
+    const handleNav = (nav) => {
+      setCurrentNav(nav);
+      if (isMobile) setIsMobileSidebarOpen(false);
+    };
+
+    return (
+      <div className="flex flex-col justify-between h-full min-h-full">
         <div>
           {/* Logo Brand Header */}
           <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
@@ -1284,13 +1282,24 @@ const AdminDashboardPage = ({
                 </span>
               </div>
             </div>
-            <button
-              onClick={onBackToLanding}
-              className="text-slate-400 hover:text-slate-800 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
-              title="Kembali ke Beranda Landing"
-            >
-              <ArrowLeft size={16} />
-            </button>
+            {isMobile ? (
+              <button
+                onClick={() => setIsMobileSidebarOpen(false)}
+                className="text-slate-400 hover:text-slate-800 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+                title="Tutup Menu"
+                aria-label="Tutup Menu"
+              >
+                <X size={18} />
+              </button>
+            ) : (
+              <button
+                onClick={onBackToLanding}
+                className="text-slate-400 hover:text-slate-800 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+                title="Kembali ke Beranda Landing"
+              >
+                <ArrowLeft size={16} />
+              </button>
+            )}
           </div>
 
           {/* Navigation Sections */}
@@ -1303,7 +1312,7 @@ const AdminDashboardPage = ({
               </p>
               <div className="space-y-1">
                 <button
-                  onClick={() => setCurrentNav('dashboard')}
+                  onClick={() => handleNav('dashboard')}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     currentNav === 'dashboard'
                       ? 'bg-slate-900 text-white font-bold shadow-xs'
@@ -1317,7 +1326,7 @@ const AdminDashboardPage = ({
                 </button>
 
                 <button
-                  onClick={() => setCurrentNav('students')}
+                  onClick={() => handleNav('students')}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     currentNav === 'students'
                       ? 'bg-slate-900 text-white font-bold shadow-xs'
@@ -1336,7 +1345,7 @@ const AdminDashboardPage = ({
                 </button>
 
                 <button
-                  onClick={() => setCurrentNav('proker')}
+                  onClick={() => handleNav('proker')}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     currentNav === 'proker'
                       ? 'bg-slate-900 text-white font-bold shadow-xs'
@@ -1356,7 +1365,7 @@ const AdminDashboardPage = ({
 
                 {/* Kotak Masuk Konsultasi (Inbox Kontak Landing Page) */}
                 <button
-                  onClick={() => setCurrentNav('inbox')}
+                  onClick={() => handleNav('inbox')}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     currentNav === 'inbox'
                       ? 'bg-slate-900 text-white font-bold shadow-xs'
@@ -1395,7 +1404,7 @@ const AdminDashboardPage = ({
                   return (
                     <button
                       key={svc.id}
-                      onClick={() => setCurrentNav(svc.id)}
+                      onClick={() => handleNav(svc.id)}
                       className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                         isActive
                           ? 'bg-slate-900 text-white font-bold shadow-xs'
@@ -1420,7 +1429,7 @@ const AdminDashboardPage = ({
               </p>
               <div className="space-y-1">
                 <button
-                  onClick={() => setCurrentNav('session')}
+                  onClick={() => handleNav('session')}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     currentNav === 'session'
                       ? 'bg-slate-900 text-white font-bold shadow-xs'
@@ -1435,7 +1444,7 @@ const AdminDashboardPage = ({
                 </button>
 
                 <button
-                  onClick={() => setCurrentNav('backup')}
+                  onClick={() => handleNav('backup')}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     currentNav === 'backup'
                       ? 'bg-slate-900 text-white font-bold shadow-xs'
@@ -1449,7 +1458,7 @@ const AdminDashboardPage = ({
                 </button>
 
                 <button
-                  onClick={() => setCurrentNav('logs')}
+                  onClick={() => handleNav('logs')}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     currentNav === 'logs'
                       ? 'bg-slate-900 text-white font-bold shadow-xs'
@@ -1466,7 +1475,7 @@ const AdminDashboardPage = ({
                 </button>
 
                 <button
-                  onClick={() => setCurrentNav('settings')}
+                  onClick={() => handleNav('settings')}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     currentNav === 'settings'
                       ? 'bg-slate-900 text-white font-bold shadow-xs'
@@ -1484,7 +1493,7 @@ const AdminDashboardPage = ({
         </div>
 
         {/* Bottom Profile & Zero-Trust Destroy Session Button */}
-        <div className="pt-4 border-t border-slate-100">
+        <div className="pt-4 border-t border-slate-100 mt-6">
           <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/70 mb-3">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-full bg-slate-900 text-white font-black text-xs flex items-center justify-center shrink-0">
@@ -1509,30 +1518,78 @@ const AdminDashboardPage = ({
             <span>Hancurkan Sesi</span>
           </button>
 
+          {isMobile && (
+            <button
+              onClick={onBackToLanding}
+              className="w-full py-2 px-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-all cursor-pointer flex items-center justify-center gap-1.5 mb-2"
+            >
+              <ArrowLeft size={13} />
+              <span>Kembali ke Beranda</span>
+            </button>
+          )}
+
           <p className="text-[10px] text-center text-slate-400 font-medium">
             © 2026 TERAMEDIA / TeraDesk
           </p>
         </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="w-full min-h-screen bg-[#F8FAFC] text-slate-800 flex font-sans antialiased selection:bg-blue-600 selection:text-white">
+      
+      {/* 1. LEFT SIDEBAR: DESKTOP ONLY */}
+      <aside className="w-64 bg-white border-r border-slate-200/80 shrink-0 hidden lg:flex flex-col justify-between p-5 min-h-screen sticky top-0 h-screen z-20 overflow-y-auto">
+        {renderSidebarContent(false)}
       </aside>
+
+      {/* 1B. MOBILE SIDEBAR DRAWER (HP & TABLET) */}
+      {isMobileSidebarOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden flex">
+          {/* Backdrop Overlay */}
+          <div
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
+            onClick={() => setIsMobileSidebarOpen(false)}
+            aria-hidden="true"
+          />
+          {/* Slide-out Drawer Panel */}
+          <aside className="relative w-72 max-w-[85vw] bg-white h-full shadow-2xl flex flex-col justify-between p-5 overflow-y-auto z-10 animate-in slide-in-from-left duration-200">
+            {renderSidebarContent(true)}
+          </aside>
+        </div>
+      )}
 
       {/* 2. MAIN WORKSPACE CONTAINER */}
       <div className="flex-1 flex flex-col min-w-0">
         
         {/* TOP HEADER BAR */}
-        <header className="h-16 bg-white border-b border-slate-200/80 px-6 lg:px-8 flex items-center justify-between sticky top-0 z-10">
-          {/* Search Bar for TeraDesk */}
-          <div className="relative w-72 lg:w-96">
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari Layanan, Proposal, atau NIM..."
-              className="w-full pl-9 pr-14 py-2 bg-slate-50 hover:bg-slate-100/70 focus:bg-white rounded-xl border border-slate-200/80 text-xs font-medium text-slate-800 focus:outline-hidden focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all placeholder:text-slate-400"
-            />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono font-medium text-slate-400 bg-slate-200/60 px-1.5 py-0.5 rounded">
-              Ctrl + K
-            </span>
+        <header className="h-16 bg-white border-b border-slate-200/80 px-4 sm:px-6 lg:px-8 flex items-center justify-between sticky top-0 z-10">
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Hamburger Button for Mobile (HP) */}
+            <button
+              onClick={() => setIsMobileSidebarOpen(true)}
+              className="lg:hidden p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+              title="Buka Menu Navigasi"
+              aria-label="Buka Menu Navigasi"
+            >
+              <Menu size={20} />
+            </button>
+
+            {/* Search Bar for TeraDesk */}
+            <div className="relative w-44 sm:w-72 lg:w-96">
+              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Cari Layanan, Proposal, atau NIM..."
+                className="w-full pl-9 pr-10 sm:pr-14 py-2 bg-slate-50 hover:bg-slate-100/70 focus:bg-white rounded-xl border border-slate-200/80 text-xs font-medium text-slate-800 focus:outline-hidden focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all placeholder:text-slate-400"
+              />
+              <span className="hidden sm:inline absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono font-medium text-slate-400 bg-slate-200/60 px-1.5 py-0.5 rounded">
+                Ctrl + K
+              </span>
+            </div>
           </div>
 
           {/* Right Header Controls */}
@@ -2994,8 +3051,14 @@ const AdminDashboardPage = ({
                 </div>
 
                 <div className="space-y-3">
-                  {pubdokTickets
-                    .filter((t) => pubdokFilter === 'Semua' || t.status === pubdokFilter)
+                  {activePubdokTickets
+                    .filter((t) => {
+                      if (pubdokFilter === 'Semua') return true;
+                      if (pubdokFilter === 'Antrean') return t.status === 'Antrean' || t.status === 'Diajukan';
+                      if (pubdokFilter === 'Dikerjakan') return t.status === 'Dikerjakan' || t.status === 'Sedang Dikerjakan';
+                      if (pubdokFilter === 'Selesai') return t.status === 'Selesai';
+                      return t.status === pubdokFilter;
+                    })
                     .map((t) => (
                       <div
                         key={t.id}
@@ -3005,20 +3068,25 @@ const AdminDashboardPage = ({
                           <div className="flex items-center gap-2">
                             <span className="font-mono text-[11px] font-bold text-rose-600">{t.id}</span>
                             <span className="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 text-[10px] font-semibold">
-                              {t.canvas}
+                              {t.canvas || t.category}
                             </span>
-                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${t.statusColor}`}>
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${t.statusColor || 'bg-slate-100 text-slate-700 border-slate-200'}`}>
                               {t.status}
                             </span>
                           </div>
                           <h4 className="text-sm font-bold text-slate-900">{t.title}</h4>
                           <p className="text-xs text-slate-500">
-                            Pengaju: <span className="font-semibold text-slate-700">{t.division}</span> • Deadline: {t.deadline} • PIC: {t.designer}
+                            Pengaju: <span className="font-semibold text-slate-700">{t.division || t.requester}</span> • Deadline: {t.deadline || t.targetDate} • PIC: {t.designer || t.assignedTo || 'Tim Pubdok'}
                           </p>
+                          {t.brief && t.brief !== '-' && (
+                            <p className="text-xs text-slate-600 bg-white/90 p-2 rounded-lg border border-slate-200/60 font-mono mt-1">
+                              Brief: {t.brief}
+                            </p>
+                          )}
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
-                          {t.status === 'Antrean' && (
+                          {(t.status === 'Antrean' || t.status === 'Diajukan') && (
                             <button
                               onClick={() => handleToggleTicketStatus(t.id, 'Dikerjakan')}
                               className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-semibold cursor-pointer shadow-xs"
@@ -3026,7 +3094,7 @@ const AdminDashboardPage = ({
                               Mulai Kerjakan
                             </button>
                           )}
-                          {t.status === 'Dikerjakan' && (
+                          {(t.status === 'Dikerjakan' || t.status === 'Sedang Dikerjakan') && (
                             <button
                               onClick={() => handleToggleTicketStatus(t.id, 'Selesai')}
                               className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold cursor-pointer shadow-xs"
@@ -3038,6 +3106,19 @@ const AdminDashboardPage = ({
                             <span className="text-xs font-bold text-emerald-700 flex items-center gap-1">
                               <Check size={14} /> Selesai Siap Upload
                             </span>
+                          )}
+                          {onDeleteTicket && (
+                            <button
+                              onClick={() => {
+                                if (window.confirm(`Hapus tiket ${t.id} - ${t.title}?`)) {
+                                  onDeleteTicket(t.id);
+                                }
+                              }}
+                              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                              title="Hapus Tiket"
+                            >
+                              <Trash2 size={14} />
+                            </button>
                           )}
                         </div>
                       </div>
