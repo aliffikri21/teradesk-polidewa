@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "src/App.jsx": {
-    "mtime": 1794058635.9068873,
-    "seen": 1794058676.269549,
-    "ast_hash": "e54cb6519038cf5d6eda648d22aa4c90",
+    "mtime": 1794070133.0964718,
+    "seen": 1794070167.336946,
+    "ast_hash": "bd1af886d84b395fe0bbf1c59d2bd521",
     "semantic_hash": ""
   },
   "src/components/AboutUs.jsx": {
@@ -66,8 +66,8 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1794063503.0723636,
-    "seen": 1794063529.0164995,
+    "mtime": 1794063547.5713563,
+    "seen": 1794069627.3428593,
     "ast_hash": "bd523d4e19c5a257f08ed5a8fbace1ce",
     "semantic_hash": ""
   },
@@ -990,15 +990,27 @@
     "semantic_hash": ""
   },
   "src/services/firebase.js": {
-    "mtime": 1794059446.0268085,
-    "seen": 1794059699.9379075,
-    "ast_hash": "e76f05219cff624c65b8c69f924bcc74",
+    "mtime": 1794070066.3793058,
+    "seen": 1794070167.336946,
+    "ast_hash": "2d61551413d2da52f7c7dea6978d66f8",
     "semantic_hash": ""
   },
   "vercel.json": {
     "mtime": 1794058695.5583427,
     "seen": 1794059699.9379075,
     "ast_hash": "ccde9ca2d91b8f540f78f64319b3c2b2",
+    "semantic_hash": ""
+  },
+  "wrangler.json": {
+    "mtime": 1794069288.2910683,
+    "seen": 1794069627.3428593,
+    "ast_hash": "bfbb59c5f3784b8cba0a6ca3e742afe7",
+    "semantic_hash": ""
+  },
+  "src/services/accountService.js": {
+    "mtime": 1794070049.3311584,
+    "seen": 1794070167.336946,
+    "ast_hash": "352d7b1cb593574b5a3c33753a1442dc",
     "semantic_hash": ""
   }
 }

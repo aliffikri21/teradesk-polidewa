@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ShieldAlert } from 'lucide-react';
 import Hero from './components/Hero';
 import Features from './components/Features';
@@ -27,6 +27,14 @@ import {
   deleteConsultationFromDb,
   resetConsultationsInDb,
 } from './services/consultationService';
+import {
+  subscribeAccounts,
+  addAccountToDb,
+  updateAccountInDb,
+  updatePasswordInDb,
+  deleteAccountFromDb,
+  resetAccountsInDb,
+} from './services/accountService';
 
 function App() {
   const [pendingTarget, setPendingTarget] = useState(() => {
@@ -91,6 +99,11 @@ function App() {
     } catch {
       // ignore
     }
+  }, [registeredAccounts]);
+
+  const registeredAccountsRef = useRef(registeredAccounts);
+  useEffect(() => {
+    registeredAccountsRef.current = registeredAccounts;
   }, [registeredAccounts]);
 
   // Program Kerja Showcase state (ditampilkan saling overlapping di Hero landing page)
@@ -266,9 +279,20 @@ function App() {
       }
     });
 
+    const unsubAccounts = subscribeAccounts(
+      (cloudAccounts) => {
+        if (Array.isArray(cloudAccounts) && cloudAccounts.length > 0) {
+          setRegisteredAccounts(cloudAccounts);
+        }
+      },
+      (err) => console.warn('⚠️ [Accounts Sync Error]:', err),
+      () => registeredAccountsRef.current
+    );
+
     return () => {
       unsubLogs();
       unsubConsultations();
+      unsubAccounts();
     };
   }, []);
 
@@ -699,6 +723,7 @@ function App() {
   // Developer Dashboard account actions
   const handleAddAccount = (newAccount) => {
     setRegisteredAccounts((prev) => [newAccount, ...prev]);
+    addAccountToDb(newAccount);
     handleAddActivityLog({
       category: 'system',
       type: 'success',
@@ -716,6 +741,7 @@ function App() {
     setRegisteredAccounts((prev) =>
       prev.map((acc) => (acc.nim === nim ? { ...acc, password: newPassword } : acc))
     );
+    updatePasswordInDb(nim, newPassword);
   };
 
   const handleUpdateAccount = (originalNim, updatedAccount) => {
@@ -725,6 +751,7 @@ function App() {
     if (authUser && authUser.nim === originalNim) {
       setAuthUser((prev) => ({ ...prev, ...updatedAccount }));
     }
+    updateAccountInDb(originalNim, updatedAccount);
     handleAddActivityLog({
       category: 'system',
       type: 'info',
@@ -740,6 +767,7 @@ function App() {
 
   const handleDeleteAccount = (nim) => {
     setRegisteredAccounts((prev) => prev.filter((acc) => acc.nim !== nim));
+    deleteAccountFromDb(nim);
     handleAddActivityLog({
       category: 'system',
       type: 'warning',
@@ -756,6 +784,7 @@ function App() {
   const handleResetAccounts = () => {
     if (window.confirm('Kembalikan seluruh daftar akun ke akun bawaan sistem?')) {
       setRegisteredAccounts(initialDefaultAccounts);
+      resetAccountsInDb(initialDefaultAccounts);
     }
   };
 

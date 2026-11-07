@@ -1,8 +1,18 @@
 import { initializeApp, getApps } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 
-const apiKey = import.meta.env.VITE_FIREBASE_API_KEY;
-const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID;
+const fallbackConfig = {
+  apiKey: 'AIzaSyCZMj8NQXuxrp3Ek4-rQej7967PfaWwtx0',
+  authDomain: 'teradesk-781cd.firebaseapp.com',
+  projectId: 'teradesk-781cd',
+  storageBucket: 'teradesk-781cd.firebasestorage.app',
+  messagingSenderId: '890006695734',
+  appId: '1:890006695734:web:9d9d61def88155487b4d97',
+  measurementId: 'G-310NEG6XYM',
+};
+
+const apiKey = import.meta.env.VITE_FIREBASE_API_KEY || fallbackConfig.apiKey;
+const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID || fallbackConfig.projectId;
 
 // Validasi apakah konfigurasi Firebase sudah diisi dengan benar
 export const isFirebaseConfigured = Boolean(
@@ -13,13 +23,13 @@ export const isFirebaseConfigured = Boolean(
 );
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || '',
+  apiKey: apiKey,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || fallbackConfig.authDomain,
+  projectId: projectId,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || fallbackConfig.storageBucket,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || fallbackConfig.messagingSenderId,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || fallbackConfig.appId,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || fallbackConfig.measurementId,
 };
 
 let app = null;
@@ -39,4 +49,3 @@ if (isFirebaseConfigured) {
 }
 
 export { app, db };
-
