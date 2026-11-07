@@ -63,28 +63,15 @@ const AttendanceServicePage = (props) => {
 
   // Selected Session
   const [selectedSessionId, setSelectedSessionId] = useState(
-    () => sessions.find((s) => s.status === 'active')?.id || sessions[0]?.id || 'SES-2026-001'
+    () => sessions.find((s) => s.status === 'active')?.id || sessions[0]?.id || ''
   );
 
   const currentSession = useMemo(() => {
     return (
       sessions.find((s) => s.id === selectedSessionId) ||
-      sessions[0] || {
-        id: 'SES-DEFAULT',
-        title: 'Sesi Presensi Rapat',
-        division: OFFICIAL_DIVISIONS[0],
-        date: '08 November 2026',
-        timeStart: '13:30 WITA',
-        timeEnd: '16:00 WITA',
-        toleranceTime: '14:15 WITA',
-        location: 'Ruang Rapat Bersama',
-        status: 'active',
-        qrToken: 'TERA-QR-98214',
-        pinCode: '782910',
-        organizer: OFFICIAL_DIVISIONS[0],
-        agenda: 'Koordinasi teknis kegiatan organisasi',
-        notula: { summary: '', keyDecisions: [], actionItems: [] },
-      }
+      sessions.find((s) => s.status === 'active') ||
+      sessions[0] ||
+      null
     );
   }, [sessions, selectedSessionId]);
 
@@ -94,8 +81,9 @@ const AttendanceServicePage = (props) => {
 
   // Filter records by selected session
   const sessionRecords = useMemo(() => {
+    if (!currentSession) return [];
     return allRecords.filter((rec) => !rec.sessionId || rec.sessionId === currentSession.id);
-  }, [allRecords, currentSession.id]);
+  }, [allRecords, currentSession]);
 
   // Tab navigation
   const [activeTab, setActiveTab] = useState('qr'); // 'qr' | 'log' | 'notula' | 'rekap'
@@ -153,6 +141,7 @@ const AttendanceServicePage = (props) => {
 
   // Salin Tautan Presensi Smartphone ke Clipboard
   const handleCopyQrLink = () => {
+    if (!currentSession) return;
     const url = typeof window !== 'undefined'
       ? `${window.location.origin}${window.location.pathname}?presensi=${currentSession.id}&token=${currentSession.qrToken}`
       : `https://teradesk.politeknikdewantara.ac.id/?presensi=${currentSession.id}&token=${currentSession.qrToken}`;
@@ -223,6 +212,7 @@ const AttendanceServicePage = (props) => {
 
   // Dynamic QR Refresh
   const handleRefreshQr = () => {
+    if (!currentSession) return;
     const randomToken = `TERA-QR-${Math.floor(10000 + Math.random() * 90000)}`;
     const randomPin = `${Math.floor(100000 + Math.random() * 900000)}`;
     const updated = {
@@ -241,6 +231,7 @@ const AttendanceServicePage = (props) => {
 
   // Helper check if late
   const checkIsLate = (session) => {
+    if (!session?.toleranceTime) return { isLate: false, diff: 0 };
     try {
       const now = new Date();
       const currentHours = now.getHours();
@@ -266,6 +257,10 @@ const AttendanceServicePage = (props) => {
 
   // Submit Check-In
   const handleExecuteCheckIn = (methodName = 'Input PIN') => {
+    if (!currentSession) {
+      setCheckinError('Tidak ada agenda rapat yang aktif.');
+      return;
+    }
     const user = authUser || {
       name: 'Alif Fikri Haykal',
       nim: '23404053',
@@ -320,6 +315,10 @@ const AttendanceServicePage = (props) => {
   // Verify PIN
   const handleVerifyPin = (e) => {
     e.preventDefault();
+    if (!currentSession) {
+      setCheckinError('Belum ada sesi rapat yang aktif.');
+      return;
+    }
     if (!enteredPin.trim()) {
       setCheckinError('Harap masukkan 6 digit kode PIN rapat.');
       return;
@@ -345,6 +344,10 @@ const AttendanceServicePage = (props) => {
   // Submit Leave / Permission Request
   const handleSubmitLeave = (e) => {
     e.preventDefault();
+    if (!currentSession) {
+      alert('Tidak ada agenda rapat yang aktif.');
+      return;
+    }
     if (!leaveForm.reason.trim()) {
       alert('Mohon isi alasan / keterangan pengajuan.');
       return;
@@ -444,8 +447,8 @@ const AttendanceServicePage = (props) => {
 
   // Toggle Action Item Status
   const handleToggleActionItemStatus = (itemId) => {
-    if (!currentSession.notula?.actionItems) return;
-    const updatedItems = currentSession.notula.actionItems.map((item) => {
+    if (!currentSession?.notula?.actionItems) return;
+    const updatedItems = (currentSession.notula?.actionItems || []).map((item) => {
       if (item.id === itemId) {
         const nextStatus =
           item.status === 'done'
@@ -461,7 +464,7 @@ const AttendanceServicePage = (props) => {
     const updatedSession = {
       ...currentSession,
       notula: {
-        ...currentSession.notula,
+        ...(currentSession.notula || {}),
         actionItems: updatedItems,
       },
     };
@@ -476,12 +479,12 @@ const AttendanceServicePage = (props) => {
   // Add Key Decision to Session Notula
   const handleAddDecision = (e) => {
     e.preventDefault();
-    if (!newDecisionInput.trim()) return;
+    if (!currentSession || !newDecisionInput.trim()) return;
     const existingDecisions = currentSession.notula?.keyDecisions || [];
     const updatedSession = {
       ...currentSession,
       notula: {
-        ...currentSession.notula,
+        ...(currentSession.notula || {}),
         keyDecisions: [...existingDecisions, newDecisionInput.trim()],
       },
     };
@@ -497,6 +500,7 @@ const AttendanceServicePage = (props) => {
   // Add Action Item to Session Notula
   const handleAddActionItem = (e) => {
     e.preventDefault();
+    if (!currentSession) return;
     if (!newActionItem.task.trim() || !newActionItem.pic.trim()) {
       alert('Tugas dan nama PIC wajib diisi.');
       return;
@@ -514,7 +518,7 @@ const AttendanceServicePage = (props) => {
     const updatedSession = {
       ...currentSession,
       notula: {
-        ...currentSession.notula,
+        ...(currentSession.notula || {}),
         actionItems: [...existingItems, item],
       },
     };
@@ -530,6 +534,10 @@ const AttendanceServicePage = (props) => {
 
   // Export to Excel (.xlsx)
   const handleExportXlsx = () => {
+    if (!currentSession) {
+      alert('Belum ada agenda rapat yang dapat diekspor. Silakan buat sesi rapat terlebih dahulu.');
+      return;
+    }
     // Sheet 1: Log Kehadiran Sesi
     const rowsAttendance = sessionRecords.map((item, idx) => ({
       No: idx + 1,
@@ -601,7 +609,7 @@ const AttendanceServicePage = (props) => {
     ];
 
     // Sheet 3: Notula & Action Items
-    const rowsNotula = (currentSession.notula?.actionItems || []).map((act, idx) => ({
+    const rowsNotula = (currentSession?.notula?.actionItems || []).map((act, idx) => ({
       No: idx + 1,
       'ID Tugas': act.id,
       'Deskripsi Tindak Lanjut': act.task,
@@ -629,7 +637,7 @@ const AttendanceServicePage = (props) => {
     XLSX.utils.book_append_sheet(workbook, wsRecap, 'Rekapitulasi Divisi');
     XLSX.utils.book_append_sheet(workbook, wsNotula, 'Action Items Notula');
 
-    const cleanTitle = currentSession.title.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 20);
+    const cleanTitle = (currentSession?.title || 'Semua_Sesi').replace(/[^a-zA-Z0-9]/g, '_').slice(0, 20);
     const fileName = `Rekap_Presensi_TERADESK_${cleanTitle}_${new Date().toISOString().slice(0, 10)}.xlsx`;
     XLSX.writeFile(workbook, fileName);
 
@@ -646,7 +654,7 @@ const AttendanceServicePage = (props) => {
     return targetSessions.map((sess) => {
       // Ambil seluruh presensi milik agenda ini
       const recordsForSess = allRecords.filter(
-        (rec) => rec.sessionId === sess.id || (!rec.sessionId && sess.id === 'SES-2026-001')
+        (rec) => rec.sessionId === sess.id
       );
 
       // Filter berdasarkan pencarian & filter status
@@ -751,26 +759,38 @@ const AttendanceServicePage = (props) => {
               <select
                 value={selectedSessionId}
                 onChange={(e) => setSelectedSessionId(e.target.value)}
-                className="w-full sm:w-auto appearance-none bg-slate-50 border border-slate-300 text-slate-800 text-xs sm:text-sm font-semibold rounded-xl pl-3.5 pr-9 py-2.5 hover:bg-slate-100 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={sessions.length === 0}
+                className="w-full sm:w-auto appearance-none bg-slate-50 border border-slate-300 text-slate-800 text-xs sm:text-sm font-semibold rounded-xl pl-3.5 pr-9 py-2.5 hover:bg-slate-100 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {sessions.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.title} ({s.date} • {s.status === 'active' ? '🟢 Aktif' : '⚪ Selesai'})
-                  </option>
-                ))}
+                {sessions.length === 0 ? (
+                  <option value="">Belum Ada Agenda Rapat</option>
+                ) : (
+                  sessions.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.title} ({s.date} • {s.status === 'active' ? '🟢 Aktif' : '⚪ Selesai'})
+                    </option>
+                  ))
+                )}
               </select>
               <ChevronDown size={15} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
             </div>
-            <span
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${
-                currentSession.status === 'active'
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                  : 'bg-slate-100 text-slate-600 border-slate-200'
-              }`}
-            >
-              <span className={`w-2 h-2 rounded-full ${currentSession.status === 'active' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
-              {currentSession.status === 'active' ? 'Sesi Sedang Berlangsung' : 'Sesi Selesai (Arsip)'}
-            </span>
+            {currentSession ? (
+              <span
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${
+                  currentSession.status === 'active'
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                    : 'bg-slate-100 text-slate-600 border-slate-200'
+                }`}
+              >
+                <span className={`w-2 h-2 rounded-full ${currentSession.status === 'active' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+                {currentSession.status === 'active' ? 'Sesi Sedang Berlangsung' : 'Sesi Selesai (Arsip)'}
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border bg-slate-100 text-slate-500 border-slate-200">
+                <span className="w-2 h-2 rounded-full bg-slate-400" />
+                Belum Ada Acara Rapat
+              </span>
+            )}
           </div>
 
           {/* Action buttons */}
@@ -783,7 +803,13 @@ const AttendanceServicePage = (props) => {
               <span>Buat Sesi Baru</span>
             </button>
             <button
-              onClick={() => setIsLeaveModalOpen(true)}
+              onClick={() => {
+                if (!currentSession) {
+                  alert('Belum ada agenda rapat yang aktif. Silakan buat sesi rapat terlebih dahulu.');
+                  return;
+                }
+                setIsLeaveModalOpen(true);
+              }}
               className="flex items-center gap-1.5 px-3.5 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200/80 text-xs font-bold rounded-xl transition-colors cursor-pointer"
             >
               <AlertCircle size={15} />
@@ -791,6 +817,10 @@ const AttendanceServicePage = (props) => {
             </button>
             <button
               onClick={() => {
+                if (!currentSession) {
+                  alert('Belum ada agenda rapat yang aktif. Silakan buat sesi rapat terlebih dahulu.');
+                  return;
+                }
                 setCheckinMethodTab('pin');
                 setIsCheckinModalOpen(true);
               }}
@@ -902,7 +932,7 @@ const AttendanceServicePage = (props) => {
           }`}
         >
           <FileText size={16} />
-          <span>Notula & Action Items ({currentSession.notula?.actionItems?.length || 0})</span>
+          <span>Notula & Action Items ({currentSession?.notula?.actionItems?.length || 0})</span>
         </button>
 
         <button
@@ -922,6 +952,27 @@ const AttendanceServicePage = (props) => {
           TAB 1: QR GENERATOR & SESI INFO
           ========================================================================= */}
       {activeTab === 'qr' && (() => {
+        if (!currentSession) {
+          return (
+            <div className="bg-white border border-slate-200/80 rounded-3xl p-12 text-center shadow-xs">
+              <div className="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-4 border border-blue-200">
+                <QrCode size={32} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">Belum Ada Acara Rapat Terjadwal</h3>
+              <p className="text-xs text-slate-500 max-w-md mx-auto mb-6 leading-relaxed">
+                Semua data dummy acara rapat telah dibersihkan. Anda dapat membuat sesi rapat baru untuk mengaktifkan kode QR presensi mandiri dan radius GPS pembuat rapat.
+              </p>
+              <button
+                onClick={() => setIsNewSessionModalOpen(true)}
+                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition-all shadow-xs cursor-pointer"
+              >
+                <Plus size={16} />
+                <span>Buat Sesi Rapat Baru</span>
+              </button>
+            </div>
+          );
+        }
+
         const sessionCoords = currentSession.coordinates || {
           lat: -2.9928,
           lng: 120.1983,
@@ -1183,7 +1234,7 @@ const AttendanceServicePage = (props) => {
                 🌟 Tampilkan Semua Agenda ({sessions.length} Agenda)
               </button>
               {sessions.map((sess) => {
-                const count = allRecords.filter((r) => r.sessionId === sess.id || (!r.sessionId && sess.id === 'SES-2026-001')).length;
+                const count = allRecords.filter((r) => r.sessionId === sess.id).length;
                 return (
                   <button
                     key={sess.id}
@@ -1213,8 +1264,14 @@ const AttendanceServicePage = (props) => {
             {groupedSessionsWithRecords.length === 0 ? (
               <div className="bg-white border border-slate-200/80 rounded-3xl p-12 text-center text-slate-400 shadow-xs">
                 <Users size={36} className="mx-auto mb-2 text-slate-300" />
-                <p className="font-bold text-slate-700">Tidak ada agenda rapat yang ditemukan</p>
-                <p className="text-xs text-slate-400 mt-1">Coba sesuaikan kata kunci pencarian atau filter status.</p>
+                <p className="font-bold text-slate-700">
+                  {sessions.length === 0 ? 'Belum Ada Acara Rapat Terjadwal' : 'Tidak ada agenda rapat yang cocok'}
+                </p>
+                <p className="text-xs text-slate-400 mt-1">
+                  {sessions.length === 0
+                    ? 'Data acara rapat telah dibersihkan. Buat sesi rapat baru untuk mulai mencatat presensi.'
+                    : 'Coba sesuaikan kata kunci pencarian atau filter status.'}
+                </p>
               </div>
             ) : (
               groupedSessionsWithRecords.map(({ session: sess, records, stats: sessStats }) => {
@@ -1409,8 +1466,26 @@ const AttendanceServicePage = (props) => {
           TAB 3: NOTULA DIGITAL & ACTION ITEMS PIC (NEW FEATURE)
           ========================================================================= */}
       {activeTab === 'notula' && (
-        <div className="space-y-8">
-          {/* Ringkasan Notula Rapat */}
+        !currentSession ? (
+          <div className="bg-white border border-slate-200/80 rounded-3xl p-12 text-center shadow-xs">
+            <div className="w-16 h-16 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center mx-auto mb-4 border border-purple-200">
+              <FileText size={32} />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">Belum Ada Notula</h3>
+            <p className="text-xs text-slate-500 max-w-md mx-auto mb-6 leading-relaxed">
+              Notula dan action items akan otomatis tersedia setelah Anda membuat agenda rapat baru.
+            </p>
+            <button
+              onClick={() => setIsNewSessionModalOpen(true)}
+              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition-all shadow-xs cursor-pointer"
+            >
+              <Plus size={16} />
+              <span>Buat Sesi Rapat Baru</span>
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-8">
+            {/* Ringkasan Notula Rapat */}
           <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-xs">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-3 mb-6">
               <div>
@@ -1449,10 +1524,10 @@ const AttendanceServicePage = (props) => {
                 Poin Keputusan Resmi:
               </h4>
               <div className="space-y-2">
-                {(currentSession.notula?.keyDecisions || []).length === 0 ? (
+                {(currentSession?.notula?.keyDecisions || []).length === 0 ? (
                   <p className="text-xs text-slate-400 italic">Belum ada poin keputusan dicatat.</p>
                 ) : (
-                  currentSession.notula.keyDecisions.map((dec, idx) => (
+                  (currentSession.notula?.keyDecisions || []).map((dec, idx) => (
                     <div key={idx} className="flex items-start gap-3 p-3 bg-emerald-50/60 border border-emerald-100 rounded-xl text-xs text-slate-800">
                       <span className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">
                         {idx + 1}
@@ -1504,12 +1579,12 @@ const AttendanceServicePage = (props) => {
 
             {/* List Action Items */}
             <div className="space-y-3">
-              {(currentSession.notula?.actionItems || []).length === 0 ? (
+              {(currentSession?.notula?.actionItems || []).length === 0 ? (
                 <div className="py-8 text-center text-slate-400">
                   <p className="text-xs">Belum ada action item yang ditugaskan pada sesi ini.</p>
                 </div>
               ) : (
-                currentSession.notula.actionItems.map((act) => {
+                (currentSession.notula?.actionItems || []).map((act) => {
                   const isDone = act.status === 'done';
                   const isInProgress = act.status === 'in_progress';
 
@@ -1568,6 +1643,7 @@ const AttendanceServicePage = (props) => {
             </div>
           </div>
         </div>
+        )
       )}
 
       {/* =========================================================================
@@ -1648,10 +1724,10 @@ const AttendanceServicePage = (props) => {
                 Presensi Mandiri
               </span>
               <h3 className="text-lg font-bold text-slate-900 mt-2">
-                Check-In {currentSession.title}
+                Check-In {currentSession?.title || 'Rapat'}
               </h3>
               <p className="text-xs text-slate-500 mt-1">
-                Toleransi: {currentSession.toleranceTime} • Zona WITA
+                Toleransi: {currentSession?.toleranceTime || '-'} • Zona WITA
               </p>
             </div>
 
@@ -1795,7 +1871,7 @@ const AttendanceServicePage = (props) => {
                 Form Keterangan Izin / Sakit
               </h3>
               <p className="text-xs text-slate-500 mt-1">
-                Sesi: {currentSession.title} ({currentSession.date})
+                Sesi: {currentSession?.title || 'Rapat'} ({currentSession?.date || '-'})
               </p>
             </div>
 

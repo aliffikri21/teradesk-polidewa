@@ -1,17 +1,17 @@
 # Graph Report - teradesk-ui-slicing  (2026-11-08)
 
 ## Corpus Check
-- 166 files · ~293,008 words
+- 166 files · ~292,893 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 59 file(s) not represented in the graph (top: .csv 53, (none) 4, .example 1)
 
 ## Summary
-- 2523 nodes · 3692 edges · 143 communities (113 shown, 30 thin omitted)
+- 2523 nodes · 3694 edges · 150 communities (122 shown, 28 thin omitted)
 - Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 116 edges (avg confidence: 0.86)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `6120d053`
+- Built from commit: `7e555f76`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -37,7 +37,7 @@
 - Form & Input Components
 - Tailwind CSS Responsive Design
 - Typography Specifications
-- firebase
+- AttendanceServicePage.jsx
 - Logo Usage Rules
 - Component Specifications
 - re
@@ -94,7 +94,7 @@
 - extract-colors.cjs
 - validate-asset.cjs
 - Primitive Tokens
-- button
+- card
 - Core Visual Elements
 - CIP Design Style Guide
 - TestTokenizer
@@ -120,7 +120,7 @@
 - react
 - Slides Reference
 - HTML Slide Template
-- argparse
+- cip/search.py
 - HTML Slide Template
 - read_rows
 - TestStyleTaxonomy
@@ -133,23 +133,30 @@
 - TestFixtureValidation
 - lg
 - TestSearchDomains
-- 3
-- 4
-- 5
-- 8
+- design-tokens-starter.json
+- button
+- input
+- $type
 - none
 - xl
 - Features.jsx
 - AGENTS.md — Developer & AI Agent Context Guide
+- radius
+- padding-y
+- md
+- destructive
+- destructive-foreground
 - slides-create.md
 - create.md
-- ticketService.js
+- muted
+- primary-foreground
 - TestThresholdGate
 - .generate
 - AdminDashboardPage.jsx
 - test_design_system_mode.py
-- AboutUs.jsx
-- TestMetricMath
+- ring
+- secondary-foreground
+- logo/search.py
 - split_values
 - FeaturesPortal.jsx
 
@@ -180,15 +187,15 @@
 ## Import Cycles
 - None detected.
 
-## Communities (143 total, 30 thin omitted)
+## Communities (150 total, 28 thin omitted)
 
 ### Community 0 - "ShadcnInstaller"
 Cohesion: 0.05
 Nodes (3): main(), ShadcnInstaller, TestShadcnInstaller
 
 ### Community 1 - "package.json"
-Cohesion: 0.10
-Nodes (26): @qpokychuk/sf-pro-display@^1.0.2, devDependencies, oxlint@^1.81.0, tailwindcss@^4.3.3, @tailwindcss/vite@^4.3.3, @types/react@^19.2.18, @types/react-dom@^19.2.7, vite@^8.3.0 (+18 more)
+Cohesion: 0.08
+Nodes (33): dependencies, firebase@^13.2.0, lucide-react@^1.50.0, @qpokychuk/sf-pro-display@^1.0.2, react@^19.2.8, react-dom@^19.2.8, xlsx@^0.18.5, devDependencies (+25 more)
 
 ### Community 2 - "scripts/core.py"
 Cohesion: 0.06
@@ -207,8 +214,8 @@ Cohesion: 0.12
 Nodes (12): get_context(), is_allowed_exception(), is_allowed_rgba(), is_inside_block(), load_css_variables(), main(), print_result(), print_summary() (+4 more)
 
 ### Community 6 - "App.jsx"
-Cohesion: 0.12
-Nodes (23): App(), ContactModal(), Footer(), LoginPage(), initialDefaultAccounts, addAccountToDb(), deleteAccountFromDb(), resetAccountsInDb() (+15 more)
+Cohesion: 0.11
+Nodes (26): firebase, App(), ContactModal(), Footer(), addAccountToDb(), deleteAccountFromDb(), resetAccountsInDb(), subscribeAccounts() (+18 more)
 
 ### Community 7 - "Findings List"
 Cohesion: 0.33
@@ -235,7 +242,7 @@ Cohesion: 0.06
 Nodes (35): 1. Visual Communication First, 2. Minimal Text Integration, 3. Expert Craftsmanship, 4. Systematic Patterns, Analog Meditation, Approach, Canvas Boundaries, Canvas Design System (+27 more)
 
 ### Community 13 - "pathlib"
-Cohesion: 0.16
+Cohesion: 0.17
 Nodes (4): test_sync_parses_bundled_starter_template(), _run(), test_flags_hardcoded_hex_sharing_line_with_token(), test_token_only_line_reports_no_violation()
 
 ### Community 14 - "slide_search_core.py"
@@ -247,8 +254,8 @@ Cohesion: 0.06
 Nodes (34): Accessibility, Available Domains, Available Stacks, Common Rules for Professional UI, Common Sticking Points, Example Workflow, How to Use This Skill, Icons & Visual Elements (+26 more)
 
 ### Community 17 - "spacing"
-Cohesion: 0.09
-Nodes (22): $type, $value, $type, $value, $type, $value, $type, $value (+14 more)
+Cohesion: 0.06
+Nodes (34): $type, $value, $type, $value, $type, $value, $type, $value (+26 more)
 
 ### Community 18 - "Form & Input Components"
 Cohesion: 0.06
@@ -262,9 +269,9 @@ Nodes (32): 1. Mobile-First Design, 2. Consistent Breakpoint Usage, 3. Test at B
 Cohesion: 0.06
 Nodes (30): Accessibility, Base System, Best Practices, Clean & Modern, Common Font Pairings, Contrast Requirements, CSS Implementation, Editorial (+22 more)
 
-### Community 21 - "firebase"
-Cohesion: 0.20
-Nodes (8): dependencies, firebase@^13.2.0, lucide-react@^1.50.0, react@^19.2.8, react-dom@^19.2.8, xlsx@^0.18.5, firebase, react-dom
+### Community 21 - "AttendanceServicePage.jsx"
+Cohesion: 0.22
+Nodes (12): LoginPage(), AttendanceServicePage(), DIVISION_COLORS, PublicAttendanceModal(), initialDefaultAccounts, OFFICIAL_DIVISIONS, calculateDistanceInMeters(), formatDistance() (+4 more)
 
 ### Community 22 - "Logo Usage Rules"
 Cohesion: 0.07
@@ -339,8 +346,8 @@ Cohesion: 0.22
 Nodes (4): _contrast_ratio(), _derive_dark_palette(), _select_palette_for_mode(), TestPaletteSelection
 
 ### Community 41 - "App.jsx"
-Cohesion: 0.10
-Nodes (35): Hero(), initialDefaultActivityLogs, initialDefaultConsultations, defaultActivities, defaultArchiveDocs, defaultAssets, defaultAttendanceList, defaultAttendanceSessions (+27 more)
+Cohesion: 0.09
+Nodes (37): aboutImages, AboutUs(), Hero(), initialDefaultActivityLogs, initialDefaultConsultations, defaultActivities, defaultArchiveDocs, defaultAssets (+29 more)
 
 ### Community 42 - "Routing by Task Type"
 Cohesion: 0.10
@@ -363,8 +370,8 @@ Cohesion: 0.11
 Nodes (18): 1. Wordmark (Logotype), 2. Lettermark (Monogram), 3. Pictorial Mark (Brand Mark), 4. Abstract Mark, 5. Mascot, 6. Emblem, 7. Combination Mark, Aesthetic Styles (+10 more)
 
 ### Community 48 - "color"
-Cohesion: 0.04
-Nodes (46): $type, $value, background, destructive, destructive-foreground, foreground, muted, muted-foreground (+38 more)
+Cohesion: 0.11
+Nodes (19): $type, $value, background, foreground, muted-foreground, primary, primary-hover, secondary (+11 more)
 
 ### Community 49 - "Brand Consistency Checklist"
 Cohesion: 0.11
@@ -470,9 +477,9 @@ Nodes (11): checkManifest(), formatBytes(), formatOutput(), main(), parseFilenam
 Cohesion: 0.17
 Nodes (11): Border Radius, Color Scales, Gray Scale, Motion / Duration, Primary Colors (Blue), Primitive Tokens, Shadows, Spacing Scale (+3 more)
 
-### Community 80 - "button"
-Cohesion: 0.06
-Nodes (45): $type, $value, $type, $value, bg, fg, font-size, hover-bg (+37 more)
+### Community 80 - "card"
+Cohesion: 0.20
+Nodes (12): $type, $value, bg, bg, padding, shadow, card, bg (+4 more)
 
 ### Community 81 - "Core Visual Elements"
 Cohesion: 0.18
@@ -483,8 +490,8 @@ Cohesion: 0.18
 Nodes (10): Bold Dynamic, CIP Design Style Guide, Classic Traditional, Color Psychology, Corporate Minimal, Fresh Modern, Luxury Premium, Modern Tech (+2 more)
 
 ### Community 84 - "primitive"
-Cohesion: 0.14
-Nodes (13): dark, fast, normal, slow, $type, $value, $type, $value (+5 more)
+Cohesion: 0.18
+Nodes (11): fast, normal, slow, $type, $value, $type, $value, primitive (+3 more)
 
 ### Community 85 - "cip/core.py"
 Cohesion: 0.20
@@ -524,7 +531,7 @@ Nodes (8): extractColorsFromTable(), extractCoreAttributes(), extractHexColors()
 
 ### Community 98 - "radius"
 Cohesion: 0.29
-Nodes (8): $type, $value, $type, $value, radius, full, md, md
+Nodes (8): $type, $value, $type, $value, radius, default, full, default
 
 ### Community 100 - "sync-brand-to-tokens.cjs"
 Cohesion: 0.39
@@ -535,12 +542,12 @@ Cohesion: 0.50
 Nodes (7): flattenTokens(), generateCSS(), generateTailwind(), main(), parseArgs(), resolveReference(), toCssVarName()
 
 ### Community 103 - "csv"
-Cohesion: 0.08
+Cohesion: 0.09
 Nodes (5): main(), read_rows(), read_rows(), TestTextLayoutDataContracts, TestTextLayoutRetrieval
 
 ### Community 106 - "react"
-Cohesion: 0.16
-Nodes (23): lucide-react, react, ActivityArchiveServicePage(), initialActivities, ArchiveServicePage(), sampleDocs, AssetServicePage(), initialAssets (+15 more)
+Cohesion: 0.17
+Nodes (22): lucide-react, react, ActivityArchiveServicePage(), initialActivities, ArchiveServicePage(), sampleDocs, AssetServicePage(), initialAssets (+14 more)
 
 ### Community 107 - "Slides Reference"
 Cohesion: 0.29
@@ -550,9 +557,9 @@ Nodes (6): Key Features, Knowledge Base, Slides Reference, Usage, When to Use, W
 Cohesion: 0.29
 Nodes (6): Animation Classes, Background Images, Base Structure, Chart.js Integration, CSS Variables Reference, HTML Slide Template
 
-### Community 109 - "argparse"
-Cohesion: 0.14
-Nodes (6): format_brief(), format_results(), main(), format_output(), generate_design_brief(), main()
+### Community 109 - "cip/search.py"
+Cohesion: 0.32
+Nodes (3): format_brief(), format_results(), main()
 
 ### Community 110 - "HTML Slide Template"
 Cohesion: 0.29
@@ -563,16 +570,16 @@ Cohesion: 0.19
 Nodes (3): read_rows(), TestLandingAndStackContract, TestReasoningContract
 
 ### Community 114 - "shadow"
-Cohesion: 0.27
-Nodes (10): $type, $value, sm, shadow, default, sm, default, sm (+2 more)
+Cohesion: 0.47
+Nodes (6): sm, shadow, sm, sm, $type, $value
 
 ### Community 115 - "Slides"
 Cohesion: 0.33
 Nodes (5): References (Knowledge Base), Routing, Slides, Subcommands, When to Use
 
 ### Community 116 - "design_system.py"
-Cohesion: 0.06
-Nodes (16): ansi_ljust(), _detect_page_type(), format_ascii_box(), format_markdown(), format_master_md(), format_page_override_md(), generate_design_system(), _generate_intelligent_overrides() (+8 more)
+Cohesion: 0.05
+Nodes (17): main(), ansi_ljust(), _detect_page_type(), format_ascii_box(), format_markdown(), format_master_md(), format_page_override_md(), generate_design_system() (+9 more)
 
 ### Community 118 - "_palette_is_dark"
 Cohesion: 0.18
@@ -590,21 +597,21 @@ Nodes (6): 1. Hard Gate Fixes (Priority: HIGH), 2. Purpose-Gate Fixes (Priority:
 Cohesion: 0.60
 Nodes (5): lg, $type, $value, lg, lg
 
-### Community 124 - "3"
-Cohesion: 0.67
-Nodes (3): $type, $value, 3
+### Community 124 - "design-tokens-starter.json"
+Cohesion: 0.15
+Nodes (12): component, $type, $value, dark, semantic, $schema, $type, $value (+4 more)
 
-### Community 125 - "4"
-Cohesion: 0.67
-Nodes (3): $type, $value, 4
+### Community 125 - "button"
+Cohesion: 0.20
+Nodes (10): fg, font-size, hover-bg, button, $type, $value, $type, $value (+2 more)
 
-### Community 126 - "5"
-Cohesion: 0.67
-Nodes (3): $type, $value, 5
+### Community 126 - "input"
+Cohesion: 0.29
+Nodes (8): padding-x, input, $type, $value, focus-ring, padding-x, $type, $value
 
-### Community 127 - "8"
-Cohesion: 0.67
-Nodes (3): $type, $value, 8
+### Community 127 - "$type"
+Cohesion: 0.60
+Nodes (5): $type, $value, border, border, border
 
 ### Community 128 - "none"
 Cohesion: 0.67
@@ -618,24 +625,60 @@ Nodes (4): xl, xl, $type, $value
 Cohesion: 0.20
 Nodes (9): AGENTS.md — Developer & AI Agent Context Guide, ⚙️ Arsitektur Direktori & Konfigurasi Vite, 🎨 Asset Visual Aktif, Aturan Autentikasi & Keamanan:, ⚡ Cheat Sheet Perintah Terminal, 📦 Katalog 11 Modul Layanan (Wajib Konsisten), 📌 Ringkasan Proyek, 🧭 Sistem Navigasi & Routing (+1 more)
 
-### Community 140 - "ticketService.js"
-Cohesion: 0.31
-Nodes (6): initialDefaultTickets, sortTicketsNewestFirst(), addTicketToDb(), deleteTicketFromDb(), subscribeTickets(), updateTicketInDb()
+### Community 132 - "radius"
+Cohesion: 0.60
+Nodes (5): radius, radius, radius, $type, $value
+
+### Community 133 - "padding-y"
+Cohesion: 0.67
+Nodes (4): padding-y, padding-y, $type, $value
+
+### Community 134 - "md"
+Cohesion: 0.67
+Nodes (4): $type, $value, md, md
+
+### Community 135 - "destructive"
+Cohesion: 0.67
+Nodes (3): destructive, $type, $value
+
+### Community 136 - "destructive-foreground"
+Cohesion: 0.67
+Nodes (3): destructive-foreground, $type, $value
+
+### Community 139 - "muted"
+Cohesion: 0.67
+Nodes (3): muted, $type, $value
+
+### Community 140 - "primary-foreground"
+Cohesion: 0.67
+Nodes (3): primary-foreground, $type, $value
 
 ### Community 143 - "AdminDashboardPage.jsx"
-Cohesion: 0.14
-Nodes (25): xlsx, AdminDashboardPage(), availableServices, divisionsList, getDateStamp(), getTimestamp(), CATEGORY_TABS, CommandPalette() (+17 more)
+Cohesion: 0.18
+Nodes (18): xlsx, AdminDashboardPage(), availableServices, divisionsList, getDateStamp(), getTimestamp(), CATEGORY_TABS, CommandPalette() (+10 more)
 
 ### Community 144 - "test_design_system_mode.py"
 Cohesion: 0.14
 Nodes (6): _filter_anti_patterns_for_mode(), _query_wants_dark(), _resolve_color_mode(), _style_is_dark_primary(), TestAntiPatternGating, TestModeResolution
+
+### Community 145 - "ring"
+Cohesion: 0.67
+Nodes (3): ring, $type, $value
+
+### Community 146 - "secondary-foreground"
+Cohesion: 0.67
+Nodes (3): secondary-foreground, $type, $value
+
+### Community 148 - "logo/search.py"
+Cohesion: 0.15
+Nodes (3): format_output(), generate_design_brief(), TestMetricMath
 
 ### Community 149 - "split_values"
 Cohesion: 0.47
 Nodes (3): split_values(), style_identities(), TestStyleIdentityContract
 
 ## Knowledge Gaps
-- **30 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **28 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
@@ -651,6 +694,6 @@ _Questions this graph is uniquely positioned to answer:_
 - **Are the 3 inferred relationships involving `DesignSystemGenerator` (e.g. with `TestReasoningMatch` and `TestReasoningContract`) actually correct?**
   _`DesignSystemGenerator` has 3 INFERRED edges - model-reasoned connections that need verification._
 - **Should `package.json` be split into smaller, more focused modules?**
-  _Cohesion score 0.09523809523809523 - nodes in this community are weakly interconnected._
-- **Why does `primitive` connect `primitive` to `radius`, `gray`, `spacing`, `shadow`, `fontSize`?**
+  _Cohesion score 0.07563025210084033 - nodes in this community are weakly interconnected._
+- **Why does `primitive` connect `primitive` to `radius`, `gray`, `spacing`, `shadow`, `fontSize`, `design-tokens-starter.json`?**
   _High betweenness centrality (0.009) - this node is a cross-community bridge._

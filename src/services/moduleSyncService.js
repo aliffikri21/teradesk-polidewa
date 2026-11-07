@@ -31,8 +31,8 @@ export const STORAGE_KEYS = {
   SURAT_LOG: 'teradesk_surat_log_v1',
   ASSETS: 'teradesk_assets_v1',
   FINANCE: 'teradesk_finance_v1',
-  ATTENDANCE: 'teradesk_attendance_v2',
-  ATTENDANCE_SESSIONS: 'teradesk_attendance_sessions_v2',
+  ATTENDANCE: 'teradesk_attendance_v4',
+  ATTENDANCE_SESSIONS: 'teradesk_attendance_sessions_v4',
   ACTIVITIES: 'teradesk_activities_archive_v1',
   MODULE_STATUSES: 'teradesk_module_statuses_v1',
 };
@@ -43,9 +43,13 @@ export const loadLocalData = (key, fallback) => {
   try {
     if (key === STORAGE_KEYS.ATTENDANCE) {
       localStorage.removeItem('teradesk_attendance_v1');
+      localStorage.removeItem('teradesk_attendance_v2');
+      localStorage.removeItem('teradesk_attendance_v3');
     }
     if (key === STORAGE_KEYS.ATTENDANCE_SESSIONS) {
       localStorage.removeItem('teradesk_attendance_sessions_v1');
+      localStorage.removeItem('teradesk_attendance_sessions_v2');
+      localStorage.removeItem('teradesk_attendance_sessions_v3');
     }
     const saved = localStorage.getItem(key);
     if (saved) {
@@ -126,10 +130,8 @@ const createCollectionSync = ({ collectionName, storageKey, seedData }) => {
             }
           }
 
-          if (cloudItems.length > 0) {
-            onUpdate(cloudItems);
-            saveLocalData(storageKey, cloudItems);
-          }
+          onUpdate(cloudItems);
+          saveLocalData(storageKey, cloudItems);
         },
         (error) => {
           console.warn(`[Firestore Listen Error: ${collectionName}]:`, error);

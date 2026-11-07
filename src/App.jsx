@@ -120,8 +120,8 @@ function App() {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const presensiId = params.get('presensi');
-      if (presensiId) {
-        return presensiId === 'true' ? 'SES-2026-001' : presensiId;
+      if (presensiId && presensiId !== 'true') {
+        return presensiId;
       }
     }
     return null;
@@ -974,10 +974,10 @@ function App() {
       if (Array.isArray(data) && data.length > 0) setFinanceTransactions(data);
     });
     const unsubAttendance = attendanceSync.subscribe((data) => {
-      if (Array.isArray(data) && data.length > 0) setAttendanceList(data);
+      if (Array.isArray(data)) setAttendanceList(data);
     });
     const unsubAttendanceSessions = attendanceSessionsSync.subscribe((data) => {
-      if (Array.isArray(data) && data.length > 0) setAttendanceSessions(data);
+      if (Array.isArray(data)) setAttendanceSessions(data);
     });
     const unsubActivities = activitiesSync.subscribe((data) => {
       if (Array.isArray(data) && data.length > 0) setActivities(data);
@@ -1652,7 +1652,7 @@ function App() {
           attendanceSessions={attendanceSessions}
           onAddAttendanceSession={handleAddAttendanceSession}
           onUpdateAttendanceSession={handleUpdateAttendanceSession}
-          onOpenPublicAttendanceModal={(sessionId) => setActivePublicAttendanceId(sessionId || 'SES-2026-001')}
+          onOpenPublicAttendanceModal={(sessionId) => setActivePublicAttendanceId(sessionId || null)}
           moduleStatuses={moduleStatuses}
           onToggleModuleStatus={handleToggleModuleStatus}
         />
@@ -1703,7 +1703,7 @@ function App() {
           attendanceSessions={attendanceSessions}
           onAddAttendanceSession={handleAddAttendanceSession}
           onUpdateAttendanceSession={handleUpdateAttendanceSession}
-          onOpenPublicAttendanceModal={(sessionId) => setActivePublicAttendanceId(sessionId || 'SES-2026-001')}
+          onOpenPublicAttendanceModal={(sessionId) => setActivePublicAttendanceId(sessionId || null)}
           activities={activities}
           onAddActivity={handleAddActivity}
           moduleStatuses={moduleStatuses}

@@ -362,16 +362,18 @@ const AdminDashboardPage = ({
   const adminAttendanceList = propAttendanceList || defaultAttendanceList;
   const adminAttendanceSessions = propAttendanceSessions || defaultAttendanceSessions;
   const [selectedAdminSessionId, setSelectedAdminSessionId] = useState(
-    () => adminAttendanceSessions.find((s) => s.status === 'active')?.id || adminAttendanceSessions[0]?.id || 'SES-2026-001'
+    () => adminAttendanceSessions.find((s) => s.status === 'active')?.id || adminAttendanceSessions[0]?.id || ''
   );
   const activeAttendanceSession =
     adminAttendanceSessions.find((s) => s.id === selectedAdminSessionId) ||
     adminAttendanceSessions.find((s) => s.status === 'active') ||
-    adminAttendanceSessions[0];
+    adminAttendanceSessions[0] ||
+    null;
   const [adminAttendanceSearch, setAdminAttendanceSearch] = useState('');
   const [adminAttendanceFilter, setAdminAttendanceFilter] = useState('Semua');
 
   const handleToggleCompleteMeetingSession = (sessionToToggle) => {
+    if (!sessionToToggle) return;
     const isCurrentlyActive = sessionToToggle.status === 'active';
     const updatedStatus = isCurrentlyActive ? 'completed' : 'active';
     const updatedSession = {
@@ -391,6 +393,7 @@ const AdminDashboardPage = ({
   const [copiedAdminQrLink, setCopiedAdminQrLink] = useState(false);
   const handleCopyAdminQrLink = (sessionToCopy) => {
     const s = sessionToCopy || activeAttendanceSession;
+    if (!s) return;
     const url = typeof window !== 'undefined'
       ? `${window.location.origin}${window.location.pathname}?presensi=${s.id}&token=${s.qrToken}`
       : `https://teradesk.politeknikdewantara.ac.id/?presensi=${s.id}&token=${s.qrToken}`;
@@ -617,52 +620,7 @@ const AdminDashboardPage = ({
   const humasMedparts = propHumasMedparts || localHumasMedparts;
 
   // 4. DIVISI KADERISASI: State & Logic
-  const [kaderRaporList] = useState([
-    {
-      nim: '24401012',
-      name: 'Rizky Ramadhan',
-      division: 'Divisi Publikasi dan Dokumentasi',
-      diksar: 'Lulus Diksar I & II',
-      score: 94,
-      attendance: '96%',
-      grade: 'A (Sangat Aktif)',
-      gradeColor: 'text-emerald-700 bg-emerald-50 border-emerald-200',
-      certStatus: 'Siap Terbit',
-    },
-    {
-      nim: '24402034',
-      name: 'Dewi Lestari',
-      division: 'Divisi Humas',
-      diksar: 'Lulus Diksar I & II',
-      score: 88,
-      attendance: '92%',
-      grade: 'A (Sangat Aktif)',
-      gradeColor: 'text-emerald-700 bg-emerald-50 border-emerald-200',
-      certStatus: 'Siap Terbit',
-    },
-    {
-      nim: '25403055',
-      name: 'Fikri Haikal',
-      division: 'Divisi KKM',
-      diksar: 'Lulus Diksar I',
-      score: 76,
-      attendance: '80%',
-      grade: 'B (Aktif)',
-      gradeColor: 'text-blue-700 bg-blue-50 border-blue-200',
-      certStatus: 'Proses Magang',
-    },
-    {
-      nim: '25404099',
-      name: 'Nabila Putri',
-      division: 'Divisi Kesekretariatan',
-      diksar: 'Lulus Diksar I',
-      score: 68,
-      attendance: '72%',
-      grade: 'C (Cukup)',
-      gradeColor: 'text-amber-700 bg-amber-50 border-amber-200',
-      certStatus: 'Remedial Presensi',
-    },
-  ]);
+  const [kaderRaporList] = useState([]);
 
   // Sinkronisasi data Akun Terdaftar ke tabel Rapor Kader SDM
   const combinedKaderRaporList = useMemo(() => {
@@ -2941,6 +2899,54 @@ const AdminDashboardPage = ({
 
           {/* TAB: ATTENDANCE (PRESENSI QR & NOTULA) */}
           {currentNav === 'attendance' && (() => {
+            if (!activeAttendanceSession) {
+              return (
+                <div className="max-w-6xl mx-auto space-y-6">
+                  {/* Header & Quick Action */}
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-purple-50 border border-purple-200 text-purple-600 flex items-center justify-center">
+                        <ClipboardCheck size={22} />
+                      </div>
+                      <div>
+                        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+                          Presensi Digital QR Code & Notula
+                        </h1>
+                        <p className="text-xs text-slate-500 font-medium">
+                          Monitoring kehadiran musyawarah pleno, tracking status tepat waktu & izin, serta ringkasan notula hasil rapat.
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => onNavigateToService('attendance')}
+                      className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs"
+                    >
+                      <ExternalLink size={14} />
+                      <span>Buka Modul Presensi & Buat Rapat Baru</span>
+                    </button>
+                  </div>
+
+                  <div className="bg-white p-12 rounded-2xl border border-slate-200/80 text-center shadow-xs">
+                    <div className="w-16 h-16 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center mx-auto mb-4 border border-purple-200">
+                      <ClipboardCheck size={32} />
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900 mb-1">Belum Ada Acara Rapat Terjadwal</h3>
+                    <p className="text-xs text-slate-500 max-w-md mx-auto mb-6">
+                      Data acara rapat telah dibersihkan. Anda dapat menjadwalkan agenda rapat baru lengkap dengan titik GPS pembuat di modul presensi utama.
+                    </p>
+                    <button
+                      onClick={() => onNavigateToService('attendance')}
+                      className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs"
+                    >
+                      <Plus size={15} />
+                      <span>Buat Agenda Rapat Baru</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            }
+
             const currentRecs = adminAttendanceList.filter(
               (r) => !r.sessionId || r.sessionId === activeAttendanceSession.id
             );
@@ -3497,7 +3503,14 @@ const AdminDashboardPage = ({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {combinedKaderRaporList.map((k) => (
+                      {combinedKaderRaporList.length === 0 ? (
+                        <tr>
+                          <td colSpan={7} className="py-8 text-center text-slate-400">
+                            Belum ada data anggota kepengurusan terdaftar.
+                          </td>
+                        </tr>
+                      ) : (
+                        combinedKaderRaporList.map((k) => (
                         <tr key={k.nim} className="hover:bg-slate-50/60 transition-colors">
                           <td className="py-3 px-3">
                             <span className="font-bold text-slate-900 block">{k.name}</span>
@@ -3532,7 +3545,8 @@ const AdminDashboardPage = ({
                             </span>
                           </td>
                         </tr>
-                      ))}
+                      ))
+                    )}
                     </tbody>
                   </table>
                 </div>

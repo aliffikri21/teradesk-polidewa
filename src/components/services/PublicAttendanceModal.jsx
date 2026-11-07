@@ -214,7 +214,7 @@ export default function PublicAttendanceModal({
 
     const newRecord = {
       id: `ATT-${Date.now().toString().slice(-4)}`,
-      sessionId: session?.id || 'SES-2026-001',
+      sessionId: session?.id || '',
       name: form.name.trim(),
       nim: form.nim.trim(),
       division: form.division || 'Anggota Umum',

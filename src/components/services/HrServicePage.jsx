@@ -13,89 +13,9 @@ import {
   Download
 } from 'lucide-react';
 import ServicePageLayout from './ServicePageLayout';
+import { OFFICIAL_DIVISIONS } from '../../data/defaultAccounts';
 
-const sampleMembers = [
-  {
-    id: 'MEM-001',
-    name: 'Dr. Hendra Wijaya',
-    role: 'Pembina Organisasi',
-    division: 'Dewan Pembina',
-    email: 'hendra.w@kampus.ac.id',
-    phone: '0812-3456-7890',
-    status: 'Aktif',
-    initials: 'HW',
-  },
-  {
-    id: 'MEM-002',
-    name: 'Muhammad Farhan',
-    role: 'Ketua Umum (Ketum)',
-    division: 'Badan Pengurus Harian (BPH)',
-    email: 'farhan.ketum@teramedia.org',
-    phone: '0813-8899-1122',
-    status: 'Aktif',
-    initials: 'MF',
-  },
-  {
-    id: 'MEM-003',
-    name: 'Nisa Salsabila',
-    role: 'Sekretaris Jenderal',
-    division: 'Badan Pengurus Harian (BPH)',
-    email: 'nisa.sekjen@teramedia.org',
-    phone: '0812-7766-3344',
-    status: 'Aktif',
-    initials: 'NS',
-  },
-  {
-    id: 'MEM-004',
-    name: 'Reza Fahrezi',
-    role: 'Bendahara Umum',
-    division: 'Badan Pengurus Harian (BPH)',
-    email: 'reza.bendum@teramedia.org',
-    phone: '0815-4433-2211',
-    status: 'Aktif',
-    initials: 'RF',
-  },
-  {
-    id: 'MEM-005',
-    name: 'Bagas Aditya',
-    role: 'Ketua Divisi (Kadiv)',
-    division: 'Divisi Kaderisasi & SDM',
-    email: 'bagas.kader@teramedia.org',
-    phone: '0819-2233-4455',
-    status: 'Aktif',
-    initials: 'BA',
-  },
-  {
-    id: 'MEM-006',
-    name: 'Nadia Safitri',
-    role: 'Ketua Divisi (Kadiv)',
-    division: 'Divisi Media & Informasi',
-    email: 'nadia.medinfo@teramedia.org',
-    phone: '0857-1122-3344',
-    status: 'Aktif',
-    initials: 'NS',
-  },
-  {
-    id: 'MEM-007',
-    name: 'Fajar Nugraha',
-    role: 'Staff Ahli Kaderisasi',
-    division: 'Divisi Kaderisasi & SDM',
-    email: 'fajar.sdm@teramedia.org',
-    phone: '0878-9900-1122',
-    status: 'Aktif',
-    initials: 'FN',
-  },
-  {
-    id: 'MEM-008',
-    name: 'Rian Pratama',
-    role: 'Ketua Divisi (Kadiv)',
-    division: 'Divisi Minat & Bakat',
-    email: 'rian.mikat@teramedia.org',
-    phone: '0821-4455-6677',
-    status: 'Aktif',
-    initials: 'RP',
-  },
-];
+const sampleMembers = [];
 
 const HrServicePage = (props) => {
   const { accounts = [] } = props;
@@ -162,14 +82,7 @@ const HrServicePage = (props) => {
 
   // Daftar divisi dinamis dari data gabungan
   const divisions = useMemo(() => {
-    const list = [
-      'Semua',
-      'Badan Pengurus Harian (BPH)',
-      'Divisi Kaderisasi & SDM',
-      'Divisi Media & Informasi',
-      'Divisi Minat & Bakat',
-      'Dewan Pembina',
-    ];
+    const list = ['Semua', ...OFFICIAL_DIVISIONS];
     allMembers.forEach((m) => {
       if (m.division && !list.includes(m.division)) {
         list.push(m.division);
@@ -332,61 +245,69 @@ const HrServicePage = (props) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {filteredMembers.map((m) => (
-              <div
-                key={m.id}
-                className={`bg-white/5 border rounded-3xl p-6 flex flex-col justify-between transition-all ${
-                  m.isRegisteredAccount
-                    ? 'border-blue-500/40 shadow-lg shadow-blue-950/20 hover:border-blue-400'
-                    : 'border-white/10 hover:border-indigo-400/30'
-                }`}
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 flex items-center justify-center font-bold text-base">
-                      {m.initials}
+          {filteredMembers.length === 0 ? (
+            <div className="bg-white/5 border border-white/10 rounded-3xl p-12 text-center text-gray-400">
+              <Users size={36} className="mx-auto mb-2 text-gray-500" />
+              <p className="font-bold text-white">Tidak ada data anggota yang sesuai</p>
+              <p className="text-xs text-gray-400 mt-1">Belum ada anggota yang terdaftar atau tidak cocok dengan filter pencarian.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {filteredMembers.map((m) => (
+                <div
+                  key={m.id}
+                  className={`bg-white/5 border rounded-3xl p-6 flex flex-col justify-between transition-all ${
+                    m.isRegisteredAccount
+                      ? 'border-blue-500/40 shadow-lg shadow-blue-950/20 hover:border-blue-400'
+                      : 'border-white/10 hover:border-indigo-400/30'
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 flex items-center justify-center font-bold text-base">
+                        {m.initials}
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        {m.isRegisteredAccount && (
+                          <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 flex items-center gap-1">
+                            <ShieldCheck size={10} /> Akun
+                          </span>
+                        )}
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                          {m.status}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      {m.isRegisteredAccount && (
-                        <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 flex items-center gap-1">
-                          <ShieldCheck size={10} /> Akun
+
+                    <h4 className="font-bold text-white text-sm mb-0.5 flex items-center gap-1.5">
+                      <span>{m.name}</span>
+                      {m.canAccessAdmin && (
+                        <span className="text-[8px] font-mono px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                          Admin
                         </span>
                       )}
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                        {m.status}
-                      </span>
+                    </h4>
+                    {m.nim && (
+                      <p className="text-[10px] font-mono text-cyan-300/80 mb-1">NIM: {m.nim}</p>
+                    )}
+                    <p className="text-xs text-indigo-300 font-semibold mb-1">{m.role}</p>
+                    <p className="text-[11px] text-gray-400 mb-4">{m.division}</p>
+
+                    <div className="space-y-1.5 text-xs text-gray-300 border-t border-white/5 pt-3">
+                      <p className="flex items-center gap-2 text-gray-400 truncate">
+                        <Mail size={13} className="text-gray-500 shrink-0" />
+                        <span className="truncate">{m.email}</span>
+                      </p>
+                      <p className="flex items-center gap-2 text-gray-400">
+                        <Phone size={13} className="text-gray-500 shrink-0" />
+                        <span>{m.phone}</span>
+                      </p>
                     </div>
                   </div>
-
-                  <h4 className="font-bold text-white text-sm mb-0.5 flex items-center gap-1.5">
-                    <span>{m.name}</span>
-                    {m.canAccessAdmin && (
-                      <span className="text-[8px] font-mono px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                        Admin
-                      </span>
-                    )}
-                  </h4>
-                  {m.nim && (
-                    <p className="text-[10px] font-mono text-cyan-300/80 mb-1">NIM: {m.nim}</p>
-                  )}
-                  <p className="text-xs text-indigo-300 font-semibold mb-1">{m.role}</p>
-                  <p className="text-[11px] text-gray-400 mb-4">{m.division}</p>
-
-                  <div className="space-y-1.5 text-xs text-gray-300 border-t border-white/5 pt-3">
-                    <p className="flex items-center gap-2 text-gray-400 truncate">
-                      <Mail size={13} className="text-gray-500 shrink-0" />
-                      <span className="truncate">{m.email}</span>
-                    </p>
-                    <p className="flex items-center gap-2 text-gray-400">
-                      <Phone size={13} className="text-gray-500 shrink-0" />
-                      <span>{m.phone}</span>
-                    </p>
-                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -419,46 +340,34 @@ const HrServicePage = (props) => {
 
               <div className="w-0.5 h-6 bg-white/20 mx-auto"></div>
 
-              {/* Level 2: Ketum */}
-              <div className="inline-block bg-slate-900 border-2 border-blue-400/40 rounded-2xl p-4 max-w-xs shadow-lg">
-                <span className="text-[10px] text-blue-300 font-mono">Level 2 - Pucuk Pimpinan</span>
-                <h4 className="font-bold text-white text-sm mt-0.5">Muhammad Farhan</h4>
-                <p className="text-xs text-gray-400">Ketua Umum BEM</p>
-              </div>
-
-              <div className="w-0.5 h-6 bg-white/20 mx-auto"></div>
-
-              {/* Level 3: BPH */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md mx-auto">
-                <div className="bg-slate-900 border border-white/10 rounded-2xl p-4">
-                  <span className="text-[10px] text-teal-300 font-mono">Sekretariat</span>
-                  <h4 className="font-bold text-white text-sm">Nisa Salsabila</h4>
-                  <p className="text-xs text-gray-400">Sekretaris Jenderal</p>
-                </div>
-                <div className="bg-slate-900 border border-white/10 rounded-2xl p-4">
-                  <span className="text-[10px] text-emerald-300 font-mono">Keuangan</span>
-                  <h4 className="font-bold text-white text-sm">Reza Fahrezi</h4>
-                  <p className="text-xs text-gray-400">Bendahara Umum</p>
-                </div>
-              </div>
-
-              <div className="w-0.5 h-6 bg-white/20 mx-auto"></div>
-
-              {/* Level 4: Kadiv */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-slate-900 border border-white/10 rounded-2xl p-4">
-                  <h5 className="font-bold text-white text-xs">Divisi Kaderisasi & SDM</h5>
-                  <p className="text-[11px] text-gray-400 mt-1">Bagas Aditya (Kadiv)</p>
-                </div>
-                <div className="bg-slate-900 border border-white/10 rounded-2xl p-4">
-                  <h5 className="font-bold text-white text-xs">Divisi Media & Info</h5>
-                  <p className="text-[11px] text-gray-400 mt-1">Nadia Safitri (Kadiv)</p>
-                </div>
-                <div className="bg-slate-900 border border-white/10 rounded-2xl p-4">
-                  <h5 className="font-bold text-white text-xs">Divisi Minat & Bakat</h5>
-                  <p className="text-[11px] text-gray-400 mt-1">Rian Pratama (Kadiv)</p>
-                </div>
-              </div>
+              {/* Level 2: Pengurus Terdaftar */}
+              {allMembers.filter((m) => m.nim !== '23404053').length > 0 ? (
+                <>
+                  <div className="w-0.5 h-6 bg-white/20 mx-auto"></div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
+                    {allMembers
+                      .filter((m) => m.nim !== '23404053')
+                      .map((m) => (
+                        <div key={m.id} className="bg-slate-900 border border-white/10 rounded-2xl p-4 text-left">
+                          <span className="text-[10px] text-teal-300 font-mono block">{m.division}</span>
+                          <h4 className="font-bold text-white text-sm mt-0.5">{m.name}</h4>
+                          <p className="text-xs text-gray-400">{m.role}</p>
+                          {m.nim && <p className="text-[10px] text-cyan-300/80 font-mono mt-1">NIM: {m.nim}</p>}
+                        </div>
+                      ))}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="w-0.5 h-6 bg-white/20 mx-auto"></div>
+                  <div className="inline-block bg-slate-900/60 border border-dashed border-white/20 rounded-2xl p-5 max-w-md">
+                    <p className="text-xs font-semibold text-gray-300">Struktur Pengurus Baru Siap Didaftarkan</p>
+                    <p className="text-[11px] text-gray-500 mt-1">
+                      Data anggota dummy telah dibersihkan. Akun mahasiswa/pengurus baru yang ditambahkan di Panel Admin otomatis masuk ke bagan hierarki ini.
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -472,38 +381,37 @@ const HrServicePage = (props) => {
             <p className="text-xs text-gray-400 mb-6">Penghitungan skor kontribusi proker dan pencetakan e-sertifikat kepengurusan resmi.</p>
 
             <div className="space-y-4">
-              {/* Prioritaskan Akun Terdaftar (Alif Fikri dkk) + Pengurus Utama */}
-              {[
-                { name: 'Alif Fikri Haykal', role: 'Demisioner Ketua Umum & Lead Dev', score: 99, cert: 'E-Sertifikat Demisioner Terbit', nim: '23404053' },
-                { name: 'Muhammad Farhan', role: 'Ketua Umum', score: 98, cert: 'E-Sertifikat Ketum Terbit' },
-                { name: 'Nisa Salsabila', role: 'Sekretaris Jenderal', score: 96, cert: 'E-Sertifikat Sekjen Terbit' },
-                { name: 'Reza Fahrezi', role: 'Bendahara Umum', score: 95, cert: 'E-Sertifikat Bendum Terbit' },
-                { name: 'Bagas Aditya', role: 'Kadiv Kaderisasi', score: 94, cert: 'E-Sertifikat Kadiv Terbit' },
-              ].map((item, idx) => (
-                <div key={idx} className="bg-slate-900 border border-white/10 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-bold text-white text-sm">{item.name}</h4>
-                      {item.nim && (
-                        <span className="text-[10px] font-mono text-cyan-300">NIM: {item.nim}</span>
-                      )}
-                    </div>
-                    <p className="text-xs text-gray-400">{item.role}</p>
-                  </div>
-                  <div className="flex items-center gap-3 self-end sm:self-auto">
-                    <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-500/20 px-2.5 py-1 rounded-full border border-emerald-500/30">
-                      Skor KPI: {item.score}/100
-                    </span>
-                    <button
-                      onClick={() => handleDownloadCert(item.name, item.role)}
-                      className="text-xs font-semibold text-blue-300 hover:text-white bg-blue-600/30 hover:bg-blue-600 px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
-                    >
-                      <Download size={13} />
-                      <span>Unduh E-Sertifikat</span>
-                    </button>
-                  </div>
+              {allMembers.length === 0 ? (
+                <div className="text-center py-8 text-gray-400 text-xs">
+                  Belum ada data anggota kepengurusan terdaftar.
                 </div>
-              ))}
+              ) : (
+                allMembers.map((item, idx) => (
+                  <div key={item.id || idx} className="bg-slate-900 border border-white/10 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-bold text-white text-sm">{item.name}</h4>
+                        {item.nim && (
+                          <span className="text-[10px] font-mono text-cyan-300">NIM: {item.nim}</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-400">{item.role} • {item.division}</p>
+                    </div>
+                    <div className="flex items-center gap-3 self-end sm:self-auto">
+                      <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-500/20 px-2.5 py-1 rounded-full border border-emerald-500/30">
+                        Skor KPI: {item.isDefault ? 99 : 92}/100
+                      </span>
+                      <button
+                        onClick={() => handleDownloadCert(item.name, item.role)}
+                        className="text-xs font-semibold text-blue-300 hover:text-white bg-blue-600/30 hover:bg-blue-600 px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
+                      >
+                        <Download size={13} />
+                        <span>Unduh E-Sertifikat</span>
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
