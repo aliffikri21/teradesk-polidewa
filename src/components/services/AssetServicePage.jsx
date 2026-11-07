@@ -35,7 +35,7 @@ const initialAssets = [
     condition: 'Baik',
     location: 'Gedung Serbaguna',
     borrower: 'Farhan (Panitia Workshop)',
-    returnDate: 'Besok, 18:00 WIB',
+    returnDate: 'Besok, 18:00 WITA',
   },
   {
     id: 'AST-003',
@@ -68,7 +68,7 @@ const initialAssets = [
     condition: 'Baik',
     location: 'Studio Media',
     borrower: 'Gilang (Divisi Humas)',
-    returnDate: 'Hari Ini, 20:00 WIB',
+    returnDate: 'Hari Ini, 20:00 WITA',
   },
   {
     id: 'AST-006',
@@ -496,7 +496,7 @@ const AssetServicePage = (props) => {
                   </label>
                   <input
                     type="text"
-                    placeholder="Contoh: 15 Nov 2026, 08:00 WIB"
+                    placeholder="Contoh: 15 Nov 2026, 08:00 WITA"
                     value={bookingForm.startDate}
                     onChange={(e) => setBookingForm({ ...bookingForm, startDate: e.target.value })}
                     className="w-full text-xs sm:text-sm px-4 py-3 rounded-xl bg-slate-900 border border-white/15 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -509,7 +509,7 @@ const AssetServicePage = (props) => {
                   </label>
                   <input
                     type="text"
-                    placeholder="Contoh: 17 Nov 2026, 18:00 WIB"
+                    placeholder="Contoh: 17 Nov 2026, 18:00 WITA"
                     value={bookingForm.endDate}
                     onChange={(e) => setBookingForm({ ...bookingForm, endDate: e.target.value })}
                     className="w-full text-xs sm:text-sm px-4 py-3 rounded-xl bg-slate-900 border border-white/15 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -634,7 +634,7 @@ const AssetServicePage = (props) => {
               <div className="p-4 rounded-2xl bg-slate-900 border border-white/10 flex flex-col sm:flex-row justify-between sm:items-center gap-2">
                 <div>
                   <span className="text-[10px] bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded font-mono font-semibold">
-                    14:00 - 16:30 WIB
+                    14:00 - 16:30 WITA
                   </span>
                   <h4 className="font-bold text-white text-sm mt-1">Rapat Koordinasi BPH Terbatas</h4>
                   <p className="text-xs text-gray-400">Penanggung Jawab: Sekretaris Umum</p>
@@ -645,7 +645,7 @@ const AssetServicePage = (props) => {
               <div className="p-4 rounded-2xl bg-slate-900 border border-white/10 flex flex-col sm:flex-row justify-between sm:items-center gap-2">
                 <div>
                   <span className="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-mono font-semibold">
-                    19:00 - 21:00 WIB
+                    19:00 - 21:00 WITA
                   </span>
                   <h4 className="font-bold text-white text-sm mt-1">Briefing Panitia Pelaksana LDK 2026</h4>
                   <p className="text-xs text-gray-400">Penanggung Jawab: Fajar (Ketupat)</p>

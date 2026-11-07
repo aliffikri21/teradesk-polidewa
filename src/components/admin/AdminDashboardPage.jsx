@@ -61,11 +61,17 @@ import {
   Volume2,
   VolumeX,
   Menu,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Radio
 } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import { playNotificationChime, getSoundMuted, setSoundMuted } from '../../utils/notificationSound';
 import { initialDefaultTickets, sortTicketsNewestFirst } from '../../data/defaultTickets';
 import { getLogDateInfo, getAvailableLogMonths, exportLogsToXLSX } from '../../utils/logExporter';
+import {
+  defaultAttendanceSessions,
+  defaultAttendanceList,
+} from '../../data/defaultModulesData';
 
 const divisionsList = [
   'Semua Divisi',
@@ -247,8 +253,14 @@ const AdminDashboardPage = ({
   onSetKkmLunas: propOnSetKkmLunas,
   suratLog: propSuratLog,
   onAddSuratLog: propOnAddSuratLog,
+  attendanceList: propAttendanceList,
+  onAddAttendanceRecord: _propOnAddAttendanceRecord,
+  attendanceSessions: propAttendanceSessions,
+  onAddAttendanceSession: _propOnAddAttendanceSession,
+  onUpdateAttendanceSession: propOnUpdateAttendanceSession,
   moduleStatuses: propModuleStatuses,
   onToggleModuleStatus: propOnToggleModuleStatus,
+  onOpenPublicAttendanceModal,
   initialNav = 'dashboard',
   onOpenCommandPalette,
 }) => {
@@ -349,6 +361,80 @@ const AdminDashboardPage = ({
   const [prokerFormIsVisible, setProkerFormIsVisible] = useState(true);
   const [prokerFormError, setProkerFormError] = useState('');
   const [prokerFormSuccess, setProkerFormSuccess] = useState('');
+
+  // Attendance Module State for Executive Admin Tab
+  const adminAttendanceList = propAttendanceList || defaultAttendanceList;
+  const adminAttendanceSessions = propAttendanceSessions || defaultAttendanceSessions;
+  const [selectedAdminSessionId, setSelectedAdminSessionId] = useState(
+    () => adminAttendanceSessions.find((s) => s.status === 'active')?.id || adminAttendanceSessions[0]?.id || 'SES-2026-001'
+  );
+  const activeAttendanceSession =
+    adminAttendanceSessions.find((s) => s.id === selectedAdminSessionId) ||
+    adminAttendanceSessions.find((s) => s.status === 'active') ||
+    adminAttendanceSessions[0];
+  const [adminAttendanceSearch, setAdminAttendanceSearch] = useState('');
+  const [adminAttendanceFilter, setAdminAttendanceFilter] = useState('Semua');
+
+  const handleToggleCompleteMeetingSession = (sessionToToggle) => {
+    const isCurrentlyActive = sessionToToggle.status === 'active';
+    const updatedStatus = isCurrentlyActive ? 'completed' : 'active';
+    const updatedSession = {
+      ...sessionToToggle,
+      status: updatedStatus,
+    };
+    if (propOnUpdateAttendanceSession) {
+      propOnUpdateAttendanceSession(updatedSession);
+    }
+    const actionLabel = isCurrentlyActive
+      ? `Agenda rapat "${sessionToToggle.title}" resmi diselesaikan & diarsipkan`
+      : `Agenda rapat "${sessionToToggle.title}" diaktifkan kembali`;
+    addLog(actionLabel, isCurrentlyActive ? 'success' : 'info');
+    playNotificationChime();
+  };
+
+  const [copiedAdminQrLink, setCopiedAdminQrLink] = useState(false);
+  const handleCopyAdminQrLink = (sessionToCopy) => {
+    const s = sessionToCopy || activeAttendanceSession;
+    const url = typeof window !== 'undefined'
+      ? `${window.location.origin}${window.location.pathname}?presensi=${s.id}&token=${s.qrToken}`
+      : `https://teradesk.politeknikdewantara.ac.id/?presensi=${s.id}&token=${s.qrToken}`;
+    navigator.clipboard.writeText(url);
+    setCopiedAdminQrLink(true);
+    playNotificationChime();
+    setTimeout(() => setCopiedAdminQrLink(false), 3000);
+  };
+
+  const handleExportAdminAttendanceXlsx = () => {
+    const rows = adminAttendanceList.map((item, idx) => ({
+      No: idx + 1,
+      'ID Presensi': item.id,
+      'Nama Pengurus': item.name,
+      NIM: item.nim || '-',
+      Divisi: item.division,
+      Jabatan: item.role,
+      'Waktu Presensi (WITA)': item.time,
+      'Status': item.status,
+      'Metode': item.method || 'Manual',
+      'Catatan': item.note || '-',
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    ws['!cols'] = [
+      { wch: 6 },
+      { wch: 14 },
+      { wch: 24 },
+      { wch: 14 },
+      { wch: 28 },
+      { wch: 16 },
+      { wch: 22 },
+      { wch: 18 },
+      { wch: 18 },
+      { wch: 32 },
+    ];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Daftar Presensi');
+    XLSX.writeFile(wb, `Rekap_Presensi_Admin_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    addLog('Ekspor rekap data presensi ke Excel (.xlsx) berhasil diunduh', 'info');
+  };
 
   // Form State for Adding Student
   const [isAddFormOpen, setIsAddFormOpen] = useState(false);
@@ -661,7 +747,7 @@ const AdminDashboardPage = ({
         id: 1,
         time: '14:50:12',
         date: '06 Nov 2026',
-        timestamp: '14:50:12 WIB, 06 Nov 2026',
+        timestamp: '14:50:12 WITA, 06 Nov 2026',
         event: 'Sistem inisialisasi database kredensial TeraDesk',
         type: 'info',
         category: 'system',
@@ -698,7 +784,7 @@ const AdminDashboardPage = ({
       id: Date.now() + Math.floor(Math.random() * 1000),
       time,
       date,
-      timestamp: `${time} WIB, ${date}`,
+      timestamp: `${time} WITA, ${date}`,
       event,
       type,
       category: extra.category || 'system',
@@ -719,7 +805,7 @@ const AdminDashboardPage = ({
   };
 
   const filteredActivityLogs = useMemo(() => {
-    return currentLogs.filter((log) => {
+    const list = currentLogs.filter((log) => {
       // Month filter
       if (selectedLogMonth !== 'all') {
         const dateInfo = getLogDateInfo(log);
@@ -746,6 +832,27 @@ const AdminDashboardPage = ({
         return eventMatch || nameMatch || nimMatch || roleMatch || moduleMatch || divMatch || deviceMatch;
       }
       return true;
+    });
+
+    // Urutkan selalu dari yang terbaru di paling atas
+    return [...list].sort((a, b) => {
+      const getEpoch = (item) => {
+        if (item.createdAt?.toMillis) return item.createdAt.toMillis();
+        if (item.createdAt) {
+          const t = new Date(item.createdAt).getTime();
+          if (!isNaN(t)) return t;
+        }
+        if (typeof item.id === 'number') return item.id;
+        const numInId = String(item.id).replace(/\D/g, '').slice(0, 13);
+        if (numInId.length >= 10) return parseInt(numInId, 10);
+        return 0;
+      };
+
+      const epochA = getEpoch(a);
+      const epochB = getEpoch(b);
+      if (epochA && epochB && epochA !== epochB) return epochB - epochA;
+
+      return 0;
     });
   }, [currentLogs, selectedLogMonth, logFilterCategory, logSearchQuery]);
 
@@ -2783,7 +2890,7 @@ const AdminDashboardPage = ({
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
                   <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">Booking Aktif</span>
                   <h3 className="font-bold text-slate-900 mt-2 text-sm">Ruang Rapat Sekretariat</h3>
-                  <p className="text-xs text-slate-500 mt-1">Rapat BPH Pukul 16.00 WIB</p>
+                  <p className="text-xs text-slate-500 mt-1">Rapat BPH Pukul 16.00 WITA</p>
                 </div>
               </div>
             </div>
@@ -2837,46 +2944,418 @@ const AdminDashboardPage = ({
           )}
 
           {/* TAB: ATTENDANCE (PRESENSI QR & NOTULA) */}
-          {currentNav === 'attendance' && (
-            <div className="max-w-6xl mx-auto space-y-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-purple-50 border border-purple-200 text-purple-600 flex items-center justify-center">
-                    <ClipboardCheck size={22} />
+          {currentNav === 'attendance' && (() => {
+            const currentRecs = adminAttendanceList.filter(
+              (r) => !r.sessionId || r.sessionId === activeAttendanceSession.id
+            );
+            const totalHadir = currentRecs.length;
+            const tepatWaktu = currentRecs.filter((r) => r.status && r.status.includes('Tepat')).length;
+            const terlambat = currentRecs.filter((r) => r.status && r.status.includes('Terlambat')).length;
+            const izinSakit = currentRecs.filter((r) => r.status && (r.status.includes('Izin') || r.status.includes('Sakit'))).length;
+
+            const filteredAttendance = currentRecs.filter((item) => {
+              const matchSearch =
+                item.name.toLowerCase().includes(adminAttendanceSearch.toLowerCase()) ||
+                item.division.toLowerCase().includes(adminAttendanceSearch.toLowerCase()) ||
+                (item.nim && item.nim.includes(adminAttendanceSearch));
+              const matchStatus =
+                adminAttendanceFilter === 'Semua' ||
+                (adminAttendanceFilter === 'Tepat Waktu' && item.status.includes('Tepat')) ||
+                (adminAttendanceFilter === 'Terlambat' && item.status.includes('Terlambat')) ||
+                (adminAttendanceFilter === 'Izin/Sakit' && (item.status.includes('Izin') || item.status.includes('Sakit')));
+              return matchSearch && matchStatus;
+            });
+
+            const sortedAttendance = [...filteredAttendance].sort((a, b) => {
+              const matchA = String(a.time).match(/(\d{1,2}):(\d{2})/);
+              const matchB = String(b.time).match(/(\d{1,2}):(\d{2})/);
+              if (matchA && matchB) {
+                const minA = parseInt(matchA[1], 10) * 60 + parseInt(matchA[2], 10);
+                const minB = parseInt(matchB[1], 10) * 60 + parseInt(matchB[2], 10);
+                if (minA !== minB) return minB - minA; // Jam terbaru berada di atas
+              }
+              const parseId = (id) => parseInt(String(id).replace(/\D/g, ''), 10) || 0;
+              return parseId(b.id) - parseId(a.id);
+            });
+
+            return (
+              <div className="max-w-6xl mx-auto space-y-6">
+                {/* Header & Quick Action */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-purple-50 border border-purple-200 text-purple-600 flex items-center justify-center">
+                      <ClipboardCheck size={22} />
+                    </div>
+                    <div>
+                      <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+                        Presensi Digital QR Code & Notula
+                      </h1>
+                      <p className="text-xs text-slate-500 font-medium">
+                        Monitoring kehadiran musyawarah pleno, tracking status tepat waktu & izin, serta ringkasan notula hasil rapat.
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-                      Presensi Digital QR Code & Notula
-                    </h1>
-                    <p className="text-xs text-slate-500 font-medium">
-                      Absensi rapat pleno dan proker via kode QR dengan pembuatan notula otomatis.
+
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <button
+                      onClick={handleExportAdminAttendanceXlsx}
+                      className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs"
+                    >
+                      <Download size={14} />
+                      <span>Ekspor Excel (.xlsx)</span>
+                    </button>
+                    <button
+                      onClick={() => onNavigateToService('attendance')}
+                      className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs"
+                    >
+                      <ExternalLink size={14} />
+                      <span>Buka Halaman Presensi Penuh</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Sesi Rapat Aktif Card */}
+                <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
+                  {/* Top Bar: Selector & Aksi Selesaikan Agenda Rapat */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-5 border-b border-slate-100">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        Pilih Sesi Rapat:
+                      </span>
+                      <div className="relative">
+                        <select
+                          value={selectedAdminSessionId}
+                          onChange={(e) => setSelectedAdminSessionId(e.target.value)}
+                          className="appearance-none bg-slate-50 border border-slate-300 text-slate-800 text-xs font-bold rounded-xl pl-3 pr-8 py-1.5 focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer"
+                        >
+                          {adminAttendanceSessions.map((s) => (
+                            <option key={s.id} value={s.id}>
+                              {s.title} ({s.status === 'active' ? '🟢 Aktif' : '⚪ Selesai'})
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                      </div>
+                    </div>
+
+                    {/* Tombol Aksi Selesaikan Agenda Rapat */}
+                    <button
+                      type="button"
+                      onClick={() => handleToggleCompleteMeetingSession(activeAttendanceSession)}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer ${
+                        activeAttendanceSession.status === 'active'
+                          ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                          : 'bg-slate-800 hover:bg-slate-900 text-white'
+                      }`}
+                    >
+                      {activeAttendanceSession.status === 'active' ? (
+                        <>
+                          <CheckCircle2 size={15} />
+                          <span>Selesaikan Agenda Rapat</span>
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw size={14} />
+                          <span>Aktifkan Kembali Sesi Rapat</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-6 border-b border-slate-100">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border uppercase tracking-wider flex items-center gap-1.5 ${
+                            activeAttendanceSession.status === 'active'
+                              ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                              : 'text-slate-600 bg-slate-100 border-slate-200'
+                          }`}
+                        >
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${
+                              activeAttendanceSession.status === 'active'
+                                ? 'bg-emerald-500 animate-pulse'
+                                : 'bg-slate-400'
+                            }`}
+                          />
+                          {activeAttendanceSession.status === 'active'
+                            ? 'Sesi Presensi Aktif'
+                            : 'Agenda Selesai & Diarsipkan'}
+                        </span>
+                        <span className="text-xs text-slate-400">• {activeAttendanceSession.division}</span>
+                      </div>
+                      <h3 className="text-xl font-bold text-slate-900 mt-1">
+                        {activeAttendanceSession.title}
+                      </h3>
+                      <div className="flex items-center gap-2 text-xs text-slate-600 pt-1 flex-wrap">
+                        <span className="text-slate-500">Dibuat oleh:</span>
+                        <strong className="font-semibold text-slate-900">
+                          {activeAttendanceSession.createdBy?.name || activeAttendanceSession.organizer || 'Pengurus'}
+                        </strong>
+                        <span className="font-mono text-purple-700 bg-purple-50 border border-purple-200/80 px-2 py-0.5 rounded text-[11px] font-bold">
+                          NIM: {activeAttendanceSession.createdBy?.nim || '23404053'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 flex items-center gap-3 pt-1.5 flex-wrap">
+                        <span>📅 {activeAttendanceSession.date}</span>
+                        <span>⏰ {activeAttendanceSession.timeStart} - {activeAttendanceSession.timeEnd} (WITA)</span>
+                        <span>📍 {activeAttendanceSession.location}</span>
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                      <div className="flex items-center gap-3 bg-slate-50 p-2.5 rounded-2xl border border-slate-200">
+                        <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center p-1 text-slate-900 shrink-0 border border-slate-200 overflow-hidden shadow-xs">
+                          <img
+                            src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
+                              typeof window !== 'undefined'
+                                ? `${window.location.origin}${window.location.pathname}?presensi=${activeAttendanceSession.id}&token=${activeAttendanceSession.qrToken}`
+                                : `https://teradesk.politeknikdewantara.ac.id/?presensi=${activeAttendanceSession.id}&token=${activeAttendanceSession.qrToken}`
+                            )}&margin=4`}
+                            alt="QR Presensi"
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                        <div className="text-left pr-2">
+                          <span className="text-[10px] font-bold uppercase text-slate-400 block">Kode PIN Rapat:</span>
+                          <span className="font-mono text-xl font-extrabold text-amber-600 tracking-wider">
+                            {activeAttendanceSession.pinCode}
+                          </span>
+                          <span className="text-[10px] text-slate-500 block">Toleransi: {activeAttendanceSession.toleranceTime}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-1.5 w-full sm:w-auto">
+                        <button
+                          type="button"
+                          onClick={() => handleCopyAdminQrLink(activeAttendanceSession)}
+                          className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
+                        >
+                          {copiedAdminQrLink ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} />}
+                          <span>{copiedAdminQrLink ? 'Tautan Tersalin!' : 'Salin Tautan HP'}</span>
+                        </button>
+                        {onOpenPublicAttendanceModal && (
+                          <button
+                            type="button"
+                            onClick={() => onOpenPublicAttendanceModal(activeAttendanceSession.id)}
+                            className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
+                          >
+                            <Smartphone size={13} />
+                            <span>Presensi Tamu (HP)</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Creator Geofence Anchor Info Banner */}
+                  <div className="mt-4 p-3 bg-purple-50/70 border border-purple-200/80 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                    <div className="flex items-center gap-2 text-purple-900">
+                      <Radio size={14} className="text-purple-600 animate-pulse shrink-0" />
+                      <span>
+                        Titik Pusat Rapat: <strong>{activeAttendanceSession.coordinates?.locationName || activeAttendanceSession.location || 'Lapangan Pancasila Palopo'}</strong>
+                        {activeAttendanceSession.coordinates?.lat ? ` (${activeAttendanceSession.coordinates.lat}, ${activeAttendanceSession.coordinates.lng})` : ''}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-bold text-slate-600">
+                        Pembuat: <strong className="text-slate-900">{activeAttendanceSession.createdBy?.name || 'Alif Fikri Haykal'}</strong>
+                      </span>
+                      <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                        Radius {activeAttendanceSession.coordinates?.radiusMeters || 100}m
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* 4 Stats Metrics */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6">
+                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200/60">
+                      <span className="text-xs text-slate-500">Tercatat Hadir</span>
+                      <p className="text-xl font-extrabold text-slate-900 mt-1">{totalHadir} Pengurus</p>
+                      <span className="text-[10px] text-slate-400">Total partisipasi</span>
+                    </div>
+                    <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-200/60">
+                      <span className="text-xs text-emerald-700">Tepat Waktu</span>
+                      <p className="text-xl font-extrabold text-emerald-600 mt-1">{tepatWaktu}</p>
+                      <span className="text-[10px] text-emerald-600">Sesuai toleransi WITA</span>
+                    </div>
+                    <div className="bg-amber-50/50 p-4 rounded-xl border border-amber-200/60">
+                      <span className="text-xs text-amber-700">Terlambat</span>
+                      <p className="text-xl font-extrabold text-amber-600 mt-1">{terlambat}</p>
+                      <span className="text-[10px] text-amber-600">Melebihi toleransi</span>
+                    </div>
+                    <div className="bg-purple-50/50 p-4 rounded-xl border border-purple-200/60">
+                      <span className="text-xs text-purple-700">Izin / Sakit</span>
+                      <p className="text-xl font-extrabold text-purple-600 mt-1">{izinSakit}</p>
+                      <span className="text-[10px] text-purple-600">Keterangan resmi</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Live Attendee Feed Table */}
+                <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <h3 className="font-bold text-slate-900 text-sm">Daftar Kehadiran Sesi Berjalan</h3>
+                      <p className="text-xs text-slate-500">Live feed absensi pengurus organisasi terverifikasi sistem.</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="relative">
+                        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <input
+                          type="text"
+                          value={adminAttendanceSearch}
+                          onChange={(e) => setAdminAttendanceSearch(e.target.value)}
+                          placeholder="Cari pengurus..."
+                          className="pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        />
+                      </div>
+                      <select
+                        value={adminAttendanceFilter}
+                        onChange={(e) => setAdminAttendanceFilter(e.target.value)}
+                        className="py-1.5 px-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-700 font-semibold focus:outline-none"
+                      >
+                        <option value="Semua">Semua Status</option>
+                        <option value="Tepat Waktu">Tepat Waktu</option>
+                        <option value="Terlambat">Terlambat</option>
+                        <option value="Izin/Sakit">Izin / Sakit</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="overflow-x-auto border border-slate-100 rounded-xl">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-50 text-slate-500 font-bold uppercase text-[10px] border-b border-slate-100">
+                        <tr>
+                          <th className="py-3 px-4">Nama Pengurus</th>
+                          <th className="py-3 px-4">Divisi & Peran</th>
+                          <th className="py-3 px-4">Waktu (WITA)</th>
+                          <th className="py-3 px-4">Metode</th>
+                          <th className="py-3 px-4">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {sortedAttendance.length === 0 ? (
+                          <tr>
+                            <td colSpan={5} className="py-8 text-center text-slate-400">
+                              Tidak ada data kehadiran yang sesuai filter.
+                            </td>
+                          </tr>
+                        ) : (
+                          sortedAttendance.map((rec) => {
+                            const isTepat = rec.status && rec.status.includes('Tepat');
+                            const isTerlambat = rec.status && rec.status.includes('Terlambat');
+
+                            return (
+                              <tr key={rec.id} className="hover:bg-slate-50/60 transition-colors">
+                                <td className="py-3 px-4 font-bold text-slate-900">
+                                  {rec.name}
+                                  <span className="block text-[10px] text-slate-400 font-normal font-mono">
+                                    NIM: {rec.nim || '-'}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-4 text-slate-600">
+                                  <span className="font-semibold text-slate-800">{rec.division}</span>
+                                  <span className="block text-[10px] text-slate-400">{rec.role}</span>
+                                </td>
+                                <td className="py-3 px-4 font-mono font-medium text-slate-700">
+                                  {rec.time}
+                                </td>
+                                <td className="py-3 px-4">
+                                  <span className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded text-[11px] font-medium inline-flex items-center gap-1">
+                                    {rec.method === 'QR Scan (HP)' && <Smartphone size={11} className="text-purple-600" />}
+                                    <span>{rec.method || 'Manual'}</span>
+                                  </span>
+                                  {rec.distanceInfo && (
+                                    <span className="block text-[10px] text-teal-800 bg-teal-50 border border-teal-200/60 px-1.5 py-0.5 rounded font-mono w-fit mt-1">
+                                      📍 {rec.distanceInfo}
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="py-3 px-4">
+                                  <span
+                                    className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
+                                      isTepat
+                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                        : isTerlambat
+                                        ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                        : 'bg-purple-50 text-purple-700 border-purple-200'
+                                    }`}
+                                  >
+                                    <CheckCircle2 size={11} />
+                                    {rec.status}
+                                  </span>
+                                </td>
+                              </tr>
+                            );
+                          })
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Mini Notula & Action Items Widget */}
+                {activeAttendanceSession.notula && (
+                  <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 space-y-4">
+                    <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                      <div>
+                        <h3 className="font-bold text-slate-900 text-sm">Ringkasan Notula & Action Items Sesi</h3>
+                        <p className="text-xs text-slate-500">Tindak lanjut hasil musyawarah yang didelegasikan ke PIC.</p>
+                      </div>
+                      <span className="text-xs font-bold text-purple-700 bg-purple-50 px-2.5 py-1 rounded-lg border border-purple-200">
+                        {activeAttendanceSession.notula.actionItems?.length || 0} Tindak Lanjut
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-slate-600 bg-slate-50 p-3.5 rounded-xl border border-slate-200/60 leading-relaxed">
+                      {activeAttendanceSession.notula.summary}
                     </p>
-                  </div>
-                </div>
 
-                <button
-                  onClick={() => onNavigateToService('attendance')}
-                  className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs"
-                >
-                  <ExternalLink size={14} />
-                  <span>Buka Halaman Presensi Penuh</span>
-                </button>
-              </div>
-
-              <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
-                <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-                  <div>
-                    <span className="text-xs font-bold text-purple-600 uppercase">Sesi Presensi Aktif</span>
-                    <h3 className="text-lg font-bold text-slate-900 mt-1">Rapat Pleno Paruh Periode 2026</h3>
-                    <p className="text-xs text-slate-500">Selasa, 03 November 2026 • 42 dari 48 Pengurus Hadir (93%)</p>
+                    <div className="space-y-2 pt-2">
+                      {(activeAttendanceSession.notula.actionItems || []).map((act) => (
+                        <div key={act.id} className="flex items-center justify-between p-3 rounded-xl border border-slate-200/70 text-xs">
+                          <div>
+                            <p className="font-semibold text-slate-900">{act.task}</p>
+                            <p className="text-[11px] text-slate-500">PIC: {act.pic} • Tenggat: {act.deadline}</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (!propOnUpdateAttendanceSession) return;
+                              const updatedItems = activeAttendanceSession.notula.actionItems.map((item) => {
+                                if (item.id === act.id) {
+                                  const nextSt = item.status === 'done' ? 'pending' : item.status === 'in_progress' ? 'done' : 'in_progress';
+                                  return { ...item, status: nextSt };
+                                }
+                                return item;
+                              });
+                              const updatedSess = {
+                                ...activeAttendanceSession,
+                                notula: { ...activeAttendanceSession.notula, actionItems: updatedItems },
+                              };
+                              propOnUpdateAttendanceSession(updatedSess);
+                              playNotificationChime();
+                            }}
+                            className={`px-2.5 py-1 rounded-full font-bold text-[10px] border cursor-pointer transition-colors ${
+                              act.status === 'done'
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                                : act.status === 'in_progress'
+                                ? 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100'
+                                : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
+                            }`}
+                          >
+                            {act.status === 'done' ? 'Selesai' : act.status === 'in_progress' ? 'Dalam Proses' : 'Menunggu'}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <div className="w-16 h-16 bg-slate-100 rounded-xl flex items-center justify-center border border-slate-200 text-xs font-mono font-bold">
-                    [QR CODE]
-                  </div>
-                </div>
+                )}
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* TAB: TIMELINE (MASTER TIMELINE & KALENDER) */}
           {currentNav === 'timeline' && (

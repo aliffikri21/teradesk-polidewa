@@ -10,6 +10,7 @@ import AdminDashboardPage from './components/admin/AdminDashboardPage';
 import FeaturesPortal from './components/FeaturesPortal';
 import ServiceDispatcher from './components/services/ServiceDispatcher';
 import CommandPalette from './components/common/CommandPalette';
+import PublicAttendanceModal from './components/services/PublicAttendanceModal';
 import { initialDefaultAccounts } from './data/defaultAccounts';
 import { initialDefaultProker } from './data/defaultProker';
 import { initialDefaultConsultations } from './data/defaultConsultations';
@@ -57,6 +58,7 @@ import {
   assetsSync,
   financeSync,
   attendanceSync,
+  attendanceSessionsSync,
   activitiesSync,
   subscribeModuleStatuses,
   updateModuleStatusInDb,
@@ -71,6 +73,7 @@ import {
   defaultAssets,
   defaultFinanceTransactions,
   defaultAttendanceList,
+  defaultAttendanceSessions,
   defaultActivities,
   defaultModuleStatuses,
 } from './data/defaultModulesData';
@@ -111,6 +114,18 @@ function App() {
   const [accessDeniedInfo, setAccessDeniedInfo] = useState(null);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [adminInitialNav, setAdminInitialNav] = useState('dashboard');
+
+  // State Presensi Mandiri Publik (untuk anggota/tamu yang memindai QR Code via smartphone camera)
+  const [activePublicAttendanceId, setActivePublicAttendanceId] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const presensiId = params.get('presensi');
+      if (presensiId) {
+        return presensiId === 'true' ? 'SES-2026-001' : presensiId;
+      }
+    }
+    return null;
+  });
 
   // Registered accounts state dengan pembersihan data lama agar hanya akun Alif Fikri yang aktif
   const [registeredAccounts, setRegisteredAccounts] = useState(() => {
@@ -635,13 +650,41 @@ function App() {
       category: 'module_submit',
       type: 'success',
       userName: record.name,
-      userNim: authUser?.nim || '-',
+      userNim: record.nim || authUser?.nim || '-',
       userRole: record.role || 'Anggota',
       userDivision: record.division || 'Kaderisasi',
       moduleName: 'Presensi Digital & QR Acara',
       event: `Check-in Presensi: ${record.name}`,
-      details: `Presensi rapat/kegiatan tercatat pada ${record.time} (${record.status}).`,
+      details: `Presensi rapat/kegiatan tercatat pada ${record.time} (${record.status}) - ${record.method || 'Presensi Digital'}${record.distanceInfo ? ` [${record.distanceInfo}]` : ''}.`,
     });
+  };
+
+  const handleAddAttendanceSession = (session) => {
+    setAttendanceSessions((prev) => [session, ...prev]);
+    saveLocalData(STORAGE_KEYS.ATTENDANCE_SESSIONS, [session, ...attendanceSessions]);
+    attendanceSessionsSync.addItem(session);
+    handleAddActivityLog({
+      category: 'module_submit',
+      type: 'info',
+      userName: authUser?.name || 'Pengurus',
+      userNim: authUser?.nim || '-',
+      userRole: authUser?.role || 'BPH',
+      userDivision: session.division || 'BPH & Presidium',
+      moduleName: 'Presensi Digital & QR Acara',
+      event: `Sesi Rapat Baru Dibuat: ${session.title}`,
+      details: `Agenda pada ${session.date} (${session.timeStart} - ${session.timeEnd}) di ${session.location}. PIN: ${session.pinCode}`,
+    });
+  };
+
+  const handleUpdateAttendanceSession = (updatedSession) => {
+    setAttendanceSessions((prev) =>
+      prev.map((s) => (s.id === updatedSession.id ? updatedSession : s))
+    );
+    const updatedList = attendanceSessions.map((s) =>
+      s.id === updatedSession.id ? updatedSession : s
+    );
+    saveLocalData(STORAGE_KEYS.ATTENDANCE_SESSIONS, updatedList);
+    attendanceSessionsSync.updateItem(updatedSession.id, updatedSession);
   };
 
   // Handlers for Activity Archive
@@ -839,13 +882,20 @@ function App() {
     saveLocalData(STORAGE_KEYS.FINANCE, financeTransactions);
   }, [financeTransactions]);
 
-  // 9. Attendance List
+  // 9. Attendance List & Sessions
   const [attendanceList, setAttendanceList] = useState(() =>
     loadLocalData(STORAGE_KEYS.ATTENDANCE, defaultAttendanceList)
   );
   useEffect(() => {
     saveLocalData(STORAGE_KEYS.ATTENDANCE, attendanceList);
   }, [attendanceList]);
+
+  const [attendanceSessions, setAttendanceSessions] = useState(() =>
+    loadLocalData(STORAGE_KEYS.ATTENDANCE_SESSIONS, defaultAttendanceSessions)
+  );
+  useEffect(() => {
+    saveLocalData(STORAGE_KEYS.ATTENDANCE_SESSIONS, attendanceSessions);
+  }, [attendanceSessions]);
 
   // 10. Activities Archive
   const [activities, setActivities] = useState(() =>
@@ -926,6 +976,9 @@ function App() {
     const unsubAttendance = attendanceSync.subscribe((data) => {
       if (Array.isArray(data) && data.length > 0) setAttendanceList(data);
     });
+    const unsubAttendanceSessions = attendanceSessionsSync.subscribe((data) => {
+      if (Array.isArray(data) && data.length > 0) setAttendanceSessions(data);
+    });
     const unsubActivities = activitiesSync.subscribe((data) => {
       if (Array.isArray(data) && data.length > 0) setActivities(data);
     });
@@ -947,6 +1000,7 @@ function App() {
       unsubAssets();
       unsubFinance();
       unsubAttendance();
+      unsubAttendanceSessions();
       unsubActivities();
       unsubModuleStatuses();
     };
@@ -1039,7 +1093,8 @@ function App() {
         year: 'numeric',
       }) +
       ', ' +
-      now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
+      now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':') +
+      ' WITA';
 
     // Selalu baca data terbaru dari storage agar tidak tertimpa state lama di memori
     let currentList = [];
@@ -1592,6 +1647,12 @@ function App() {
           onSetKkmLunas={handleSetKkmLunas}
           suratLog={suratLog}
           onAddSuratLog={handleAddSuratLog}
+          attendanceList={attendanceList}
+          onAddAttendanceRecord={handleAddAttendanceRecord}
+          attendanceSessions={attendanceSessions}
+          onAddAttendanceSession={handleAddAttendanceSession}
+          onUpdateAttendanceSession={handleUpdateAttendanceSession}
+          onOpenPublicAttendanceModal={(sessionId) => setActivePublicAttendanceId(sessionId || 'SES-2026-001')}
           moduleStatuses={moduleStatuses}
           onToggleModuleStatus={handleToggleModuleStatus}
         />
@@ -1639,6 +1700,10 @@ function App() {
           onAddFinanceTransaction={handleAddFinanceTransaction}
           attendanceList={attendanceList}
           onAddAttendanceRecord={handleAddAttendanceRecord}
+          attendanceSessions={attendanceSessions}
+          onAddAttendanceSession={handleAddAttendanceSession}
+          onUpdateAttendanceSession={handleUpdateAttendanceSession}
+          onOpenPublicAttendanceModal={(sessionId) => setActivePublicAttendanceId(sessionId || 'SES-2026-001')}
           activities={activities}
           onAddActivity={handleAddActivity}
           moduleStatuses={moduleStatuses}
@@ -1690,6 +1755,26 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* Public Attendance Modal (Scannable QR check-in untuk smartphone anggota/tamu non-login) */}
+      <PublicAttendanceModal
+        isOpen={Boolean(activePublicAttendanceId)}
+        onClose={() => {
+          setActivePublicAttendanceId(null);
+          if (typeof window !== 'undefined' && window.location.search.includes('presensi')) {
+            const cleanUrl = window.location.origin + window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
+          }
+        }}
+        session={
+          attendanceSessions.find((s) => s.id === activePublicAttendanceId) ||
+          attendanceSessions.find((s) => s.status === 'active') ||
+          attendanceSessions[0]
+        }
+        allRecords={attendanceList}
+        onAddAttendanceRecord={handleAddAttendanceRecord}
+        onOpenPortal={() => handleNavigate('portal')}
+      />
 
       {/* Contact Modal */}
       <ContactModal

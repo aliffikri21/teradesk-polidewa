@@ -311,7 +311,7 @@ export const defaultAssets = [
     condition: 'Baik',
     location: 'Gedung Serbaguna',
     borrower: 'Farhan (Panitia Workshop)',
-    returnDate: 'Besok, 18:00 WIB',
+    returnDate: 'Besok, 18:00 WITA',
   },
   {
     id: 'AST-003',
@@ -344,7 +344,7 @@ export const defaultAssets = [
     condition: 'Baik',
     location: 'Studio Media',
     borrower: 'Gilang (Divisi Humas)',
-    returnDate: 'Hari Ini, 20:00 WIB',
+    returnDate: 'Hari Ini, 20:00 WITA',
   },
   {
     id: 'AST-006',
@@ -423,13 +423,130 @@ export const defaultFinanceTransactions = [
   },
 ];
 
+export const defaultAttendanceSessions = [
+  {
+    id: 'SES-2026-001',
+    title: 'Rapat Pleno Koordinasi LDK 2026',
+    division: 'BPH & Presidium',
+    date: '08 November 2026',
+    timeStart: '13:30 WITA',
+    timeEnd: '16:00 WITA',
+    toleranceTime: '14:15 WITA',
+    location: 'Lapangan Pancasila Palopo (Area Gazebo Teramedia)',
+    status: 'active',
+    qrToken: 'TERA-QR-98214',
+    pinCode: '782910',
+    organizer: 'Badan Pengurus Harian & Sekjen',
+    createdBy: {
+      name: 'Alif Fikri Haykal',
+      nim: '23404053',
+      role: 'Demisioner Ketum',
+    },
+    coordinates: {
+      lat: -2.9928,
+      lng: 120.1983,
+      locationName: 'Lapangan Pancasila Palopo',
+      radiusMeters: 100, // Radius 100 meter dari pembuat rapat (Alif)
+    },
+    agenda: 'Koordinasi teknis pelaksanaan LDK Kader Muda, plotting panitia, dan fiksasi rundown acara.',
+    notula: {
+      summary: 'Rapat pleno dihadiri pengurus inti dan koordinator divisi. Pembahasan difokuskan pada kesiapan logistik perkemahan, perizinan kampus, dan pembagian tugas fasilitator pendamping peserta.',
+      keyDecisions: [
+        'Lokasi LDK disepakati di Bumi Perkemahan Wisata Alam Dewantara',
+        'Pemberangkatan peserta dijadwalkan Jumat pukul 07:30 WITA berkumpul di pelataran kampus',
+        'Batas akhir pengumpulan data medis & riwayat alergi peserta pada H-2',
+        'Peralatan sound portable & genset dipinjam dari inventaris BPH'
+      ],
+      actionItems: [
+        { id: 'ACT-1', task: 'Finalisasi rundown dan jadwal pemateri Diksar', pic: 'Bagas Aditya (Kaderisasi)', deadline: '10 Nov 2026, 17:00 WITA', status: 'done' },
+        { id: 'ACT-2', task: 'Pengecekan kelengkapan tenda & P3K lapangan', pic: 'Rian Pratama (Logistik)', deadline: '11 Nov 2026, 12:00 WITA', status: 'pending' },
+        { id: 'ACT-3', task: 'Penerbitan surat izin kegiatan ke Rektorat & Kemahasiswaan', pic: 'Reza Fahrezi (Sekretariat)', deadline: '09 Nov 2026, 15:00 WITA', status: 'done' },
+        { id: 'ACT-4', task: 'Pembuatan twibbon peserta dan materi publikasi feeds IG', pic: 'Nadia Safitri (Pubdok)', deadline: '11 Nov 2026, 20:00 WITA', status: 'in_progress' }
+      ]
+    }
+  },
+  {
+    id: 'SES-2026-002',
+    title: 'Evaluasi Mingguan Tim Desain & Media Publikasi',
+    division: 'Divisi Publikasi dan Dokumentasi',
+    date: '05 November 2026',
+    timeStart: '19:00 WITA',
+    timeEnd: '21:00 WITA',
+    toleranceTime: '19:15 WITA',
+    location: 'Discord / Google Meet Teramedia',
+    status: 'completed',
+    qrToken: 'TERA-QR-44120',
+    pinCode: '451299',
+    organizer: 'Divisi Publikasi dan Dokumentasi',
+    createdBy: {
+      name: 'Nadia Safitri',
+      nim: '23404018',
+      role: 'Kadiv Pubdok',
+    },
+    coordinates: {
+      lat: 0,
+      lng: 0,
+      locationName: 'Online / Bebas Lokasi',
+      radiusMeters: 0,
+    },
+    agenda: 'Evaluasi antrean tiket desain feeds promosi KKM dan konten reels edukasi multimedia.',
+    notula: {
+      summary: 'Seluruh desainer divisi telah menyelesaikan 14 tiket dalam sepekan terakhir. Ditemukan kendala pada revisi copy caption dari pemohon yang lambat.',
+      keyDecisions: [
+        'Pemohon wajib menyertakan copy final sebelum tiket dikerjakan',
+        'Template layout feed dies natalis diseragamkan dengan font SF Pro Display'
+      ],
+      actionItems: [
+        { id: 'ACT-5', task: 'Update form request desain agar mencakup checklist materi', pic: 'Nadia Safitri', deadline: '07 Nov 2026, 21:00 WITA', status: 'done' }
+      ]
+    }
+  },
+  {
+    id: 'SES-2026-003',
+    title: 'Briefing Panitia Bazar & Merchandise KKM',
+    division: 'Divisi Dana Usaha (KKM)',
+    date: '02 November 2026',
+    timeStart: '16:00 WITA',
+    timeEnd: '17:30 WITA',
+    toleranceTime: '16:15 WITA',
+    location: 'Sekretariat TERAMEDIA (Kampus Dewantara)',
+    status: 'completed',
+    qrToken: 'TERA-QR-21908',
+    pinCode: '312984',
+    organizer: 'Divisi Dana Usaha (KKM)',
+    createdBy: {
+      name: 'Reza Fahrezi',
+      nim: '23404022',
+      role: 'Bendahara Umum / KKM',
+    },
+    coordinates: {
+      lat: -2.9975,
+      lng: 120.2005,
+      locationName: 'Sekretariat UKM Teramedia',
+      radiusMeters: 50,
+    },
+    agenda: 'Persiapan stock merchandise hoodie batch 2 dan pembagian shift piket booth bazaar kampus.',
+    notula: {
+      summary: 'Penjualan batch 1 mencapai target 92 paket. Persiapan booth bazaar kampus dijadwalkan mulai Senin pagi.',
+      keyDecisions: [
+        'Shift piket booth dibagi 2 sesi: pagi (08:00 - 12:00 WITA) dan siang (13:00 - 17:00 WITA)',
+        'Sistem pencatatan transaksi menggunakan modul Keuangan & KKM TeraDesk'
+      ],
+      actionItems: [
+        { id: 'ACT-6', task: 'Cetak QRIS statis kas KKM untuk meja kasir booth', pic: 'Reza Fahrezi', deadline: '03 Nov 2026, 10:00 WITA', status: 'done' }
+      ]
+    }
+  }
+];
+
 export const defaultAttendanceList = [
-  { id: 'ATT-01', name: 'Ahmad Fauzi', division: 'Divisi Kaderisasi & SDM', role: 'Staff', time: '13:54 WIB', status: 'Tepat Waktu' },
-  { id: 'ATT-02', name: 'Nadia Safitri', division: 'Divisi Media & Informasi', role: 'Kadiv', time: '13:58 WIB', status: 'Tepat Waktu' },
-  { id: 'ATT-03', name: 'Reza Fahrezi', division: 'Bendahara Umum', role: 'BPH', time: '14:01 WIB', status: 'Tepat Waktu' },
-  { id: 'ATT-04', name: 'Bagas Aditya', division: 'Divisi Kaderisasi & SDM', role: 'Kadiv', time: '14:05 WIB', status: 'Tepat Waktu' },
-  { id: 'ATT-05', name: 'Rian Pratama', division: 'Divisi Minat & Bakat', role: 'Staff', time: '14:18 WIB', status: 'Terlambat (18m)' },
-  { id: 'ATT-06', name: 'Siti Aminah', division: 'Divisi Humas & Jaringan', role: 'Staff', time: '14:02 WIB', status: 'Tepat Waktu' },
+  { id: 'ATT-05', sessionId: 'SES-2026-001', name: 'Rian Pratama', nim: '23404033', division: 'Divisi Minat & Bakat', role: 'Staff', time: '14:18 WITA', status: 'Terlambat (18m)', method: 'Input PIN', distanceInfo: '18m dari Alif (Lap. Pancasila)', note: 'Terlambat karena kuliah pengganti' },
+  { id: 'ATT-04', sessionId: 'SES-2026-001', name: 'Bagas Aditya', nim: '23404008', division: 'Divisi Kaderisasi & SDM', role: 'Kadiv', time: '14:05 WITA', status: 'Tepat Waktu', method: 'Input PIN', distanceInfo: '12m dari Alif (Lap. Pancasila)', note: 'Hadir tepat waktu' },
+  { id: 'ATT-06', sessionId: 'SES-2026-001', name: 'Siti Aminah', nim: '23404041', division: 'Divisi Humas & Jaringan', role: 'Staff', time: '14:02 WITA', status: 'Tepat Waktu', method: 'QR Scanner', distanceInfo: '8m dari Alif (Lap. Pancasila)', note: 'Hadir tepat waktu' },
+  { id: 'ATT-03', sessionId: 'SES-2026-001', name: 'Reza Fahrezi', nim: '23404022', division: 'Bendahara Umum', role: 'BPH', time: '14:01 WITA', status: 'Tepat Waktu', method: 'QR Scanner', distanceInfo: '15m dari Alif (Lap. Pancasila)', note: 'Hadir tepat waktu' },
+  { id: 'ATT-02', sessionId: 'SES-2026-001', name: 'Nadia Safitri', nim: '23404018', division: 'Divisi Media & Informasi', role: 'Kadiv', time: '13:58 WITA', status: 'Tepat Waktu', method: 'Input PIN', distanceInfo: '22m dari Alif (Lap. Pancasila)', note: 'Hadir tepat waktu' },
+  { id: 'ATT-01', sessionId: 'SES-2026-001', name: 'Ahmad Fauzi', nim: '23404012', division: 'Divisi Kaderisasi & SDM', role: 'Staff', time: '13:54 WITA', status: 'Tepat Waktu', method: 'QR Scanner', distanceInfo: '5m dari Alif (Lap. Pancasila)', note: 'Hadir tepat waktu' },
+  { id: 'ATT-07', sessionId: 'SES-2026-001', name: 'Hendra Gunawan', nim: '23404050', division: 'Divisi Dana Usaha', role: 'Staff', time: '13:45 WITA', status: 'Izin', method: 'Form Izin/Sakit', distanceInfo: '-', note: 'Izin praktikum laboratorium jaringan' },
 ];
 
 export const defaultActivities = [

@@ -16,6 +16,7 @@ import {
   defaultAssets,
   defaultFinanceTransactions,
   defaultAttendanceList,
+  defaultAttendanceSessions,
   defaultActivities,
   defaultModuleStatuses,
 } from '../data/defaultModulesData';
@@ -31,6 +32,7 @@ export const STORAGE_KEYS = {
   ASSETS: 'teradesk_assets_v1',
   FINANCE: 'teradesk_finance_v1',
   ATTENDANCE: 'teradesk_attendance_v1',
+  ATTENDANCE_SESSIONS: 'teradesk_attendance_sessions_v1',
   ACTIVITIES: 'teradesk_activities_archive_v1',
   MODULE_STATUSES: 'teradesk_module_statuses_v1',
 };
@@ -233,6 +235,12 @@ export const attendanceSync = createCollectionSync({
   collectionName: 'attendance_records',
   storageKey: STORAGE_KEYS.ATTENDANCE,
   seedData: defaultAttendanceList,
+});
+
+export const attendanceSessionsSync = createCollectionSync({
+  collectionName: 'attendance_sessions',
+  storageKey: STORAGE_KEYS.ATTENDANCE_SESSIONS,
+  seedData: defaultAttendanceSessions,
 });
 
 // 10. ACTIVITY ARCHIVE / ARSIP KEGIATAN
