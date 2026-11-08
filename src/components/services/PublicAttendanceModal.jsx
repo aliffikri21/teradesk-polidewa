@@ -213,7 +213,7 @@ export default function PublicAttendanceModal({
     const locName = creatorCoords.locationName || 'Lapangan Pancasila Palopo';
 
     const newRecord = {
-      id: `ATT-${Date.now().toString().slice(-4)}`,
+      id: `REC-${Date.now().toString().slice(-6)}-${Math.floor(100 + Math.random() * 900)}`,
       sessionId: session?.id || '',
       name: form.name.trim(),
       nim: form.nim.trim(),

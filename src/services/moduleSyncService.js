@@ -31,10 +31,37 @@ export const STORAGE_KEYS = {
   SURAT_LOG: 'teradesk_surat_log_v1',
   ASSETS: 'teradesk_assets_v1',
   FINANCE: 'teradesk_finance_v1',
-  ATTENDANCE: 'teradesk_attendance_v4',
-  ATTENDANCE_SESSIONS: 'teradesk_attendance_sessions_v4',
+  ATTENDANCE: 'teradesk_attendance_v5',
+  ATTENDANCE_SESSIONS: 'teradesk_attendance_sessions_v5',
   ACTIVITIES: 'teradesk_activities_archive_v1',
   MODULE_STATUSES: 'teradesk_module_statuses_v1',
+};
+
+// Filter data dummy presensi lama agar tidak bangkit kembali
+export const isDummyAttendanceSession = (s) => {
+  if (!s || typeof s !== 'object') return true;
+  const title = (s.title || '').trim().toLowerCase();
+  if (
+    title.includes('rapat pleno koordinasi ldk') ||
+    title.includes('evaluasi mingguan tim desain') ||
+    title.includes('briefing panitia bazar') ||
+    s.id === 'SES-2026-001' ||
+    s.id === 'SES-2026-002' ||
+    s.id === 'SES-2026-003'
+  ) {
+    return true;
+  }
+  return false;
+};
+
+export const isDummyAttendanceRecord = (r) => {
+  if (!r || typeof r !== 'object') return true;
+  if (['ATT-01', 'ATT-02', 'ATT-03', 'ATT-04', 'ATT-05', 'ATT-06'].includes(r.id)) return true;
+  if (['SES-2026-001', 'SES-2026-002', 'SES-2026-003'].includes(r.sessionId)) return true;
+  if (typeof r.time === 'string' && r.time.includes('WIB')) return true;
+  const dummyNames = ['Ahmad Fauzi', 'Nadia Safitri', 'Reza Fahrezi', 'Bagas Aditya', 'Rian Pratama', 'Siti Aminah'];
+  if (dummyNames.includes(r.name) && (!r.nim || r.nim === '-' || r.nim === '')) return true;
+  return false;
 };
 
 // Local Storage Safe Helpers
@@ -45,16 +72,32 @@ export const loadLocalData = (key, fallback) => {
       localStorage.removeItem('teradesk_attendance_v1');
       localStorage.removeItem('teradesk_attendance_v2');
       localStorage.removeItem('teradesk_attendance_v3');
+      localStorage.removeItem('teradesk_attendance_v4');
     }
     if (key === STORAGE_KEYS.ATTENDANCE_SESSIONS) {
       localStorage.removeItem('teradesk_attendance_sessions_v1');
       localStorage.removeItem('teradesk_attendance_sessions_v2');
       localStorage.removeItem('teradesk_attendance_sessions_v3');
+      localStorage.removeItem('teradesk_attendance_sessions_v4');
     }
     const saved = localStorage.getItem(key);
     if (saved) {
       const parsed = JSON.parse(saved);
-      if (Array.isArray(fallback) && Array.isArray(parsed) && parsed.length > 0) {
+      if (Array.isArray(fallback) && Array.isArray(parsed)) {
+        if (key === STORAGE_KEYS.ATTENDANCE_SESSIONS) {
+          const cleaned = parsed.filter((s) => !isDummyAttendanceSession(s));
+          if (cleaned.length !== parsed.length) {
+            localStorage.setItem(key, JSON.stringify(cleaned));
+          }
+          return cleaned;
+        }
+        if (key === STORAGE_KEYS.ATTENDANCE) {
+          const cleaned = parsed.filter((r) => !isDummyAttendanceRecord(r));
+          if (cleaned.length !== parsed.length) {
+            localStorage.setItem(key, JSON.stringify(cleaned));
+          }
+          return cleaned;
+        }
         return parsed;
       }
       if (!Array.isArray(fallback) && typeof parsed === 'object' && parsed !== null) {
@@ -107,10 +150,37 @@ const createCollectionSync = ({ collectionName, storageKey, seedData }) => {
       return onSnapshot(
         colRef,
         async (snapshot) => {
-          const cloudItems = snapshot.docs.map((d) => ({
+          let cloudItems = snapshot.docs.map((d) => ({
             ...d.data(),
             id: d.id,
           }));
+
+          // Filter out dummy attendance data from cloud if any
+          if (storageKey === STORAGE_KEYS.ATTENDANCE_SESSIONS) {
+            const dummies = cloudItems.filter((s) => isDummyAttendanceSession(s));
+            if (dummies.length > 0) {
+              dummies.forEach((d) => {
+                try {
+                  deleteDoc(doc(db, collectionName, String(d.id)));
+                } catch (e) {
+                  console.warn(`[Firestore Clean Dummy Error]:`, e);
+                }
+              });
+              cloudItems = cloudItems.filter((s) => !isDummyAttendanceSession(s));
+            }
+          } else if (storageKey === STORAGE_KEYS.ATTENDANCE) {
+            const dummies = cloudItems.filter((r) => isDummyAttendanceRecord(r));
+            if (dummies.length > 0) {
+              dummies.forEach((d) => {
+                try {
+                  deleteDoc(doc(db, collectionName, String(d.id)));
+                } catch (e) {
+                  console.warn(`[Firestore Clean Dummy Record Error]:`, e);
+                }
+              });
+              cloudItems = cloudItems.filter((r) => !isDummyAttendanceRecord(r));
+            }
+          }
 
           if (isFirst) {
             isFirst = false;

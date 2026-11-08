@@ -36,6 +36,7 @@ import {
   updateAccountInDb,
   updatePasswordInDb,
   deleteAccountFromDb,
+  deleteAccountsBatchFromDb,
   resetAccountsInDb,
 } from './services/accountService';
 import {
@@ -62,6 +63,8 @@ import {
   activitiesSync,
   subscribeModuleStatuses,
   updateModuleStatusInDb,
+  isDummyAttendanceSession,
+  isDummyAttendanceRecord,
 } from './services/moduleSyncService';
 import {
   defaultParSubmissions,
@@ -127,18 +130,19 @@ function App() {
     return null;
   });
 
-  // Registered accounts state dengan pembersihan data lama agar hanya akun Alif Fikri yang aktif
+  // Registered accounts state tersinkron dengan Koordinator Divisi & Anggota Biasa
   const [registeredAccounts, setRegisteredAccounts] = useState(() => {
     try {
       localStorage.removeItem('teradesk_dev_accounts');
       localStorage.removeItem('teradesk_dev_accounts_v2');
-      const saved = localStorage.getItem('teradesk_dev_accounts_v3');
+      localStorage.removeItem('teradesk_dev_accounts_v3');
+      const saved = localStorage.getItem('teradesk_dev_accounts_v4');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
           return parsed.map((acc) => ({
             ...acc,
-            canAccessAdmin: acc.canAccessAdmin ?? (acc.nim === '23404053' || acc.isDefault === true),
+            canAccessAdmin: acc.canAccessAdmin ?? (acc.nim === '23404053' || acc.role?.toLowerCase().includes('koordinator') || acc.isDefault === true),
           }));
         }
       }
@@ -151,7 +155,7 @@ function App() {
   // Persist registered accounts changes
   useEffect(() => {
     try {
-      localStorage.setItem('teradesk_dev_accounts_v3', JSON.stringify(registeredAccounts));
+      localStorage.setItem('teradesk_dev_accounts_v4', JSON.stringify(registeredAccounts));
     } catch {
       // ignore
     }
@@ -687,6 +691,52 @@ function App() {
     attendanceSessionsSync.updateItem(updatedSession.id, updatedSession);
   };
 
+  const handleDeleteAttendanceSession = (sessionId) => {
+    setAttendanceSessions((prev) => prev.filter((s) => s.id !== sessionId));
+    const filtered = attendanceSessions.filter((s) => s.id !== sessionId);
+    saveLocalData(STORAGE_KEYS.ATTENDANCE_SESSIONS, filtered);
+    attendanceSessionsSync.deleteItem(sessionId);
+
+    // Hapus juga seluruh riwayat presensi yang terikat pada agenda ini
+    setAttendanceList((prev) => {
+      const remainingRecords = prev.filter((r) => r.sessionId !== sessionId);
+      saveLocalData(STORAGE_KEYS.ATTENDANCE, remainingRecords);
+      return remainingRecords;
+    });
+
+    handleAddActivityLog({
+      category: 'module_submit',
+      type: 'warning',
+      userName: authUser?.name || 'Pengurus',
+      userNim: authUser?.nim || '-',
+      userRole: authUser?.role || 'BPH',
+      userDivision: authUser?.division || 'BPH & Presidium',
+      moduleName: 'Presensi Digital & QR Acara',
+      event: `Agenda Rapat Dihapus: ${sessionId}`,
+      details: `Sesi rapat dengan ID ${sessionId} beserta riwayat kehadiran terkait telah dihapus permanen oleh ${authUser?.name || 'Pengurus'}.`,
+    });
+  };
+
+  const handleDeleteAttendanceRecord = (recordId) => {
+    setAttendanceList((prev) => {
+      const remaining = prev.filter((r) => r.id !== recordId);
+      saveLocalData(STORAGE_KEYS.ATTENDANCE, remaining);
+      return remaining;
+    });
+    attendanceSync.deleteItem(recordId);
+    handleAddActivityLog({
+      category: 'module_submit',
+      type: 'warning',
+      userName: authUser?.name || 'Pengurus',
+      userNim: authUser?.nim || '-',
+      userRole: authUser?.role || 'BPH',
+      userDivision: authUser?.division || 'BPH & Presidium',
+      moduleName: 'Presensi Digital & QR Acara',
+      event: `Log Presensi Dihapus: ${recordId}`,
+      details: `Catatan presensi dengan ID ${recordId} telah dihapus dari sistem.`,
+    });
+  };
+
   // Handlers for Activity Archive
   const handleAddActivity = (newActivity) => {
     setActivities((prev) => [newActivity, ...prev]);
@@ -883,16 +933,18 @@ function App() {
   }, [financeTransactions]);
 
   // 9. Attendance List & Sessions
-  const [attendanceList, setAttendanceList] = useState(() =>
-    loadLocalData(STORAGE_KEYS.ATTENDANCE, defaultAttendanceList)
-  );
+  const [attendanceList, setAttendanceList] = useState(() => {
+    const loaded = loadLocalData(STORAGE_KEYS.ATTENDANCE, defaultAttendanceList);
+    return Array.isArray(loaded) ? loaded.filter((r) => !isDummyAttendanceRecord(r)) : [];
+  });
   useEffect(() => {
     saveLocalData(STORAGE_KEYS.ATTENDANCE, attendanceList);
   }, [attendanceList]);
 
-  const [attendanceSessions, setAttendanceSessions] = useState(() =>
-    loadLocalData(STORAGE_KEYS.ATTENDANCE_SESSIONS, defaultAttendanceSessions)
-  );
+  const [attendanceSessions, setAttendanceSessions] = useState(() => {
+    const loaded = loadLocalData(STORAGE_KEYS.ATTENDANCE_SESSIONS, defaultAttendanceSessions);
+    return Array.isArray(loaded) ? loaded.filter((s) => !isDummyAttendanceSession(s)) : [];
+  });
   useEffect(() => {
     saveLocalData(STORAGE_KEYS.ATTENDANCE_SESSIONS, attendanceSessions);
   }, [attendanceSessions]);
@@ -933,6 +985,11 @@ function App() {
       (cloudAccounts) => {
         if (Array.isArray(cloudAccounts) && cloudAccounts.length > 0) {
           setRegisteredAccounts(cloudAccounts);
+          try {
+            localStorage.setItem('teradesk_dev_accounts_v4', JSON.stringify(cloudAccounts));
+          } catch {
+            // ignore
+          }
         }
       },
       (err) => console.warn('⚠️ [Accounts Sync Error]:', err),
@@ -974,10 +1031,14 @@ function App() {
       if (Array.isArray(data) && data.length > 0) setFinanceTransactions(data);
     });
     const unsubAttendance = attendanceSync.subscribe((data) => {
-      if (Array.isArray(data)) setAttendanceList(data);
+      if (Array.isArray(data)) {
+        setAttendanceList(data.filter((r) => !isDummyAttendanceRecord(r)));
+      }
     });
     const unsubAttendanceSessions = attendanceSessionsSync.subscribe((data) => {
-      if (Array.isArray(data)) setAttendanceSessions(data);
+      if (Array.isArray(data)) {
+        setAttendanceSessions(data.filter((s) => !isDummyAttendanceSession(s)));
+      }
     });
     const unsubActivities = activitiesSync.subscribe((data) => {
       if (Array.isArray(data) && data.length > 0) setActivities(data);
@@ -1502,7 +1563,15 @@ function App() {
   };
 
   const handleDeleteAccount = (nim) => {
-    setRegisteredAccounts((prev) => prev.filter((acc) => acc.nim !== nim));
+    setRegisteredAccounts((prev) => {
+      const updated = prev.filter((acc) => String(acc.nim) !== String(nim));
+      try {
+        localStorage.setItem('teradesk_dev_accounts_v4', JSON.stringify(updated));
+      } catch {
+        // ignore
+      }
+      return updated;
+    });
     deleteAccountFromDb(nim);
     handleAddActivityLog({
       category: 'system',
@@ -1514,6 +1583,32 @@ function App() {
       moduleName: 'Manajemen Akun',
       event: `Hapus Akun: NIM ${nim}`,
       details: `Akun pengurus NIM ${nim} dihapus dari basis data sistem.`,
+    });
+  };
+
+  const handleDeleteBatchAccounts = (nims) => {
+    if (!Array.isArray(nims) || nims.length === 0) return;
+    const nimSet = new Set(nims.map(String));
+    setRegisteredAccounts((prev) => {
+      const updated = prev.filter((acc) => !nimSet.has(String(acc.nim)));
+      try {
+        localStorage.setItem('teradesk_dev_accounts_v4', JSON.stringify(updated));
+      } catch {
+        // ignore
+      }
+      return updated;
+    });
+    deleteAccountsBatchFromDb(nims);
+    handleAddActivityLog({
+      category: 'system',
+      type: 'warning',
+      userName: authUser?.name || 'Administrator',
+      userNim: authUser?.nim || '23404053',
+      userRole: authUser?.role || 'BPH',
+      userDivision: 'BPH',
+      moduleName: 'Manajemen Akun',
+      event: `Hapus Massal Akun (${nims.length} akun)`,
+      details: `${nims.length} akun mahasiswa pengurus telah dihapus dari basis data sistem.`,
     });
   };
 
@@ -1609,6 +1704,7 @@ function App() {
           onUpdateAccount={handleUpdateAccount}
           onUpdatePassword={handleUpdatePassword}
           onDeleteAccount={handleDeleteAccount}
+          onDeleteBatchAccounts={handleDeleteBatchAccounts}
           onResetAccounts={handleResetAccounts}
           onImpersonate={handleImpersonate}
           onForceDestroySession={handleLogout}
@@ -1652,6 +1748,8 @@ function App() {
           attendanceSessions={attendanceSessions}
           onAddAttendanceSession={handleAddAttendanceSession}
           onUpdateAttendanceSession={handleUpdateAttendanceSession}
+          onDeleteAttendanceSession={handleDeleteAttendanceSession}
+          onDeleteAttendanceRecord={handleDeleteAttendanceRecord}
           onOpenPublicAttendanceModal={(sessionId) => setActivePublicAttendanceId(sessionId || null)}
           moduleStatuses={moduleStatuses}
           onToggleModuleStatus={handleToggleModuleStatus}
@@ -1703,6 +1801,8 @@ function App() {
           attendanceSessions={attendanceSessions}
           onAddAttendanceSession={handleAddAttendanceSession}
           onUpdateAttendanceSession={handleUpdateAttendanceSession}
+          onDeleteAttendanceSession={handleDeleteAttendanceSession}
+          onDeleteAttendanceRecord={handleDeleteAttendanceRecord}
           onOpenPublicAttendanceModal={(sessionId) => setActivePublicAttendanceId(sessionId || null)}
           activities={activities}
           onAddActivity={handleAddActivity}

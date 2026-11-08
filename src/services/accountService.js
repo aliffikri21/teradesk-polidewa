@@ -49,28 +49,9 @@ export const subscribeAccounts = (onUpdate, onError, getLocalAccounts) => {
             onUpdate(seedList);
             return;
           }
-
-          // Kasus 2: Cloud sudah ada akun, periksa apakah ada akun lokal yang belum tersinkron ke cloud
-          if (localAccounts && localAccounts.length > 0) {
-            const cloudNimSet = new Set(cloudAccounts.map((a) => String(a.nim)));
-            const missingInCloud = localAccounts.filter((a) => !cloudNimSet.has(String(a.nim)));
-
-            if (missingInCloud.length > 0) {
-              for (const acc of missingInCloud) {
-                try {
-                  await setDoc(doc(db, COLLECTION_NAME, String(acc.nim)), acc, { merge: true });
-                  cloudAccounts.unshift(acc);
-                } catch (e) {
-                  console.warn('⚠️ [Firestore Accounts] Gagal sinkronkan akun lokal ke cloud:', e);
-                }
-              }
-            }
-          }
         }
 
-        if (cloudAccounts.length > 0) {
-          onUpdate(cloudAccounts);
-        }
+        onUpdate(cloudAccounts);
       },
       (error) => {
         console.warn('⚠️ [Firestore Accounts] Gagal berlangganan listener:', error);
@@ -145,6 +126,24 @@ export const deleteAccountFromDb = async (nim) => {
     await deleteDoc(doc(db, COLLECTION_NAME, String(nim)));
   } catch (error) {
     console.error('❌ [Firestore Accounts] Gagal menghapus akun di cloud:', error);
+  }
+};
+
+/**
+ * Menghapus sekumpulan akun sekaligus (batch delete) dari Firestore.
+ */
+export const deleteAccountsBatchFromDb = async (nims) => {
+  if (!isFirebaseConfigured || !db || !Array.isArray(nims) || nims.length === 0) return;
+
+  try {
+    const batch = writeBatch(db);
+    nims.forEach((nim) => {
+      const docRef = doc(db, COLLECTION_NAME, String(nim));
+      batch.delete(docRef);
+    });
+    await batch.commit();
+  } catch (error) {
+    console.error('❌ [Firestore Accounts] Gagal batch delete akun di cloud:', error);
   }
 };
 

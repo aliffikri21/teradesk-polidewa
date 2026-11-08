@@ -25,7 +25,12 @@ import {
   Copy,
   Check,
   Smartphone,
-  Compass
+  Compass,
+  Share2,
+  Pencil,
+  Trash2,
+  Lock,
+  RotateCcw
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import ServicePageLayout from './ServicePageLayout';
@@ -33,7 +38,11 @@ import {
   defaultAttendanceSessions,
   defaultAttendanceList,
 } from '../../data/defaultModulesData';
-import { OFFICIAL_DIVISIONS } from '../../data/defaultAccounts';
+import { OFFICIAL_DIVISIONS, isUserCoordinator } from '../../data/defaultAccounts';
+import {
+  isDummyAttendanceSession,
+  isDummyAttendanceRecord,
+} from '../../services/moduleSyncService';
 import { playNotificationChime } from '../../utils/notificationSound';
 import { PALOPO_LOCATION_PRESETS } from '../../utils/geoDistance';
 
@@ -50,16 +59,24 @@ const AttendanceServicePage = (props) => {
   const {
     attendanceList: propAttendance,
     onAddAttendanceRecord,
+    onDeleteAttendanceRecord,
     attendanceSessions: propSessions,
     onAddAttendanceSession,
     onUpdateAttendanceSession,
+    onDeleteAttendanceSession,
     authUser,
     onOpenPublicAttendanceModal,
   } = props;
 
   // State Sessions
-  const [localSessions, setLocalSessions] = useState(defaultAttendanceSessions);
-  const sessions = propSessions || localSessions;
+  const [localSessions, setLocalSessions] = useState(() =>
+    defaultAttendanceSessions.filter((s) => !isDummyAttendanceSession(s))
+  );
+  const rawSessions = propSessions || localSessions;
+  const sessions = useMemo(
+    () => (rawSessions || []).filter((s) => !isDummyAttendanceSession(s)),
+    [rawSessions]
+  );
 
   // Selected Session
   const [selectedSessionId, setSelectedSessionId] = useState(
@@ -76,8 +93,14 @@ const AttendanceServicePage = (props) => {
   }, [sessions, selectedSessionId]);
 
   // State Records
-  const [localAttendance, setLocalAttendance] = useState(defaultAttendanceList);
-  const allRecords = propAttendance || localAttendance;
+  const [localAttendance, setLocalAttendance] = useState(() =>
+    defaultAttendanceList.filter((r) => !isDummyAttendanceRecord(r))
+  );
+  const rawRecords = propAttendance || localAttendance;
+  const allRecords = useMemo(
+    () => (rawRecords || []).filter((r) => !isDummyAttendanceRecord(r)),
+    [rawRecords]
+  );
 
   // Filter records by selected session
   const sessionRecords = useMemo(() => {
@@ -201,6 +224,319 @@ const AttendanceServicePage = (props) => {
     }
   };
 
+  // Role Check: Hanya Koordinator Divisi, BPH, atau Eksekutif yang memiliki hak akses kelola sesi
+  const isCoordinator = useMemo(() => isUserCoordinator(authUser), [authUser]);
+
+  // Edit Session Modal State
+  const [isEditSessionModalOpen, setIsEditSessionModalOpen] = useState(false);
+  const [editSessionForm, setEditSessionForm] = useState({
+    id: '',
+    title: '',
+    division: OFFICIAL_DIVISIONS[0],
+    date: '08 November 2026',
+    timeStart: '14:00 WITA',
+    timeEnd: '16:30 WITA',
+    toleranceTime: '14:15 WITA',
+    location: '',
+    agenda: '',
+    locationPreset: 'custom',
+    lat: -2.9928,
+    lng: 120.1983,
+    locationName: '',
+    radiusMeters: 100,
+    isDetectingGps: false,
+  });
+
+  // Ambil Titik GPS Pembuat Rapat Saat Edit
+  const handleDetectEditGps = () => {
+    if (!navigator.geolocation) {
+      alert('Browser tidak mendukung Geolocation API.');
+      return;
+    }
+    setEditSessionForm((prev) => ({ ...prev, isDetectingGps: true }));
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = parseFloat(pos.coords.latitude.toFixed(6));
+        const lng = parseFloat(pos.coords.longitude.toFixed(6));
+        setEditSessionForm((prev) => ({
+          ...prev,
+          lat,
+          lng,
+          locationPreset: 'custom',
+          isDetectingGps: false,
+        }));
+      },
+      (err) => {
+        alert(`Gagal mengambil titik GPS: ${err.message || 'Izin lokasi belum diberikan.'}`);
+        setEditSessionForm((prev) => ({ ...prev, isDetectingGps: false }));
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  };
+
+  // Handle Preset Lokasi Saat Edit
+  const handleEditPresetChange = (presetId) => {
+    const found = PALOPO_LOCATION_PRESETS.find((p) => p.id === presetId);
+    if (found) {
+      setEditSessionForm((prev) => ({
+        ...prev,
+        locationPreset: presetId,
+        lat: found.lat,
+        lng: found.lng,
+        locationName: found.name,
+        location: found.name,
+        radiusMeters: found.defaultRadius,
+      }));
+    } else {
+      setEditSessionForm((prev) => ({
+        ...prev,
+        locationPreset: 'custom',
+      }));
+    }
+  };
+
+  // Buka Modal Edit Sesi
+  const handleOpenEditSessionModal = (s = currentSession) => {
+    if (!s) {
+      alert('Belum ada sesi rapat yang dapat diedit.');
+      return;
+    }
+    if (!isCoordinator) {
+      alert(
+        `Akses Ditolak: Hanya Koordinator Divisi atau BPH yang berhak mengedit data agenda rapat. Status akun Anda saat ini: "${authUser?.role || 'Anggota Biasa'}".`
+      );
+      return;
+    }
+
+    const coords = s.coordinates || {
+      lat: -2.9928,
+      lng: 120.1983,
+      locationName: s.location || 'Politeknik Dewantara Palopo',
+      radiusMeters: 100,
+    };
+
+    setEditSessionForm({
+      id: s.id,
+      title: s.title || '',
+      division: s.division || OFFICIAL_DIVISIONS[0],
+      date: s.date || '08 November 2026',
+      timeStart: s.timeStart || '14:00 WITA',
+      timeEnd: s.timeEnd || '16:30 WITA',
+      toleranceTime: s.toleranceTime || '14:15 WITA',
+      location: s.location || '',
+      agenda: s.agenda || '',
+      locationPreset: 'custom',
+      lat: coords.lat,
+      lng: coords.lng,
+      locationName: coords.locationName || s.location || '',
+      radiusMeters: coords.radiusMeters || 100,
+      isDetectingGps: false,
+    });
+    setIsEditSessionModalOpen(true);
+  };
+
+  // Simpan Perubahan Sesi Rapat
+  const handleSaveEditSession = (e) => {
+    e.preventDefault();
+    if (!editSessionForm.title.trim()) {
+      alert('Judul agenda rapat wajib diisi.');
+      return;
+    }
+
+    const targetSession = sessions.find((s) => s.id === editSessionForm.id) || currentSession;
+    if (!targetSession) return;
+
+    const updatedSession = {
+      ...targetSession,
+      title: editSessionForm.title.trim(),
+      division: editSessionForm.division,
+      date: editSessionForm.date,
+      timeStart: editSessionForm.timeStart,
+      timeEnd: editSessionForm.timeEnd,
+      toleranceTime: editSessionForm.toleranceTime,
+      location: editSessionForm.location.trim(),
+      agenda: editSessionForm.agenda.trim(),
+      coordinates: {
+        ...(targetSession.coordinates || {}),
+        locationName: editSessionForm.locationName.trim() || editSessionForm.location.trim(),
+        lat: Number(editSessionForm.lat) || -2.9928,
+        lng: Number(editSessionForm.lng) || 120.1983,
+        radiusMeters: Number(editSessionForm.radiusMeters) || 100,
+      },
+    };
+
+    if (onUpdateAttendanceSession) {
+      onUpdateAttendanceSession(updatedSession);
+    } else {
+      setLocalSessions((prev) =>
+        prev.map((item) => (item.id === updatedSession.id ? updatedSession : item))
+      );
+    }
+
+    setIsEditSessionModalOpen(false);
+    playNotificationChime();
+    setCheckinSuccess(`Perubahan agenda rapat "${updatedSession.title}" berhasil disimpan!`);
+    setTimeout(() => setCheckinSuccess(''), 5000);
+  };
+
+  // Hapus Agenda Rapat
+  const handleDeleteSession = (sessionId = currentSession?.id) => {
+    if (!sessionId) {
+      alert('Belum ada sesi rapat yang dapat dihapus.');
+      return;
+    }
+    if (!isCoordinator) {
+      alert(
+        `Akses Ditolak: Hanya Koordinator Divisi atau BPH yang berhak menghapus agenda rapat. Status akun Anda saat ini: "${authUser?.role || 'Anggota Biasa'}".`
+      );
+      return;
+    }
+
+    const target = sessions.find((s) => s.id === sessionId);
+    const targetTitle = target?.title || sessionId;
+
+    if (!window.confirm(`PERINGATAN: Apakah Anda yakin ingin menghapus agenda rapat "${targetTitle}"? Sesi akan dihapus permanen dari sistem.`)) {
+      return;
+    }
+
+    if (onDeleteAttendanceSession) {
+      onDeleteAttendanceSession(sessionId);
+    } else {
+      setLocalSessions((prev) => prev.filter((s) => s.id !== sessionId));
+    }
+
+    const remaining = sessions.filter((s) => s.id !== sessionId);
+    setSelectedSessionId(remaining[0]?.id || '');
+    playNotificationChime();
+    setCheckinSuccess(`Agenda rapat "${targetTitle}" berhasil dihapus.`);
+    setTimeout(() => setCheckinSuccess(''), 5000);
+  };
+
+  // Hapus Catatan Kehadiran Individu (Khusus Koordinator Divisi)
+  const handleDeleteSingleRecord = (recordId, attendeeName) => {
+    if (!isCoordinator) {
+      alert('Akses Ditolak: Hanya Koordinator Divisi atau BPH yang berhak menghapus data presensi.');
+      return;
+    }
+    if (!window.confirm(`Hapus catatan kehadiran "${attendeeName || 'Pengurus'}" dari agenda rapat ini?`)) {
+      return;
+    }
+    if (onDeleteAttendanceRecord) {
+      onDeleteAttendanceRecord(recordId);
+    } else {
+      setLocalAttendance((prev) => prev.filter((r) => r.id !== recordId));
+    }
+    playNotificationChime();
+    setCheckinSuccess(`Catatan kehadiran "${attendeeName || 'Pengurus'}" berhasil dihapus.`);
+    setTimeout(() => setCheckinSuccess(''), 4500);
+  };
+
+  // Selesaikan / Arsipkan Agenda Rapat (Khusus Koordinator Divisi)
+  const handleToggleCompleteSession = (sessionToToggle = currentSession) => {
+    const s = sessionToToggle || currentSession;
+    if (!s) {
+      alert('Belum ada sesi rapat yang aktif.');
+      return;
+    }
+
+    if (!isCoordinator) {
+      alert(
+        `Akses Ditolak: Fitur menyelesaikan/mengarsipkan rapat hanya dapat dilakukan oleh Koordinator Divisi atau BPH. Akun Anda terdaftar sebagai "${authUser?.role || 'Anggota Biasa'}".`
+      );
+      return;
+    }
+
+    const isCurrentlyActive = s.status === 'active';
+    const confirmMsg = isCurrentlyActive
+      ? `Apakah Anda yakin ingin menyelesaikan agenda rapat "${s.title}"? Sesi presensi QR akan ditutup dan status diubah menjadi selesai & diarsipkan.`
+      : `Buka kembali sesi rapat "${s.title}" sebagai agenda aktif?`;
+
+    if (!window.confirm(confirmMsg)) return;
+
+    const now = new Date();
+    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')} WITA`;
+
+    const updatedSession = {
+      ...s,
+      status: isCurrentlyActive ? 'completed' : 'active',
+      timeEnd: isCurrentlyActive ? timeStr : s.timeEnd,
+      completedAt: isCurrentlyActive ? new Date().toISOString() : null,
+      completedBy: isCurrentlyActive
+        ? {
+            name: authUser?.name || 'Koordinator Divisi',
+            nim: authUser?.nim || '-',
+            role: authUser?.role || 'Koordinator Divisi',
+          }
+        : null,
+    };
+
+    if (onUpdateAttendanceSession) {
+      onUpdateAttendanceSession(updatedSession);
+    } else {
+      setLocalSessions((prev) =>
+        prev.map((item) => (item.id === updatedSession.id ? updatedSession : item))
+      );
+    }
+
+    playNotificationChime();
+    setCheckinSuccess(
+      isCurrentlyActive
+        ? `Agenda rapat "${s.title}" berhasil diselesaikan & diarsipkan oleh Koordinator Divisi (${authUser?.name || 'Koordinator'}).`
+        : `Agenda rapat "${s.title}" berhasil diaktifkan kembali!`
+    );
+    setTimeout(() => setCheckinSuccess(''), 5000);
+  };
+
+  // Bagikan Undangan Rapat ke WhatsApp
+  const handleShareWhatsApp = (targetSession = currentSession) => {
+    const s = targetSession || currentSession;
+    if (!s) {
+      alert('Belum ada sesi rapat yang dapat dibagikan.');
+      return;
+    }
+
+    const sessionCoords = s.coordinates || {
+      locationName: s.location || 'Lapangan Pancasila Palopo',
+      radiusMeters: 100,
+    };
+
+    const attendancePublicUrl = typeof window !== 'undefined'
+      ? `${window.location.origin}${window.location.pathname}?presensi=${s.id}&token=${s.qrToken}`
+      : `https://teradesk.politeknikdewantara.ac.id/?presensi=${s.id}&token=${s.qrToken}`;
+
+    const message = [
+      `📢 *UNDANGAN PRESENSI RAPAT TERAMEDIA*`,
+      `━━━━━━━━━━━━━━━━━━━━━━`,
+      `📌 *Agenda:* ${s.title}`,
+      `🏢 *Divisi:* ${s.division}`,
+      `📅 *Hari/Tanggal:* ${s.date}`,
+      `⏰ *Waktu:* ${s.timeStart} - ${s.timeEnd} (WITA)`,
+      `⏳ *Toleransi Presensi:* Hingga ${s.toleranceTime} WITA`,
+      `📍 *Lokasi Rapat:* ${s.location}`,
+      `📡 *Titik Geofence:* ${sessionCoords.locationName} (Radius Maks. ${sessionCoords.radiusMeters || 100}m)`,
+      `🔢 *PIN Proyektor:* ${s.pinCode}`,
+      `━━━━━━━━━━━━━━━━━━━━━━`,
+      `📲 *Tautan Presensi Mandiri Smartphone:*`,
+      `${attendancePublicUrl}`,
+      `━━━━━━━━━━━━━━━━━━━━━━`,
+      `👤 *Dibuat Oleh:* ${s.createdBy?.name || s.organizer || 'Pengurus'} (NIM: ${s.createdBy?.nim || '23404053'})`,
+      `⚠️ _Presensi diverifikasi otomatis dengan radius GPS pembuat rapat. Harap hadir tepat waktu._`
+    ].join('\n');
+
+    try {
+      navigator.clipboard.writeText(message);
+    } catch {
+      // ignore
+    }
+
+    playNotificationChime();
+    setCheckinSuccess('Teks undangan WhatsApp berhasil disalin ke clipboard!');
+    setTimeout(() => setCheckinSuccess(''), 4500);
+
+    const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+    window.open(waUrl, '_blank');
+  };
+
   // New Notula Decision & Action Item Form States
   const [newDecisionInput, setNewDecisionInput] = useState('');
   const [isAddActionItemOpen, setIsAddActionItemOpen] = useState(false);
@@ -286,7 +622,7 @@ const AttendanceServicePage = (props) => {
       : 'Tepat Waktu';
 
     const newRecord = {
-      id: `ATT-${Date.now().toString().slice(-4)}`,
+      id: `REC-${Date.now().toString().slice(-6)}-${Math.floor(100 + Math.random() * 900)}`,
       sessionId: currentSession.id,
       name: user.name,
       nim: user.nim || '23404053',
@@ -364,7 +700,7 @@ const AttendanceServicePage = (props) => {
     const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')} WITA`;
 
     const newRecord = {
-      id: `ATT-${Date.now().toString().slice(-4)}`,
+      id: `REC-${Date.now().toString().slice(-6)}-${Math.floor(100 + Math.random() * 900)}`,
       sessionId: currentSession.id,
       name: user.name,
       nim: user.nim || '23404053',
@@ -392,6 +728,12 @@ const AttendanceServicePage = (props) => {
   // Create New Meeting Session
   const handleCreateSession = (e) => {
     e.preventDefault();
+    if (!isCoordinator) {
+      alert(
+        `Akses Ditolak: Hanya Koordinator Divisi atau BPH yang berhak membuat agenda rapat baru. Status akun Anda saat ini: "${authUser?.role || 'Anggota Biasa'}".`
+      );
+      return;
+    }
     if (!newSessionForm.title.trim()) {
       alert('Judul rapat / agenda wajib diisi.');
       return;
@@ -401,7 +743,7 @@ const AttendanceServicePage = (props) => {
     const randomPin = `${Math.floor(100000 + Math.random() * 900000)}`;
 
     const newSession = {
-      id: `SES-2026-00${sessions.length + 1}`,
+      id: `SES-2026-${Date.now().toString().slice(-5)}`,
       title: newSessionForm.title,
       division: newSessionForm.division,
       date: newSessionForm.date,
@@ -795,11 +1137,122 @@ const AttendanceServicePage = (props) => {
 
           {/* Action buttons */}
           <div className="flex items-center gap-2 flex-wrap">
+            {currentSession && (
+              <button
+                type="button"
+                onClick={() => handleShareWhatsApp(currentSession)}
+                className="flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-xs cursor-pointer"
+                title="Bagikan undangan dan link presensi ke WhatsApp"
+              >
+                <Share2 size={14} />
+                <span>Bagikan WA</span>
+              </button>
+            )}
+
+            {currentSession && (
+              <button
+                type="button"
+                onClick={() => handleToggleCompleteSession(currentSession)}
+                className={`flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer border ${
+                  currentSession.status === 'active'
+                    ? isCoordinator
+                      ? 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-200'
+                      : 'bg-slate-100 text-slate-400 border-slate-200 hover:bg-slate-100'
+                    : isCoordinator
+                    ? 'bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200'
+                    : 'bg-slate-100 text-slate-400 border-slate-200 hover:bg-slate-100'
+                }`}
+                title={
+                  isCoordinator
+                    ? currentSession.status === 'active'
+                      ? 'Tandai agenda rapat ini selesai dan arsipkan'
+                      : 'Buka kembali agenda rapat'
+                    : 'Akses Ditolak: Fitur selesaikan agenda rapat hanya dapat dilakukan oleh Koordinator Divisi'
+                }
+              >
+                {currentSession.status === 'active' ? (
+                  <>
+                    {isCoordinator ? (
+                      <CheckCircle2 size={14} className="text-rose-600" />
+                    ) : (
+                      <Lock size={14} className="text-slate-400" />
+                    )}
+                    <span>Selesaikan Rapat</span>
+                  </>
+                ) : (
+                  <>
+                    {isCoordinator ? (
+                      <RotateCcw size={14} className="text-blue-600" />
+                    ) : (
+                      <Lock size={14} className="text-slate-400" />
+                    )}
+                    <span>Buka Sesi</span>
+                  </>
+                )}
+              </button>
+            )}
+
+            {currentSession && (
+              <button
+                type="button"
+                onClick={() => handleOpenEditSessionModal(currentSession)}
+                className={`flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer border ${
+                  isCoordinator
+                    ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
+                    : 'bg-slate-100 text-slate-400 border-slate-200 hover:bg-slate-100'
+                }`}
+                title={
+                  isCoordinator
+                    ? 'Edit rincian sesi rapat (waktu, lokasi, radius GPS)'
+                    : 'Akses Ditolak: Hanya Koordinator Divisi yang berhak mengedit agenda rapat'
+                }
+              >
+                <Pencil size={13} />
+                <span>Edit</span>
+              </button>
+            )}
+
+            {currentSession && (
+              <button
+                type="button"
+                onClick={() => handleDeleteSession(currentSession.id)}
+                className={`p-2 text-xs font-bold rounded-xl transition-all cursor-pointer border ${
+                  isCoordinator
+                    ? 'bg-rose-50 hover:bg-rose-100 text-rose-600 border-rose-200'
+                    : 'bg-slate-100 text-slate-400 border-slate-200 hover:bg-slate-100'
+                }`}
+                title={
+                  isCoordinator
+                    ? 'Hapus agenda rapat ini'
+                    : 'Akses Ditolak: Hanya Koordinator Divisi yang berhak menghapus agenda rapat'
+                }
+              >
+                <Trash2 size={14} />
+              </button>
+            )}
+
             <button
-              onClick={() => setIsNewSessionModalOpen(true)}
-              className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors cursor-pointer"
+              onClick={() => {
+                if (!isCoordinator) {
+                  alert(
+                    `Akses Ditolak: Hanya Koordinator Divisi atau BPH yang berhak membuat agenda rapat baru. Status akun Anda saat ini: "${authUser?.role || 'Anggota Biasa'}".`
+                  );
+                  return;
+                }
+                setIsNewSessionModalOpen(true);
+              }}
+              className={`flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl transition-colors cursor-pointer border ${
+                isCoordinator
+                  ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
+                  : 'bg-slate-100 text-slate-400 border-slate-200 hover:bg-slate-100 cursor-not-allowed opacity-80'
+              }`}
+              title={
+                isCoordinator
+                  ? 'Buat Agenda Rapat Baru'
+                  : 'Akses Ditolak: Hanya Koordinator Divisi atau BPH yang berhak membuat agenda rapat'
+              }
             >
-              <Plus size={15} />
+              {isCoordinator ? <Plus size={15} /> : <Lock size={14} className="text-slate-400" />}
               <span>Buat Sesi Baru</span>
             </button>
             <button
@@ -962,13 +1415,20 @@ const AttendanceServicePage = (props) => {
               <p className="text-xs text-slate-500 max-w-md mx-auto mb-6 leading-relaxed">
                 Semua data dummy acara rapat telah dibersihkan. Anda dapat membuat sesi rapat baru untuk mengaktifkan kode QR presensi mandiri dan radius GPS pembuat rapat.
               </p>
-              <button
-                onClick={() => setIsNewSessionModalOpen(true)}
-                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition-all shadow-xs cursor-pointer"
-              >
-                <Plus size={16} />
-                <span>Buat Sesi Rapat Baru</span>
-              </button>
+              {isCoordinator ? (
+                <button
+                  onClick={() => setIsNewSessionModalOpen(true)}
+                  className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition-all shadow-xs cursor-pointer"
+                >
+                  <Plus size={16} />
+                  <span>Buat Sesi Rapat Baru</span>
+                </button>
+              ) : (
+                <div className="inline-flex items-center gap-2 bg-slate-100 text-slate-500 font-semibold px-4 py-2 rounded-xl text-xs border border-slate-200">
+                  <Lock size={14} className="text-slate-400" />
+                  <span>Pembuatan agenda rapat dibatasi khusus Koordinator Divisi & BPH</span>
+                </div>
+              )}
             </div>
           );
         }
@@ -1044,6 +1504,16 @@ const AttendanceServicePage = (props) => {
 
               {/* Action Buttons */}
               <div className="flex flex-wrap items-center justify-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => handleShareWhatsApp(currentSession)}
+                  className="flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
+                  title="Bagikan undangan rapat dan link presensi langsung ke WhatsApp"
+                >
+                  <Share2 size={14} />
+                  <span>Bagikan ke WhatsApp</span>
+                </button>
+
                 <button
                   type="button"
                   onClick={handleCopyQrLink}
@@ -1361,6 +1831,78 @@ const AttendanceServicePage = (props) => {
                             </span>
                           </div>
 
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => handleShareWhatsApp(sess)}
+                              className="p-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl transition-colors cursor-pointer text-xs font-bold flex items-center gap-1"
+                              title="Bagikan undangan rapat ke WhatsApp"
+                            >
+                              <Share2 size={13} />
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleToggleCompleteSession(sess)}
+                              className={`p-2 rounded-xl transition-colors cursor-pointer text-xs font-bold border flex items-center gap-1 ${
+                                sess.status === 'active'
+                                  ? isCoordinator
+                                    ? 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-200'
+                                    : 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
+                                  : isCoordinator
+                                  ? 'bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200'
+                                  : 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
+                              }`}
+                              title={
+                                isCoordinator
+                                  ? sess.status === 'active'
+                                    ? 'Selesaikan & Arsipkan Rapat'
+                                    : 'Buka Kembali Sesi'
+                                  : 'Akses Ditolak: Hanya Koordinator Divisi yang berhak menyelesaikan rapat'
+                              }
+                            >
+                              {sess.status === 'active' ? (
+                                isCoordinator ? <CheckCircle2 size={13} className="text-rose-600" /> : <Lock size={13} className="text-slate-400" />
+                              ) : (
+                                isCoordinator ? <RotateCcw size={13} className="text-blue-600" /> : <Lock size={13} className="text-slate-400" />
+                              )}
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEditSessionModal(sess)}
+                              className={`p-2 rounded-xl transition-colors cursor-pointer text-xs font-bold border flex items-center gap-1 ${
+                                isCoordinator
+                                  ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
+                                  : 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
+                              }`}
+                              title={
+                                isCoordinator
+                                  ? 'Edit Agenda Rapat'
+                                  : 'Akses Ditolak: Hanya Koordinator Divisi yang berhak mengedit agenda rapat'
+                              }
+                            >
+                              <Pencil size={13} />
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteSession(sess.id)}
+                              className={`p-2 rounded-xl transition-colors cursor-pointer text-xs font-bold border flex items-center gap-1 ${
+                                isCoordinator
+                                  ? 'bg-rose-50 hover:bg-rose-100 text-rose-600 border-rose-200'
+                                  : 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
+                              }`}
+                              title={
+                                isCoordinator
+                                  ? 'Hapus Agenda Rapat'
+                                  : 'Akses Ditolak: Hanya Koordinator Divisi yang berhak menghapus agenda rapat'
+                              }
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+
                           <button
                             type="button"
                             onClick={() => toggleSessionCollapse(sess.id)}
@@ -1386,12 +1928,13 @@ const AttendanceServicePage = (props) => {
                               <th className="py-3.5 px-6">Metode & Jarak GPS</th>
                               <th className="py-3.5 px-6">Status Kehadiran</th>
                               <th className="py-3.5 px-6">Catatan</th>
+                              {isCoordinator && <th className="py-3.5 px-6 text-right">Aksi</th>}
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-100">
                             {records.length === 0 ? (
                               <tr>
-                                <td colSpan={6} className="py-8 text-center text-slate-400">
+                                <td colSpan={isCoordinator ? 7 : 6} className="py-8 text-center text-slate-400">
                                   <p className="font-semibold text-slate-600">Belum ada data presensi yang sesuai untuk agenda ini</p>
                                   <p className="text-[11px] text-slate-400 mt-0.5">Peserta belum mencatatkan kehadiran atau tidak cocok dengan filter pencarian.</p>
                                 </td>
@@ -1442,6 +1985,18 @@ const AttendanceServicePage = (props) => {
                                     <td className="py-3.5 px-6 text-slate-500 max-w-xs truncate">
                                       {item.note || '-'}
                                     </td>
+                                    {isCoordinator && (
+                                      <td className="py-3.5 px-6 text-right">
+                                        <button
+                                          type="button"
+                                          onClick={() => handleDeleteSingleRecord(item.id, item.name)}
+                                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                                          title={`Hapus catatan presensi ${item.name}`}
+                                        >
+                                          <Trash2 size={14} />
+                                        </button>
+                                      </td>
+                                    )}
                                   </tr>
                                 );
                               })
@@ -1475,13 +2030,20 @@ const AttendanceServicePage = (props) => {
             <p className="text-xs text-slate-500 max-w-md mx-auto mb-6 leading-relaxed">
               Notula dan action items akan otomatis tersedia setelah Anda membuat agenda rapat baru.
             </p>
-            <button
-              onClick={() => setIsNewSessionModalOpen(true)}
-              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition-all shadow-xs cursor-pointer"
-            >
-              <Plus size={16} />
-              <span>Buat Sesi Rapat Baru</span>
-            </button>
+            {isCoordinator ? (
+              <button
+                onClick={() => setIsNewSessionModalOpen(true)}
+                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition-all shadow-xs cursor-pointer"
+              >
+                <Plus size={16} />
+                <span>Buat Sesi Rapat Baru</span>
+              </button>
+            ) : (
+              <div className="inline-flex items-center gap-2 bg-slate-100 text-slate-500 font-semibold px-4 py-2 rounded-xl text-xs border border-slate-200">
+                <Lock size={14} className="text-slate-400" />
+                <span>Pembuatan agenda rapat dibatasi khusus Koordinator Divisi & BPH</span>
+              </div>
+            )}
           </div>
         ) : (
           <div className="space-y-8">
@@ -1951,8 +2513,8 @@ const AttendanceServicePage = (props) => {
             </button>
 
             <div className="mb-5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200">
-                Agenda Musyawarah
+              <span className="text-[10px] font-bold uppercase tracking-wider text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200">
+                Otoritas: Koordinator Divisi & BPH
               </span>
               <h3 className="text-lg font-bold text-slate-900 mt-2">
                 Buat Sesi Rapat & Presensi Baru
@@ -1965,8 +2527,9 @@ const AttendanceServicePage = (props) => {
             {/* Creator Information Badge */}
             <div className="mb-4 p-3 bg-purple-50 border border-purple-200/80 rounded-xl text-xs text-purple-900 flex items-center justify-between">
               <div>
-                <span className="text-[10px] text-purple-600 font-bold block uppercase tracking-wider">Pembuat Agenda:</span>
+                <span className="text-[10px] text-purple-600 font-bold block uppercase tracking-wider">Pembuat Agenda (Koordinator / BPH):</span>
                 <span className="font-bold text-slate-900">{authUser?.name || 'Alif Fikri Haykal'}</span>
+                <span className="text-[10px] text-purple-700 block font-medium">({authUser?.role || 'Koordinator Divisi'})</span>
               </div>
               <span className="font-mono text-purple-700 bg-white px-2 py-0.5 rounded border border-purple-200 text-[11px] font-bold">
                 NIM: {authUser?.nim || '23404053'}
@@ -2170,6 +2733,252 @@ const AttendanceServicePage = (props) => {
                 <Plus size={16} />
                 <span>Terbitkan & Buka Sesi Rapat</span>
               </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          MODAL: EDIT DATA AGENDA RAPAT (KHUSUS KOORDINATOR DIVISI)
+          ========================================================================= */}
+      {isEditSessionModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl relative animate-in fade-in zoom-in-95 max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => setIsEditSessionModalOpen(false)}
+              className="absolute right-5 top-5 text-slate-400 hover:text-slate-600 transition-colors"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="mb-5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200">
+                Akses Koordinator Divisi
+              </span>
+              <h3 className="text-lg font-bold text-slate-900 mt-2">
+                Edit Agenda Rapat & Sesi Presensi
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                Perbarui detail jadwal, ruangan, atau radius geofence kehadiran pengurus.
+              </p>
+            </div>
+
+            <form onSubmit={handleSaveEditSession} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Judul Rapat / Agenda Pertemuan:
+                </label>
+                <input
+                  required
+                  type="text"
+                  value={editSessionForm.title}
+                  onChange={(e) => setEditSessionForm({ ...editSessionForm, title: e.target.value })}
+                  placeholder="Contoh: Rapat Koordinasi Panitia Dies Natalis 2026"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Divisi Penanggung Jawab:
+                  </label>
+                  <select
+                    value={editSessionForm.division}
+                    onChange={(e) => setEditSessionForm({ ...editSessionForm, division: e.target.value })}
+                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer"
+                  >
+                    {OFFICIAL_DIVISIONS.map((div) => (
+                      <option key={div} value={div}>
+                        {div}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Tanggal Pelaksanaan:
+                  </label>
+                  <input
+                    type="text"
+                    value={editSessionForm.date}
+                    onChange={(e) => setEditSessionForm({ ...editSessionForm, date: e.target.value })}
+                    placeholder="Contoh: 08 November 2026"
+                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Jam Mulai (WITA):
+                  </label>
+                  <input
+                    type="text"
+                    value={editSessionForm.timeStart}
+                    onChange={(e) => setEditSessionForm({ ...editSessionForm, timeStart: e.target.value })}
+                    placeholder="14:00 WITA"
+                    className="w-full px-2.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Jam Selesai (WITA):
+                  </label>
+                  <input
+                    type="text"
+                    value={editSessionForm.timeEnd}
+                    onChange={(e) => setEditSessionForm({ ...editSessionForm, timeEnd: e.target.value })}
+                    placeholder="16:30 WITA"
+                    className="w-full px-2.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Batas Toleransi:
+                  </label>
+                  <input
+                    type="text"
+                    value={editSessionForm.toleranceTime}
+                    onChange={(e) => setEditSessionForm({ ...editSessionForm, toleranceTime: e.target.value })}
+                    placeholder="14:15 WITA"
+                    className="w-full px-2.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono text-emerald-700 font-bold"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Lokasi / Ruangan Rapat:
+                </label>
+                <input
+                  type="text"
+                  value={editSessionForm.location}
+                  onChange={(e) =>
+                    setEditSessionForm({
+                      ...editSessionForm,
+                      location: e.target.value,
+                      locationName: e.target.value,
+                    })
+                  }
+                  placeholder="Contoh: Lapangan Pancasila Palopo (Area Gazebo Teramedia)"
+                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+
+              {/* Anchor Geofence GPS Pembuat Rapat */}
+              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                    <Radio size={14} className="text-purple-600" />
+                    <span>Titik Geofence Pembuat Rapat (Anchor GPS)</span>
+                  </span>
+                  <span className="text-[10px] text-purple-700 bg-purple-50 px-2 py-0.5 rounded font-bold border border-purple-200">
+                    ID Sesi: {editSessionForm.id}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                      Pilihan Preset Lokasi:
+                    </label>
+                    <select
+                      value={editSessionForm.locationPreset}
+                      onChange={(e) => handleEditPresetChange(e.target.value)}
+                      className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer"
+                    >
+                      {PALOPO_LOCATION_PRESETS.map((pr) => (
+                        <option key={pr.id} value={pr.id}>
+                          {pr.name}
+                        </option>
+                      ))}
+                      <option value="custom">Koordinat Custom / GPS Saya</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                      Radius Izin Kehadiran:
+                    </label>
+                    <select
+                      value={editSessionForm.radiusMeters}
+                      onChange={(e) =>
+                        setEditSessionForm({
+                          ...editSessionForm,
+                          radiusMeters: Number(e.target.value),
+                        })
+                      }
+                      className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer font-bold"
+                    >
+                      <option value={50}>50 Meter (Ruang Rapat / Sekre)</option>
+                      <option value={100}>100 Meter (Area Lapangan Pancasila)</option>
+                      <option value={200}>200 Meter (Area Kampus Dewantara)</option>
+                      <option value={500}>500 Meter (Lingkar Luar Kampus)</option>
+                      <option value={0}>0 Meter (Tanpa Batas Radius / Online)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={handleDetectEditGps}
+                    disabled={editSessionForm.isDetectingGps}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-[11px] font-bold transition-all cursor-pointer shadow-xs disabled:opacity-50"
+                  >
+                    <Compass size={13} className={editSessionForm.isDetectingGps ? 'animate-spin' : ''} />
+                    <span>{editSessionForm.isDetectingGps ? 'Mendeteksi...' : 'Deteksi GPS Saya Sekarang'}</span>
+                  </button>
+                  <span className="text-[10px] font-mono text-slate-500 bg-white px-2 py-1 rounded border border-slate-200">
+                    Lat: {editSessionForm.lat}, Lng: {editSessionForm.lng}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Deskripsi Agenda Pembahasan:
+                </label>
+                <textarea
+                  rows={2}
+                  value={editSessionForm.agenda}
+                  onChange={(e) => setEditSessionForm({ ...editSessionForm, agenda: e.target.value })}
+                  placeholder="Poin-poin garis besar yang akan dibahas..."
+                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+
+              <div className="flex items-center justify-between gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => handleDeleteSession(editSessionForm.id)}
+                  className="px-4 py-2.5 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
+                >
+                  <Trash2 size={14} />
+                  <span>Hapus Agenda</span>
+                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsEditSessionModalOpen(false)}
+                    className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 text-xs font-bold transition-colors cursor-pointer"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-colors cursor-pointer shadow-xs flex items-center gap-1.5"
+                  >
+                    <CheckCircle2 size={15} />
+                    <span>Simpan Perubahan</span>
+                  </button>
+                </div>
+              </div>
             </form>
           </div>
         </div>

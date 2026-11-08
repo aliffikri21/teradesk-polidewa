@@ -23,6 +23,7 @@ import {
   ArrowLeft,
   Check,
   Copy,
+  Share2,
   Trash2,
   Edit2,
   KeyRound,
@@ -73,6 +74,10 @@ import {
   defaultAttendanceSessions,
   defaultAttendanceList,
 } from '../../data/defaultModulesData';
+import {
+  isDummyAttendanceSession,
+  isDummyAttendanceRecord,
+} from '../../services/moduleSyncService';
 
 const divisionsList = [
   'Semua Divisi',
@@ -215,6 +220,7 @@ const AdminDashboardPage = ({
   onUpdateAccount,
   onUpdatePassword,
   onDeleteAccount,
+  onDeleteBatchAccounts,
   onResetAccounts,
   onImpersonate,
   onForceDestroySession,
@@ -254,6 +260,8 @@ const AdminDashboardPage = ({
   attendanceSessions: propAttendanceSessions,
   onAddAttendanceSession: _propOnAddAttendanceSession,
   onUpdateAttendanceSession: propOnUpdateAttendanceSession,
+  onDeleteAttendanceSession: propOnDeleteAttendanceSession,
+  onDeleteAttendanceRecord: propOnDeleteAttendanceRecord,
   moduleStatuses: propModuleStatuses,
   onToggleModuleStatus: propOnToggleModuleStatus,
   onOpenPublicAttendanceModal,
@@ -359,8 +367,16 @@ const AdminDashboardPage = ({
   const [prokerFormSuccess, setProkerFormSuccess] = useState('');
 
   // Attendance Module State for Executive Admin Tab
-  const adminAttendanceList = propAttendanceList || defaultAttendanceList;
-  const adminAttendanceSessions = propAttendanceSessions || defaultAttendanceSessions;
+  const rawAdminAttendanceList = propAttendanceList || defaultAttendanceList;
+  const adminAttendanceList = useMemo(
+    () => (rawAdminAttendanceList || []).filter((r) => !isDummyAttendanceRecord(r)),
+    [rawAdminAttendanceList]
+  );
+  const rawAdminAttendanceSessions = propAttendanceSessions || defaultAttendanceSessions;
+  const adminAttendanceSessions = useMemo(
+    () => (rawAdminAttendanceSessions || []).filter((s) => !isDummyAttendanceSession(s)),
+    [rawAdminAttendanceSessions]
+  );
   const [selectedAdminSessionId, setSelectedAdminSessionId] = useState(
     () => adminAttendanceSessions.find((s) => s.status === 'active')?.id || adminAttendanceSessions[0]?.id || ''
   );
@@ -387,6 +403,32 @@ const AdminDashboardPage = ({
       ? `Agenda rapat "${sessionToToggle.title}" resmi diselesaikan & diarsipkan`
       : `Agenda rapat "${sessionToToggle.title}" diaktifkan kembali`;
     addLog(actionLabel, isCurrentlyActive ? 'success' : 'info');
+    playNotificationChime();
+  };
+
+  const handleDeleteMeetingSession = (sessionToDelete) => {
+    const s = sessionToDelete || activeAttendanceSession;
+    if (!s) return;
+    if (!window.confirm(`PERINGATAN: Apakah Anda yakin ingin menghapus acara rapat "${s.title}"? Seluruh riwayat presensi terkait akan dihapus permanen dari sistem.`)) {
+      return;
+    }
+    if (propOnDeleteAttendanceSession) {
+      propOnDeleteAttendanceSession(s.id);
+    }
+    const remaining = adminAttendanceSessions.filter((item) => item.id !== s.id);
+    setSelectedAdminSessionId(remaining[0]?.id || '');
+    addLog(`Acara rapat "${s.title}" (ID: ${s.id}) berhasil dihapus permanen`, 'warning');
+    playNotificationChime();
+  };
+
+  const handleDeleteAdminRecord = (recordId, attendeeName) => {
+    if (!window.confirm(`Hapus catatan kehadiran "${attendeeName || 'Pengurus'}" dari agenda rapat ini?`)) {
+      return;
+    }
+    if (propOnDeleteAttendanceRecord) {
+      propOnDeleteAttendanceRecord(recordId);
+    }
+    addLog(`Catatan kehadiran "${attendeeName || 'Pengurus'}" berhasil dihapus`, 'warning');
     playNotificationChime();
   };
 
@@ -440,7 +482,7 @@ const AdminDashboardPage = ({
   const [formNim, setFormNim] = useState('');
   const [formName, setFormName] = useState('');
   const [formDivision, setFormDivision] = useState('Divisi Kesekretariatan');
-  const [formRole, setFormRole] = useState('Anggota Aktif');
+  const [formRole, setFormRole] = useState('Anggota Biasa');
   const [formPassword, setFormPassword] = useState('password123');
   const [formCanAccessAdmin, setFormCanAccessAdmin] = useState(false);
   const [formError, setFormError] = useState('');
@@ -452,7 +494,7 @@ const AdminDashboardPage = ({
   const [editFormNim, setEditFormNim] = useState('');
   const [editFormName, setEditFormName] = useState('');
   const [editFormDivision, setEditFormDivision] = useState('Divisi Kesekretariatan');
-  const [editFormRole, setEditFormRole] = useState('Anggota Aktif');
+  const [editFormRole, setEditFormRole] = useState('Anggota Biasa');
   const [editFormPassword, setEditFormPassword] = useState('');
   const [editFormCanAccessAdmin, setEditFormCanAccessAdmin] = useState(false);
   const [editFormShowPass, setEditFormShowPass] = useState(false);
@@ -1218,7 +1260,11 @@ const AdminDashboardPage = ({
   const handleDeleteSelected = () => {
     if (selectedRows.length === 0) return;
     if (window.confirm(`Hapus ${selectedRows.length} akun mahasiswa yang dipilih?`)) {
-      selectedRows.forEach((nim) => onDeleteAccount(nim));
+      if (onDeleteBatchAccounts) {
+        onDeleteBatchAccounts(selectedRows);
+      } else {
+        selectedRows.forEach((nim) => onDeleteAccount(nim));
+      }
       addLog(`${selectedRows.length} akun mahasiswa dihapus massal`, 'warning');
       setSelectedRows([]);
     }
@@ -3040,28 +3086,41 @@ const AdminDashboardPage = ({
                       </div>
                     </div>
 
-                    {/* Tombol Aksi Selesaikan Agenda Rapat */}
-                    <button
-                      type="button"
-                      onClick={() => handleToggleCompleteMeetingSession(activeAttendanceSession)}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer ${
-                        activeAttendanceSession.status === 'active'
-                          ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                          : 'bg-slate-800 hover:bg-slate-900 text-white'
-                      }`}
-                    >
-                      {activeAttendanceSession.status === 'active' ? (
-                        <>
-                          <CheckCircle2 size={15} />
-                          <span>Selesaikan Agenda Rapat</span>
-                        </>
-                      ) : (
-                        <>
-                          <RefreshCw size={14} />
-                          <span>Aktifkan Kembali Sesi Rapat</span>
-                        </>
-                      )}
-                    </button>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {/* Tombol Aksi Selesaikan Agenda Rapat */}
+                      <button
+                        type="button"
+                        onClick={() => handleToggleCompleteMeetingSession(activeAttendanceSession)}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer ${
+                          activeAttendanceSession.status === 'active'
+                            ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                            : 'bg-slate-800 hover:bg-slate-900 text-white'
+                        }`}
+                      >
+                        {activeAttendanceSession.status === 'active' ? (
+                          <>
+                            <CheckCircle2 size={15} />
+                            <span>Selesaikan Agenda Rapat</span>
+                          </>
+                        ) : (
+                          <>
+                            <RefreshCw size={14} />
+                            <span>Aktifkan Kembali Sesi Rapat</span>
+                          </>
+                        )}
+                      </button>
+
+                      {/* Tombol Aksi Hapus Acara Rapat */}
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteMeetingSession(activeAttendanceSession)}
+                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition-all cursor-pointer shadow-xs"
+                        title={`Hapus acara rapat "${activeAttendanceSession.title}" beserta seluruh riwayat presensinya`}
+                      >
+                        <Trash2 size={14} />
+                        <span>Hapus Acara Rapat</span>
+                      </button>
+                    </div>
                   </div>
 
                   <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-6 border-b border-slate-100">
@@ -3129,6 +3188,47 @@ const AdminDashboardPage = ({
                       </div>
 
                       <div className="flex flex-col gap-1.5 w-full sm:w-auto">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const s = activeAttendanceSession;
+                            if (!s) return;
+                            const coords = s.coordinates || { locationName: s.location || 'Lapangan Pancasila Palopo', radiusMeters: 100 };
+                            const publicUrl = typeof window !== 'undefined'
+                              ? `${window.location.origin}${window.location.pathname}?presensi=${s.id}&token=${s.qrToken}`
+                              : `https://teradesk.politeknikdewantara.ac.id/?presensi=${s.id}&token=${s.qrToken}`;
+                            const msg = [
+                              `📢 *UNDANGAN PRESENSI RAPAT TERAMEDIA*`,
+                              `━━━━━━━━━━━━━━━━━━━━━━`,
+                              `📌 *Agenda:* ${s.title}`,
+                              `🏢 *Divisi:* ${s.division}`,
+                              `📅 *Hari/Tanggal:* ${s.date}`,
+                              `⏰ *Waktu:* ${s.timeStart} - ${s.timeEnd} (WITA)`,
+                              `⏳ *Toleransi Presensi:* Hingga ${s.toleranceTime} WITA`,
+                              `📍 *Lokasi Rapat:* ${s.location}`,
+                              `📡 *Titik Geofence:* ${coords.locationName} (Radius Maks. ${coords.radiusMeters || 100}m)`,
+                              `🔢 *PIN Proyektor:* ${s.pinCode}`,
+                              `━━━━━━━━━━━━━━━━━━━━━━`,
+                              `📲 *Tautan Presensi Mandiri Smartphone:*`,
+                              `${publicUrl}`,
+                              `━━━━━━━━━━━━━━━━━━━━━━`,
+                              `👤 *Dibuat Oleh:* ${s.createdBy?.name || s.organizer || 'Pengurus'} (NIM: ${s.createdBy?.nim || '23404053'})`,
+                              `⚠️ _Presensi diverifikasi otomatis dengan radius GPS pembuat rapat._`
+                            ].join('\n');
+                            try {
+                              navigator.clipboard.writeText(msg);
+                            } catch {
+                              // ignore
+                            }
+                            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
+                            addLog('Teks undangan WhatsApp berhasil disalin dan dialihkan ke WhatsApp', 'success');
+                            playNotificationChime();
+                          }}
+                          className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
+                        >
+                          <Share2 size={13} />
+                          <span>Bagikan WA</span>
+                        </button>
                         <button
                           type="button"
                           onClick={() => handleCopyAdminQrLink(activeAttendanceSession)}
@@ -3235,12 +3335,13 @@ const AdminDashboardPage = ({
                           <th className="py-3 px-4">Waktu (WITA)</th>
                           <th className="py-3 px-4">Metode</th>
                           <th className="py-3 px-4">Status</th>
+                          <th className="py-3 px-4 text-right">Aksi</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100">
                         {sortedAttendance.length === 0 ? (
                           <tr>
-                            <td colSpan={5} className="py-8 text-center text-slate-400">
+                            <td colSpan={6} className="py-8 text-center text-slate-400">
                               Tidak ada data kehadiran yang sesuai filter.
                             </td>
                           </tr>
@@ -3288,6 +3389,16 @@ const AdminDashboardPage = ({
                                     <CheckCircle2 size={11} />
                                     {rec.status}
                                   </span>
+                                </td>
+                                <td className="py-3 px-4 text-right">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteAdminRecord(rec.id, rec.name)}
+                                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                                    title={`Hapus catatan presensi ${rec.name}`}
+                                  >
+                                    <Trash2 size={13} />
+                                  </button>
                                 </td>
                               </tr>
                             );
@@ -5828,15 +5939,26 @@ const AdminDashboardPage = ({
                 </div>
                 <div>
                   <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-                    Jabatan
+                    Jabatan / Peran
                   </label>
-                  <input
-                    type="text"
+                  <select
                     value={formRole}
-                    onChange={(e) => setFormRole(e.target.value)}
-                    placeholder="Anggota Aktif"
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium focus:outline-hidden focus:border-blue-600"
-                  />
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setFormRole(val);
+                      if (val === 'Koordinator Divisi' || val.includes('BPH') || val.includes('Ketua')) {
+                        setFormCanAccessAdmin(true);
+                      } else {
+                        setFormCanAccessAdmin(false);
+                      }
+                    }}
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium focus:outline-hidden focus:border-blue-600 bg-white"
+                  >
+                    <option value="Koordinator Divisi">Koordinator Divisi (Kadiv)</option>
+                    <option value="Anggota Biasa">Anggota Biasa / Staf</option>
+                    <option value="BPH (Badan Pengurus Harian)">BPH (Badan Pengurus Harian)</option>
+                    <option value="Demisioner Ketua Umum">Demisioner Ketua Umum</option>
+                  </select>
                 </div>
               </div>
 
@@ -6009,13 +6131,24 @@ const AdminDashboardPage = ({
                   <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                     Jabatan / Peran
                   </label>
-                  <input
-                    type="text"
+                  <select
                     value={editFormRole}
-                    onChange={(e) => setEditFormRole(e.target.value)}
-                    placeholder="Contoh: Demisioner Ketua Umum"
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium focus:outline-hidden focus:border-blue-600"
-                  />
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setEditFormRole(val);
+                      if (val === 'Koordinator Divisi' || val.includes('BPH') || val.includes('Ketua')) {
+                        setEditFormCanAccessAdmin(true);
+                      } else {
+                        setEditFormCanAccessAdmin(false);
+                      }
+                    }}
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium focus:outline-hidden focus:border-blue-600 bg-white"
+                  >
+                    <option value="Koordinator Divisi">Koordinator Divisi (Kadiv)</option>
+                    <option value="Anggota Biasa">Anggota Biasa / Staf</option>
+                    <option value="BPH (Badan Pengurus Harian)">BPH (Badan Pengurus Harian)</option>
+                    <option value="Demisioner Ketua Umum">Demisioner Ketua Umum</option>
+                  </select>
                 </div>
               </div>
 

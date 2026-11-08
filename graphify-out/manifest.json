@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "src/App.jsx": {
-    "mtime": 1794089452.7786074,
-    "seen": 1794090047.2210884,
-    "ast_hash": "25ac7993b624b0539a6e24e1e52d36c4",
+    "mtime": 1794120719.2433434,
+    "seen": 1794121316.8490973,
+    "ast_hash": "a3aca0481f7f0f179fcd00fd65ace684",
     "semantic_hash": ""
   },
   "src/components/AboutUs.jsx": {
@@ -810,9 +810,9 @@
     "semantic_hash": ""
   },
   "src/components/services/AttendanceServicePage.jsx": {
-    "mtime": 1794089987.7291124,
-    "seen": 1794090047.2210884,
-    "ast_hash": "0a7d95590286fd244ad6c09347474d93",
+    "mtime": 1794121286.0517871,
+    "seen": 1794121316.8490973,
+    "ast_hash": "da11d650f97b4753037684ae435e904d",
     "semantic_hash": ""
   },
   "src/components/services/FinanceServicePage.jsx": {
@@ -858,15 +858,15 @@
     "semantic_hash": ""
   },
   "src/data/defaultAccounts.js": {
-    "mtime": 1794088081.7883482,
-    "seen": 1794088868.1127625,
-    "ast_hash": "3cacb0d59fee69a6a412a37df7569290",
+    "mtime": 1794119559.2404993,
+    "seen": 1794120668.4345076,
+    "ast_hash": "3609913798da768f75502195fee615d5",
     "semantic_hash": ""
   },
   "src/components/admin/AdminDashboardPage.jsx": {
-    "mtime": 1794088924.757642,
-    "seen": 1794089411.9144373,
-    "ast_hash": "ab2c5b7ce06dbec86359f3d644f5a6da",
+    "mtime": 1794121201.002517,
+    "seen": 1794121316.8490973,
+    "ast_hash": "5d29bc82c0d17d90d685ea9a4beff651",
     "semantic_hash": ""
   },
   "public/logo-teramedia.png": {
@@ -1008,9 +1008,9 @@
     "semantic_hash": ""
   },
   "src/services/accountService.js": {
-    "mtime": 1794070208.5245688,
-    "seen": 1794070770.0160267,
-    "ast_hash": "53788693b549bfe2e8a7bb6ab4458fb8",
+    "mtime": 1794120720.7648375,
+    "seen": 1794121316.8490973,
+    "ast_hash": "55af85fe189ae439745539907f00ee3e",
     "semantic_hash": ""
   },
   "src/utils/deviceDetector.js": {
@@ -1050,9 +1050,9 @@
     "semantic_hash": ""
   },
   "src/services/moduleSyncService.js": {
-    "mtime": 1794089453.3203595,
-    "seen": 1794090047.2210884,
-    "ast_hash": "e44fdcc6b43c8bf8cae59c72418a5876",
+    "mtime": 1794120720.8615801,
+    "seen": 1794121316.8490973,
+    "ast_hash": "002893d51776bb183b1e6665dc60d3b1",
     "semantic_hash": ""
   },
   "src/components/common/CommandPalette.jsx": {
@@ -1062,9 +1062,9 @@
     "semantic_hash": ""
   },
   "src/components/services/PublicAttendanceModal.jsx": {
-    "mtime": 1794089453.211811,
-    "seen": 1794090047.2210884,
-    "ast_hash": "f0d3e800bde501200dfc6ce9640ce865",
+    "mtime": 1794120720.5787678,
+    "seen": 1794121316.8490973,
+    "ast_hash": "834e875aa6fd9adfbbd9c71acc1333f0",
     "semantic_hash": ""
   },
   "src/utils/geoDistance.js": {
