@@ -18,7 +18,8 @@ import {
   X,
   LogOut,
   CalendarCheck,
-  ShieldCheck
+  ShieldCheck,
+  KeyRound
 } from 'lucide-react';
 
 const featuresData = [
@@ -252,6 +253,7 @@ const FeaturesPortal = ({
   authUser,
   onLogout,
   onOpenCommandPalette,
+  onOpenChangePassword,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Semua');
@@ -333,6 +335,18 @@ const FeaturesPortal = ({
                   </p>
                 </div>
               </div>
+            )}
+
+            {authUser && onOpenChangePassword && (
+              <button
+                type="button"
+                onClick={onOpenChangePassword}
+                title="Ganti Kata Sandi Akun Mandiri"
+                className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-blue-600 bg-slate-100 hover:bg-blue-50 px-3 py-2 rounded-xl border border-slate-200 hover:border-blue-200 transition-all cursor-pointer"
+              >
+                <KeyRound size={13} className="text-blue-600" />
+                <span>Ganti Sandi</span>
+              </button>
             )}
 
             {authUser?.canAccessAdmin && onOpenDevDashboard && (

@@ -28,7 +28,8 @@ import {
   Tag,
   Ticket,
   FileText,
-  UserCheck
+  UserCheck,
+  KeyRound
 } from 'lucide-react';
 import { getSoundMuted, setSoundMuted, playNotificationChime } from '../../utils/notificationSound';
 import { exportLogsToXLSX } from '../../utils/logExporter';
@@ -160,6 +161,7 @@ export default function CommandPalette({
   onClose,
   onNavigate,
   onOpenContact,
+  onOpenChangePassword,
   authUser,
   accounts = [],
   prokerList = [],
@@ -492,6 +494,20 @@ export default function CommandPalette({
   // 4. Quick Actions
   const actionItems = useMemo(() => {
     return [
+      ...(authUser ? [{
+        id: 'action-change-password',
+        type: 'aksi',
+        title: 'Ganti Kata Sandi Akun Saya (Mandiri)',
+        subtitle: `Perbarui kata sandi login pengurus untuk ${authUser.name} (${authUser.nim})`,
+        badge: 'Keamanan Akun',
+        icon: KeyRound,
+        iconColor: 'text-amber-600 bg-amber-50 border-amber-200/80',
+        action: () => {
+          onClose();
+          if (onOpenChangePassword) onOpenChangePassword();
+        },
+        keywords: ['ganti kata sandi', 'ganti password', 'ubah password', 'sandi', 'password', 'keamanan', 'ubah sandi', 'mandiri'],
+      }] : []),
       {
         id: 'action-export-xlsx',
         type: 'aksi',
@@ -601,7 +617,7 @@ export default function CommandPalette({
         keywords: ['wa', 'whatsapp', 'kontak', 'hotline', 'nomor', 'telepon', 'salin'],
       },
     ];
-  }, [activityLogs, isSoundMutedState, onNavigate, onClose]);
+  }, [activityLogs, isSoundMutedState, onNavigate, onClose, authUser, onOpenChangePassword]);
 
   // Combine and filter items
   const filteredItems = useMemo(() => {

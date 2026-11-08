@@ -10,6 +10,7 @@ import AdminDashboardPage from './components/admin/AdminDashboardPage';
 import FeaturesPortal from './components/FeaturesPortal';
 import ServiceDispatcher from './components/services/ServiceDispatcher';
 import CommandPalette from './components/common/CommandPalette';
+import ChangePasswordModal from './components/common/ChangePasswordModal';
 import PublicAttendanceModal from './components/services/PublicAttendanceModal';
 import { initialDefaultAccounts } from './data/defaultAccounts';
 import { initialDefaultProker } from './data/defaultProker';
@@ -114,6 +115,7 @@ function App() {
 
   const [authUser, setAuthUser] = useState(null); // null = Guest, object = Authenticated pengurus
   const [isContactOpen, setIsContactOpen] = useState(false);
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
   const [accessDeniedInfo, setAccessDeniedInfo] = useState(null);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [adminInitialNav, setAdminInitialNav] = useState('dashboard');
@@ -1576,6 +1578,9 @@ function App() {
     setRegisteredAccounts((prev) =>
       prev.map((acc) => (acc.nim === nim ? { ...acc, password: newPassword } : acc))
     );
+    if (authUser && authUser.nim === nim) {
+      setAuthUser((prev) => (prev ? { ...prev, password: newPassword } : prev));
+    }
     updatePasswordInDb(nim, newPassword);
   };
 
@@ -1757,6 +1762,7 @@ function App() {
         <AdminDashboardPage
           initialNav={adminInitialNav}
           onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+          onOpenChangePassword={() => setIsChangePasswordOpen(true)}
           onBackToLanding={() => handleNavigate('landing')}
           onNavigateToPortal={() => handleNavigate('portal')}
           onNavigateToService={(serviceId) => handleNavigate('service', serviceId)}
@@ -1826,6 +1832,7 @@ function App() {
           authUser={authUser}
           onLogout={handleLogout}
           onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+          onOpenChangePassword={() => setIsChangePasswordOpen(true)}
           prokerList={prokerList}
           onAddProker={handleAddProker}
           onUpdateProker={handleUpdateProker}
@@ -1881,6 +1888,7 @@ function App() {
           authUser={authUser}
           onLogout={handleLogout}
           onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+          onOpenChangePassword={() => setIsChangePasswordOpen(true)}
         />
       )}
 
@@ -1968,6 +1976,7 @@ function App() {
         onClose={() => setIsCommandPaletteOpen(false)}
         onNavigate={handleNavigate}
         onOpenContact={() => setIsContactOpen(true)}
+        onOpenChangePassword={() => setIsChangePasswordOpen(true)}
         authUser={authUser}
         accounts={registeredAccounts}
         prokerList={prokerList}
@@ -1977,6 +1986,16 @@ function App() {
         assets={assets}
         activityLogs={activityLogs}
         consultationMessages={consultationMessages}
+      />
+
+      {/* Self-Service Change Password Modal */}
+      <ChangePasswordModal
+        isOpen={isChangePasswordOpen}
+        onClose={() => setIsChangePasswordOpen(false)}
+        authUser={authUser}
+        accounts={registeredAccounts}
+        onUpdatePassword={handleUpdatePassword}
+        onAddActivityLog={handleAddActivityLog}
       />
     </div>
   );

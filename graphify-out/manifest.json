@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "src/App.jsx": {
-    "mtime": 1794156234.8086574,
-    "seen": 1794156346.2754657,
-    "ast_hash": "e5f0a23cb487ed974e04979615531090",
+    "mtime": 1794159654.2925007,
+    "seen": 1794159870.4947855,
+    "ast_hash": "c585ab908bb9411e28b09dafce335103",
     "semantic_hash": ""
   },
   "src/components/AboutUs.jsx": {
@@ -36,9 +36,9 @@
     "semantic_hash": ""
   },
   "src/components/FeaturesPortal.jsx": {
-    "mtime": 1794083427.861632,
-    "seen": 1794083877.4174592,
-    "ast_hash": "d805c9989d76231554565108b53bd8af",
+    "mtime": 1794159741.240267,
+    "seen": 1794159870.4947855,
+    "ast_hash": "599fd69fd730682c5fc427c29ca1046e",
     "semantic_hash": ""
   },
   "src/components/Footer.jsx": {
@@ -846,9 +846,9 @@
     "semantic_hash": ""
   },
   "src/components/services/ServicePageLayout.jsx": {
-    "mtime": 1794083429.1039333,
-    "seen": 1794083877.4174592,
-    "ast_hash": "b2b9f6e771e148f8622767bb58bae2d8",
+    "mtime": 1794159786.0947647,
+    "seen": 1794159870.4947855,
+    "ast_hash": "5684ffe69e987f7dbc888894636a4787",
     "semantic_hash": ""
   },
   "src/components/services/TimelineServicePage.jsx": {
@@ -864,9 +864,9 @@
     "semantic_hash": ""
   },
   "src/components/admin/AdminDashboardPage.jsx": {
-    "mtime": 1794156370.1588612,
-    "seen": 1794156486.7991605,
-    "ast_hash": "3fe6a7d5a468e4b2289c8c67319d3db6",
+    "mtime": 1794159839.5789914,
+    "seen": 1794159870.4947855,
+    "ast_hash": "d66cd55458fad124053b33c76d59ec60",
     "semantic_hash": ""
   },
   "public/logo-teramedia.png": {
@@ -1056,9 +1056,9 @@
     "semantic_hash": ""
   },
   "src/components/common/CommandPalette.jsx": {
-    "mtime": 1794156458.762722,
-    "seen": 1794156486.7991605,
-    "ast_hash": "f2d1c7838447374a2ade2ff780a0ff1f",
+    "mtime": 1794159709.7177467,
+    "seen": 1794159870.4947855,
+    "ast_hash": "5dda8d5672b910eb896432d64e5dabbb",
     "semantic_hash": ""
   },
   "src/components/services/PublicAttendanceModal.jsx": {
@@ -1071,6 +1071,12 @@
     "mtime": 1794086907.1580524,
     "seen": 1794087462.4381268,
     "ast_hash": "35ac3ee33111925e472e97f6e3add8b0",
+    "semantic_hash": ""
+  },
+  "src/components/common/ChangePasswordModal.jsx": {
+    "mtime": 1794159869.1066213,
+    "seen": 1794159870.4947855,
+    "ast_hash": "949d02f383695887f735614dffd35077",
     "semantic_hash": ""
   }
 }

@@ -63,7 +63,9 @@ import {
   VolumeX,
   Menu,
   FileSpreadsheet,
-  Radio
+  Radio,
+  BarChart3,
+  Trophy
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { playNotificationChime, getSoundMuted, setSoundMuted } from '../../utils/notificationSound';
@@ -83,6 +85,95 @@ const divisionsList = [
   'Semua Divisi',
   ...OFFICIAL_DIVISIONS,
 ];
+
+const DIVISION_ANALYTICS_CONFIG = {
+  'BPH (Badan Pengurus Harian)': {
+    shortName: 'BPH',
+    badgeColor: 'bg-indigo-100 text-indigo-800 border-indigo-200',
+    barColor: 'bg-indigo-600',
+    lightBg: 'bg-indigo-50/60',
+    borderColor: 'border-indigo-200',
+    textColor: 'text-indigo-700',
+  },
+  'Divisi Kesekretariatan': {
+    shortName: 'Kesekretariatan',
+    badgeColor: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+    barColor: 'bg-emerald-600',
+    lightBg: 'bg-emerald-50/60',
+    borderColor: 'border-emerald-200',
+    textColor: 'text-emerald-700',
+  },
+  'Divisi Publikasi dan Dokumentasi': {
+    shortName: 'Pubdok',
+    badgeColor: 'bg-rose-100 text-rose-800 border-rose-200',
+    barColor: 'bg-rose-600',
+    lightBg: 'bg-rose-50/60',
+    borderColor: 'border-rose-200',
+    textColor: 'text-rose-700',
+  },
+  'Divisi Humas': {
+    shortName: 'Humas',
+    badgeColor: 'bg-sky-100 text-sky-800 border-sky-200',
+    barColor: 'bg-sky-600',
+    lightBg: 'bg-sky-50/60',
+    borderColor: 'border-sky-200',
+    textColor: 'text-sky-700',
+  },
+  'Divisi Kaderisasi': {
+    shortName: 'Kaderisasi',
+    badgeColor: 'bg-blue-100 text-blue-800 border-blue-200',
+    barColor: 'bg-blue-600',
+    lightBg: 'bg-blue-50/60',
+    borderColor: 'border-blue-200',
+    textColor: 'text-blue-700',
+  },
+  'Divisi KKM (Kewirausahaan)': {
+    shortName: 'Dana Usaha (KKM)',
+    badgeColor: 'bg-amber-100 text-amber-800 border-amber-200',
+    barColor: 'bg-amber-600',
+    lightBg: 'bg-amber-50/60',
+    borderColor: 'border-amber-200',
+    textColor: 'text-amber-700',
+  },
+};
+
+const getDivisionConfig = (name) => {
+  return (
+    DIVISION_ANALYTICS_CONFIG[name] || {
+      shortName: name,
+      badgeColor: 'bg-purple-100 text-purple-800 border-purple-200',
+      barColor: 'bg-purple-600',
+      lightBg: 'bg-purple-50/60',
+      borderColor: 'border-purple-200',
+      textColor: 'text-purple-700',
+    }
+  );
+};
+
+const normalizeDivisionName = (divName) => {
+  if (!divName) return 'Lainnya';
+  const trimmed = String(divName).trim();
+  const lower = trimmed.toLowerCase();
+  if (lower.includes('bph') || lower.includes('presidium') || lower.includes('demisioner')) {
+    return 'BPH (Badan Pengurus Harian)';
+  }
+  if (lower.includes('sekretar') || lower.includes('arsip')) {
+    return 'Divisi Kesekretariatan';
+  }
+  if (lower.includes('pubdok') || lower.includes('publikasi') || lower.includes('dokumentasi') || lower.includes('desain') || lower.includes('media')) {
+    return 'Divisi Publikasi dan Dokumentasi';
+  }
+  if (lower.includes('humas') || lower.includes('jaringan') || lower.includes('eksternal')) {
+    return 'Divisi Humas';
+  }
+  if (lower.includes('kader') || lower.includes('sdm') || lower.includes('litbang')) {
+    return 'Divisi Kaderisasi';
+  }
+  if (lower.includes('kkm') || lower.includes('wirausaha') || lower.includes('usaha') || lower.includes('merchandise')) {
+    return 'Divisi KKM (Kewirausahaan)';
+  }
+  return trimmed;
+};
 
 const availableServices = [
   {
@@ -268,6 +359,7 @@ const AdminDashboardPage = ({
   onOpenPublicAttendanceModal,
   initialNav = 'dashboard',
   onOpenCommandPalette,
+  onOpenChangePassword,
 }) => {
   // Mobile Sidebar Drawer State
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -388,6 +480,8 @@ const AdminDashboardPage = ({
     null;
   const [adminAttendanceSearch, setAdminAttendanceSearch] = useState('');
   const [adminAttendanceFilter, setAdminAttendanceFilter] = useState('Semua');
+  const [attendanceAnalyticsScope, setAttendanceAnalyticsScope] = useState('session');
+  const [attendanceAnalyticsView, setAttendanceAnalyticsView] = useState('bars');
 
   const handleToggleCompleteMeetingSession = (sessionToToggle) => {
     if (!sessionToToggle) return;
@@ -1742,6 +1836,17 @@ const AdminDashboardPage = ({
             </div>
           </div>
 
+          {onOpenChangePassword && (
+            <button
+              type="button"
+              onClick={onOpenChangePassword}
+              className="w-full py-2 px-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-center gap-1.5 mb-2 shadow-2xs"
+            >
+              <KeyRound size={13} className="text-blue-600" />
+              <span>Ganti Kata Sandi</span>
+            </button>
+          )}
+
           <button
             onClick={onForceDestroySession}
             className="w-full py-2 px-3 rounded-xl border border-rose-200 text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 transition-all cursor-pointer flex items-center justify-center gap-1.5 mb-2"
@@ -3045,6 +3150,91 @@ const AdminDashboardPage = ({
               return parseId(b.id) - parseId(a.id);
             });
 
+            // Division-based Attendance Analytics Calculation
+            const currentScopeRecs = attendanceAnalyticsScope === 'session'
+              ? currentRecs
+              : adminAttendanceList;
+
+            const activeDivisionKeys = Array.from(
+              new Set([
+                ...OFFICIAL_DIVISIONS,
+                ...(accounts || []).map((a) => normalizeDivisionName(a.division)),
+                ...adminAttendanceList.map((r) => normalizeDivisionName(r.division)),
+              ])
+            ).filter(Boolean);
+
+            const sessionMultiplier = attendanceAnalyticsScope === 'all'
+              ? Math.max(1, adminAttendanceSessions.length)
+              : 1;
+
+            const divisionStats = activeDivisionKeys.map((divName) => {
+              const members = (accounts || []).filter(
+                (a) => normalizeDivisionName(a.division) === divName
+              );
+              const memberCount = members.length;
+              const divRecs = currentScopeRecs.filter(
+                (r) => normalizeDivisionName(r.division) === divName
+              );
+
+              const hadirTepat = divRecs.filter((r) => r.status && r.status.includes('Tepat')).length;
+              const hadirTerlambat = divRecs.filter((r) => r.status && r.status.includes('Terlambat')).length;
+              const izinSakit = divRecs.filter((r) => r.status && (r.status.includes('Izin') || r.status.includes('Sakit'))).length;
+              const totalHadirDiv = divRecs.length;
+
+              const expectedCount = memberCount > 0 ? (memberCount * sessionMultiplier) : (totalHadirDiv > 0 ? totalHadirDiv : 1);
+              const effectiveTarget = Math.max(expectedCount, totalHadirDiv);
+              const belumPresensi = Math.max(0, effectiveTarget - totalHadirDiv);
+
+              const ratePct = memberCount > 0 || totalHadirDiv > 0
+                ? Math.min(100, Math.round((totalHadirDiv / effectiveTarget) * 100))
+                : 0;
+
+              const onTimePct = totalHadirDiv > 0
+                ? Math.round((hadirTepat / totalHadirDiv) * 100)
+                : 0;
+
+              const disciplineScore = totalHadirDiv > 0
+                ? Math.min(100, Math.round(((hadirTepat * 100) + (hadirTerlambat * 60) + (izinSakit * 40)) / effectiveTarget))
+                : 0;
+
+              return {
+                name: divName,
+                memberCount,
+                expectedCount,
+                effectiveTarget,
+                totalHadir: totalHadirDiv,
+                hadirTepat,
+                hadirTerlambat,
+                izinSakit,
+                belumPresensi,
+                ratePct,
+                onTimePct,
+                disciplineScore,
+              };
+            });
+
+            // Ranked divisions for Leaderboard
+            const rankedDivisions = [...divisionStats].sort((a, b) => {
+              if (b.ratePct !== a.ratePct) return b.ratePct - a.ratePct;
+              if (b.disciplineScore !== a.disciplineScore) return b.disciplineScore - a.disciplineScore;
+              return b.totalHadir - a.totalHadir;
+            });
+
+            // Overall Analytics KPIs
+            const totalExpectedAll = divisionStats.reduce((acc, d) => acc + d.effectiveTarget, 0);
+            const totalHadirAll = divisionStats.reduce((acc, d) => acc + d.totalHadir, 0);
+            const totalTepatAll = divisionStats.reduce((acc, d) => acc + d.hadirTepat, 0);
+
+            const overallRatePct = totalExpectedAll > 0
+              ? Math.min(100, Math.round((totalHadirAll / totalExpectedAll) * 100))
+              : 0;
+
+            const overallOnTimePct = totalHadirAll > 0
+              ? Math.round((totalTepatAll / totalHadirAll) * 100)
+              : 0;
+
+            const topDivision = rankedDivisions[0] || null;
+
             return (
               <div className="max-w-6xl mx-auto space-y-6">
                 {/* Header & Quick Action */}
@@ -3312,6 +3502,375 @@ const AdminDashboardPage = ({
                       <span className="text-[10px] text-purple-600">Keterangan resmi</span>
                     </div>
                   </div>
+                </div>
+
+                {/* Visual Analytics: Division Attendance Statistics & Leaderboard */}
+                <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 space-y-6">
+                  {/* Header & Controls */}
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-purple-50 border border-purple-200/70 text-purple-600 flex items-center justify-center shrink-0 shadow-2xs">
+                        <BarChart3 size={20} />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-bold text-slate-900 text-base">Grafik & Statistik Kehadiran per Divisi</h3>
+                          <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 border border-purple-200">
+                            Dashboard Analytics
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          {attendanceAnalyticsScope === 'session'
+                            ? `Analisis partisipasi pada agenda rapat "${activeAttendanceSession.title}"`
+                            : `Akumulasi partisipasi seluruh agenda rapat organisasi (${adminAttendanceSessions.length} agenda rapat)`}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Controls: Scope Switcher & View Switcher */}
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      {/* Scope Toggle */}
+                      <div className="inline-flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200/70 text-xs">
+                        <button
+                          type="button"
+                          onClick={() => setAttendanceAnalyticsScope('session')}
+                          className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                            attendanceAnalyticsScope === 'session'
+                              ? 'bg-white text-purple-700 shadow-xs'
+                              : 'text-slate-600 hover:text-slate-900'
+                          }`}
+                        >
+                          <CalendarCheck size={14} />
+                          <span>Sesi Ini</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setAttendanceAnalyticsScope('all')}
+                          className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                            attendanceAnalyticsScope === 'all'
+                              ? 'bg-white text-purple-700 shadow-xs'
+                              : 'text-slate-600 hover:text-slate-900'
+                          }`}
+                        >
+                          <Layers size={14} />
+                          <span>Semua Rapat ({adminAttendanceSessions.length})</span>
+                        </button>
+                      </div>
+
+                      {/* View Toggle */}
+                      <div className="inline-flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200/70 text-xs">
+                        <button
+                          type="button"
+                          onClick={() => setAttendanceAnalyticsView('bars')}
+                          className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                            attendanceAnalyticsView === 'bars'
+                              ? 'bg-white text-purple-700 shadow-xs'
+                              : 'text-slate-600 hover:text-slate-900'
+                          }`}
+                          title="Tampilan Grafik Batang Komposisi"
+                        >
+                          <BarChart3 size={14} />
+                          <span>Grafik Batang</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setAttendanceAnalyticsView('leaderboard')}
+                          className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                            attendanceAnalyticsView === 'leaderboard'
+                              ? 'bg-white text-purple-700 shadow-xs'
+                              : 'text-slate-600 hover:text-slate-900'
+                          }`}
+                          title="Tampilan Papan Peringkat & Skor Disiplin"
+                        >
+                          <Trophy size={14} />
+                          <span>Papan Peringkat</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3 Analytics KPI Highlights */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                    {/* KPI 1: Overall attendance rate */}
+                    <div className="bg-gradient-to-br from-purple-500/5 via-purple-500/10 to-transparent p-4 rounded-xl border border-purple-200/60 relative overflow-hidden">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-purple-800">Tingkat Kehadiran Rata-rata</span>
+                        <div className="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center">
+                          <TrendingUp size={15} />
+                        </div>
+                      </div>
+                      <div className="mt-2 flex items-baseline gap-2">
+                        <span className="text-2xl font-black text-slate-900">{overallRatePct}%</span>
+                        <span className="text-xs text-slate-500 font-medium">({totalHadirAll} / {totalExpectedAll} presensi)</span>
+                      </div>
+                      <div className="mt-2 w-full bg-purple-100 h-1.5 rounded-full overflow-hidden">
+                        <div className="bg-purple-600 h-full rounded-full transition-all duration-500" style={{ width: `${overallRatePct}%` }} />
+                      </div>
+                      <p className="text-[10px] text-slate-400 mt-1.5">Persentase partisipasi agregat seluruh divisi</p>
+                    </div>
+
+                    {/* KPI 2: Top disciplined division */}
+                    <div className="bg-gradient-to-br from-amber-500/5 via-amber-500/10 to-transparent p-4 rounded-xl border border-amber-200/60 relative overflow-hidden">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-amber-900">Divisi Paling Disiplin</span>
+                        <div className="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center">
+                          <Trophy size={15} />
+                        </div>
+                      </div>
+                      <div className="mt-2">
+                        <p className="text-base font-extrabold text-slate-900 truncate">
+                          {topDivision ? getDivisionConfig(topDivision.name).shortName : '-'}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs font-bold text-amber-700 bg-amber-100/80 px-2 py-0.5 rounded-md border border-amber-200/60">
+                            {topDivision ? `${topDivision.ratePct}% Hadir` : '0%'}
+                          </span>
+                          <span className="text-[11px] text-slate-500 font-medium">
+                            {topDivision ? `${topDivision.onTimePct}% Tepat Waktu` : '-'}
+                          </span>
+                        </div>
+                      </div>
+                      <p className="text-[10px] text-slate-400 mt-2">Peringkat tertinggi rasio kehadiran & ketepatan</p>
+                    </div>
+
+                    {/* KPI 3: On-time punctuality */}
+                    <div className="bg-gradient-to-br from-emerald-500/5 via-emerald-500/10 to-transparent p-4 rounded-xl border border-emerald-200/60 relative overflow-hidden">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-emerald-800">Rasio Ketepatan Waktu</span>
+                        <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                          <Clock size={15} />
+                        </div>
+                      </div>
+                      <div className="mt-2 flex items-baseline gap-2">
+                        <span className="text-2xl font-black text-emerald-600">{overallOnTimePct}%</span>
+                        <span className="text-xs text-slate-500 font-medium">({totalTepatAll} / {totalHadirAll || 1} tepat)</span>
+                      </div>
+                      <div className="mt-2 w-full bg-emerald-100 h-1.5 rounded-full overflow-hidden">
+                        <div className="bg-emerald-500 h-full rounded-full transition-all duration-500" style={{ width: `${overallOnTimePct}%` }} />
+                      </div>
+                      <p className="text-[10px] text-slate-400 mt-1.5">Check-in sebelum batas toleransi waktu WITA</p>
+                    </div>
+                  </div>
+
+                  {/* Switch between Horizontal Stacked Bars vs Leaderboard */}
+                  {attendanceAnalyticsView === 'bars' ? (
+                    <div className="space-y-4">
+                      {/* Legend Bar */}
+                      <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-slate-50/80 rounded-xl border border-slate-200/60 text-xs">
+                        <span className="font-bold text-slate-700 text-[11px] uppercase tracking-wider">Legenda Indikator:</span>
+                        <div className="flex flex-wrap items-center gap-3">
+                          <div className="flex items-center gap-1.5 text-slate-600">
+                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
+                            <span>Tepat Waktu</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-slate-600">
+                            <span className="w-2.5 h-2.5 rounded-full bg-amber-400 shrink-0"></span>
+                            <span>Terlambat</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-slate-600">
+                            <span className="w-2.5 h-2.5 rounded-full bg-purple-400 shrink-0"></span>
+                            <span>Izin / Sakit</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-slate-600">
+                            <span className="w-2.5 h-2.5 rounded-full bg-slate-200 shrink-0"></span>
+                            <span>Belum Presensi</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Division Bars List */}
+                      <div className="space-y-3.5">
+                        {divisionStats.map((d) => {
+                          const cfg = getDivisionConfig(d.name);
+                          const tepatW = ((d.hadirTepat / d.effectiveTarget) * 100).toFixed(1);
+                          const telatW = ((d.hadirTerlambat / d.effectiveTarget) * 100).toFixed(1);
+                          const izinW = ((d.izinSakit / d.effectiveTarget) * 100).toFixed(1);
+                          const belumW = Math.max(0, 100 - (Number(tepatW) + Number(telatW) + Number(izinW))).toFixed(1);
+
+                          return (
+                            <div
+                              key={d.name}
+                              className="p-4 rounded-xl border border-slate-200/70 hover:border-purple-200 hover:shadow-xs transition-all bg-white"
+                            >
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span className={`text-[11px] font-extrabold px-2.5 py-0.5 rounded-full border ${cfg.badgeColor}`}>
+                                    {cfg.shortName}
+                                  </span>
+                                  <span className="text-xs font-bold text-slate-800">{d.name}</span>
+                                  <span className="text-[11px] text-slate-400">
+                                    ({d.memberCount} anggota)
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                  <span className="text-xs font-black text-slate-900">
+                                    {d.ratePct}%
+                                  </span>
+                                  <span className="text-[11px] text-slate-500 font-medium">
+                                    ({d.totalHadir}/{d.effectiveTarget} Hadir)
+                                  </span>
+                                  <span
+                                    className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
+                                      d.ratePct >= 80
+                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                        : d.ratePct >= 50
+                                        ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                        : 'bg-rose-50 text-rose-700 border-rose-200'
+                                    }`}
+                                  >
+                                    {d.ratePct >= 80 ? 'Prima' : d.ratePct >= 50 ? 'Cukup' : 'Perlu Dorongan'}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Stacked Progress Bar */}
+                              <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden flex shadow-inner">
+                                {Number(tepatW) > 0 && (
+                                  <div
+                                    style={{ width: `${tepatW}%` }}
+                                    className="bg-emerald-500 h-full transition-all duration-500 hover:opacity-90"
+                                    title={`Tepat Waktu: ${d.hadirTepat} (${tepatW}%)`}
+                                  />
+                                )}
+                                {Number(telatW) > 0 && (
+                                  <div
+                                    style={{ width: `${telatW}%` }}
+                                    className="bg-amber-400 h-full transition-all duration-500 hover:opacity-90"
+                                    title={`Terlambat: ${d.hadirTerlambat} (${telatW}%)`}
+                                  />
+                                )}
+                                {Number(izinW) > 0 && (
+                                  <div
+                                    style={{ width: `${izinW}%` }}
+                                    className="bg-purple-400 h-full transition-all duration-500 hover:opacity-90"
+                                    title={`Izin / Sakit: ${d.izinSakit} (${izinW}%)`}
+                                  />
+                                )}
+                                {Number(belumW) > 0 && (
+                                  <div
+                                    style={{ width: `${belumW}%` }}
+                                    className="bg-slate-200 h-full transition-all duration-500"
+                                    title={`Belum Presensi: ${d.belumPresensi} (${belumW}%)`}
+                                  />
+                                )}
+                              </div>
+
+                              {/* Detail Chips */}
+                              <div className="flex flex-wrap items-center gap-2 mt-2.5">
+                                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/60">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                  {d.hadirTepat} Tepat ({tepatW}%)
+                                </span>
+                                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/60">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                                  {d.hadirTerlambat} Telat ({telatW}%)
+                                </span>
+                                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200/60">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+                                  {d.izinSakit} Izin ({izinW}%)
+                                </span>
+                                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200/60">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                                  {d.belumPresensi} Belum ({belumW}%)
+                                </span>
+                                <span className="ml-auto text-[11px] text-slate-400 font-medium">
+                                  Skor Disiplin: <strong className="text-slate-700">{d.disciplineScore} pts</strong>
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    /* Leaderboard View */
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                      {rankedDivisions.map((d, idx) => {
+                        const cfg = getDivisionConfig(d.name);
+                        const isFirst = idx === 0;
+                        const isSecond = idx === 1;
+                        const isThird = idx === 2;
+
+                        return (
+                          <div
+                            key={d.name}
+                            className={`p-4 rounded-xl border transition-all ${
+                              isFirst
+                                ? 'bg-gradient-to-br from-amber-50/80 via-white to-amber-50/30 border-amber-300 ring-2 ring-amber-200/60 shadow-xs'
+                                : isSecond
+                                ? 'bg-gradient-to-br from-slate-50 via-white to-slate-50/40 border-slate-300 shadow-xs'
+                                : isThird
+                                ? 'bg-gradient-to-br from-orange-50/50 via-white to-orange-50/20 border-orange-200 shadow-xs'
+                                : 'bg-white border-slate-200/80'
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex items-center gap-2.5">
+                                <div
+                                  className={`w-8 h-8 rounded-lg flex items-center justify-center font-extrabold text-sm shrink-0 ${
+                                    isFirst
+                                      ? 'bg-amber-400 text-slate-900 shadow-xs'
+                                      : isSecond
+                                      ? 'bg-slate-200 text-slate-800'
+                                      : isThird
+                                      ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                                      : 'bg-slate-100 text-slate-600'
+                                  }`}
+                                >
+                                  {isFirst ? '🥇' : isSecond ? '🥈' : isThird ? '🥉' : `#${idx + 1}`}
+                                </div>
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <h4 className="font-bold text-slate-900 text-sm">{cfg.shortName}</h4>
+                                    {isFirst && (
+                                      <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-400/30 text-amber-900 border border-amber-400/60">
+                                        Juara Disiplin
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-[11px] text-slate-500 truncate max-w-[180px] sm:max-w-xs">{d.name}</p>
+                                </div>
+                              </div>
+
+                              <div className="text-right shrink-0">
+                                <span className="text-lg font-black text-slate-900">{d.ratePct}%</span>
+                                <p className="text-[10px] text-slate-400">{d.totalHadir}/{d.effectiveTarget} hadir</p>
+                              </div>
+                            </div>
+
+                            <div className="mt-3 grid grid-cols-3 gap-2 py-2 px-3 rounded-lg bg-slate-50/80 border border-slate-200/60 text-center">
+                              <div>
+                                <span className="text-[10px] text-slate-500 block">Tepat Waktu</span>
+                                <span className="text-xs font-bold text-emerald-600">{d.hadirTepat}</span>
+                              </div>
+                              <div>
+                                <span className="text-[10px] text-slate-500 block">Terlambat</span>
+                                <span className="text-xs font-bold text-amber-600">{d.hadirTerlambat}</span>
+                              </div>
+                              <div>
+                                <span className="text-[10px] text-slate-500 block">Izin / Sakit</span>
+                                <span className="text-xs font-bold text-purple-600">{d.izinSakit}</span>
+                              </div>
+                            </div>
+
+                            <div className="mt-2.5 flex items-center justify-between text-[11px] text-slate-500">
+                              <span>Ketepatan: <strong className="text-slate-700">{d.onTimePct}%</strong></span>
+                              <span>Skor: <strong className="text-purple-700">{d.disciplineScore} pts</strong></span>
+                            </div>
+
+                            <div className="mt-2 w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                              <div
+                                className={`h-full rounded-full transition-all duration-500 ${
+                                  isFirst ? 'bg-amber-500' : isSecond ? 'bg-slate-500' : isThird ? 'bg-orange-500' : 'bg-purple-600'
+                                }`}
+                                style={{ width: `${d.ratePct}%` }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
 
                 {/* Live Attendee Feed Table */}
@@ -5358,6 +5917,53 @@ const AdminDashboardPage = ({
                     <LogOut size={14} />
                     <span>Log Out</span>
                   </button>
+                </div>
+              </div>
+
+              {/* Dedicated Self-Service Password Management Card */}
+              <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center shrink-0">
+                      <KeyRound size={20} />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-slate-900 text-base">Ganti Kata Sandi Akun Mandiri</h3>
+                      <p className="text-xs text-slate-500">Perbarui kata sandi login pengurus Anda secara independen dan aman.</p>
+                    </div>
+                  </div>
+                  {onOpenChangePassword && (
+                    <button
+                      type="button"
+                      onClick={onOpenChangePassword}
+                      className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
+                    >
+                      <KeyRound size={14} />
+                      <span>Ubah Kata Sandi Sekarang</span>
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/60">
+                    <span className="text-[11px] font-semibold text-slate-500 block">Status Kredensial</span>
+                    <span className="text-xs font-bold text-emerald-600 flex items-center gap-1 mt-1">
+                      <CheckCircle2 size={13} />
+                      Tersinkronisasi Cloud
+                    </span>
+                  </div>
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/60">
+                    <span className="text-[11px] font-semibold text-slate-500 block">Metode Validasi</span>
+                    <span className="text-xs font-bold text-slate-800 mt-1 block">
+                      Verifikasi Sandi Lama
+                    </span>
+                  </div>
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/60">
+                    <span className="text-[11px] font-semibold text-slate-500 block">Standar Keamanan</span>
+                    <span className="text-xs font-bold text-slate-800 mt-1 block">
+                      Minimal 6 Karakter
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>

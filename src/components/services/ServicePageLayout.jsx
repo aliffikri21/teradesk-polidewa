@@ -18,7 +18,8 @@ import {
   Search,
   ShieldCheck,
   CheckCircle2,
-  CalendarCheck
+  CalendarCheck,
+  KeyRound
 } from 'lucide-react';
 
 const allServices = [
@@ -124,6 +125,7 @@ const ServicePageLayout = ({
   authUser,
   onLogout,
   onOpenCommandPalette,
+  onOpenChangePassword,
   children,
 }) => {
   const [isSwitcherOpen, setIsSwitcherOpen] = useState(false);
@@ -248,6 +250,17 @@ const ServicePageLayout = ({
               </div>
             </div>
           </div>
+
+          {onOpenChangePassword && (
+            <button
+              type="button"
+              onClick={onOpenChangePassword}
+              className="w-full py-2 px-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-center gap-1.5 mb-2 shadow-2xs"
+            >
+              <KeyRound size={13} className="text-blue-600" />
+              <span>Ganti Kata Sandi</span>
+            </button>
+          )}
 
           {onLogout && (
             <button
@@ -408,6 +421,18 @@ const ServicePageLayout = ({
                   {authUser?.role || 'Demisioner'}
                 </p>
               </div>
+
+              {onOpenChangePassword && (
+                <button
+                  type="button"
+                  onClick={onOpenChangePassword}
+                  title="Ganti Kata Sandi Akun Mandiri"
+                  className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-blue-600 bg-slate-50 hover:bg-blue-50 px-2.5 py-1.5 rounded-xl border border-slate-200 hover:border-blue-200 transition-all cursor-pointer ml-1"
+                >
+                  <KeyRound size={13} className="text-blue-600" />
+                  <span className="hidden md:inline">Ganti Sandi</span>
+                </button>
+              )}
             </div>
 
           </div>
