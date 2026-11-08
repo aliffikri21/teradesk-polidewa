@@ -97,7 +97,26 @@ export const deleteConsultationFromDb = async (id) => {
 };
 
 /**
- * Mereset data konsultasi ke pesan default.
+ * Menghapus SEMUA pesan konsultasi dari Cloud Firestore secara batch.
+ */
+export const clearAllConsultationsFromDb = async () => {
+  if (!isFirebaseConfigured || !db) return;
+
+  try {
+    const snapshot = await getDocs(collection(db, COLLECTION_NAME));
+    if (snapshot.empty) return;
+    const batch = writeBatch(db);
+    snapshot.docs.forEach((d) => {
+      batch.delete(d.ref);
+    });
+    await batch.commit();
+  } catch (error) {
+    console.error('❌ [Firestore Consultations] Gagal mengosongkan kotak masuk di cloud:', error);
+  }
+};
+
+/**
+ * Mereset data konsultasi ke pesan default (jika array kosong, menghapus semua).
  */
 export const resetConsultationsInDb = async (defaultMessages = []) => {
   if (!isFirebaseConfigured || !db) return;
@@ -109,13 +128,15 @@ export const resetConsultationsInDb = async (defaultMessages = []) => {
       batch.delete(d.ref);
     });
 
-    defaultMessages.forEach((item, index) => {
-      const docRef = doc(db, COLLECTION_NAME, item.id || `MSG-DEFAULT-${index + 1}`);
-      batch.set(docRef, {
-        ...item,
-        createdAt: serverTimestamp(),
+    if (Array.isArray(defaultMessages) && defaultMessages.length > 0) {
+      defaultMessages.forEach((item, index) => {
+        const docRef = doc(db, COLLECTION_NAME, item.id || `MSG-DEFAULT-${index + 1}`);
+        batch.set(docRef, {
+          ...item,
+          createdAt: serverTimestamp(),
+        });
       });
-    });
+    }
 
     await batch.commit();
   } catch (error) {

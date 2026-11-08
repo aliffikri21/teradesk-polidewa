@@ -238,6 +238,7 @@ const AdminDashboardPage = ({
   onMarkAllConsultationsRead,
   onDeleteConsultation,
   onResetConsultations,
+  onClearAllConsultations,
   activityLogs = [],
   onAddActivityLog,
   onClearActivityLogs,
@@ -4302,18 +4303,28 @@ const AdminDashboardPage = ({
                       <span>Tandai Semua Dibaca</span>
                     </button>
                   )}
-                  <button
-                    onClick={() => {
-                      if (confirm('Reset daftar kotak masuk kembali ke data simulasi default?')) {
-                        onResetConsultations();
-                      }
-                    }}
-                    className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-600 rounded-xl border border-slate-200 text-xs font-semibold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
-                    title="Reset data konsultasi"
-                  >
-                    <RefreshCw size={13} className="text-slate-400" />
-                    <span>Reset Data</span>
-                  </button>
+                  {consultationMessages.length > 0 && (
+                    <button
+                      onClick={() => {
+                        if (
+                          confirm(
+                            'Apakah Anda yakin ingin mengosongkan seluruh pesan di kotak masuk? Semua pesan akan dihapus permanen.'
+                          )
+                        ) {
+                          if (onClearAllConsultations) {
+                            onClearAllConsultations();
+                          } else if (onResetConsultations) {
+                            onResetConsultations();
+                          }
+                        }
+                      }}
+                      className="px-3.5 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl border border-red-200 text-xs font-semibold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                      title="Kosongkan seluruh pesan masuk"
+                    >
+                      <Trash2 size={13} className="text-red-500" />
+                      <span>Kosongkan Kotak Masuk</span>
+                    </button>
+                  )}
                 </div>
               </div>
 

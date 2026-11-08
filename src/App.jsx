@@ -13,7 +13,7 @@ import CommandPalette from './components/common/CommandPalette';
 import PublicAttendanceModal from './components/services/PublicAttendanceModal';
 import { initialDefaultAccounts } from './data/defaultAccounts';
 import { initialDefaultProker } from './data/defaultProker';
-import { initialDefaultConsultations } from './data/defaultConsultations';
+import { isDummyConsultation } from './data/defaultConsultations';
 import { initialDefaultActivityLogs } from './data/defaultActivityLogs';
 import { initialDefaultTickets, sortTicketsNewestFirst } from './data/defaultTickets';
 import { isFirebaseConfigured } from './services/firebase';
@@ -28,7 +28,7 @@ import {
   addConsultationToDb,
   updateConsultationStatusInDb,
   deleteConsultationFromDb,
-  resetConsultationsInDb,
+  clearAllConsultationsFromDb,
 } from './services/consultationService';
 import {
   subscribeAccounts,
@@ -781,16 +781,16 @@ function App() {
   const [consultationMessages, setConsultationMessages] = useState(() => {
     try {
       const saved = localStorage.getItem('teradesk_consultations_v1');
-      if (saved) {
+      if (saved !== null) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
+        if (Array.isArray(parsed)) {
+          return parsed.filter((m) => !isDummyConsultation(m));
         }
       }
     } catch {
       // ignore
     }
-    return initialDefaultConsultations;
+    return [];
   });
 
   // Sinkronisasi otomatis antar-tab browser dan saat window fokus
@@ -798,10 +798,10 @@ function App() {
     const syncFromStorage = () => {
       try {
         const saved = localStorage.getItem('teradesk_consultations_v1');
-        if (saved) {
+        if (saved !== null) {
           const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            setConsultationMessages(parsed);
+          if (Array.isArray(parsed)) {
+            setConsultationMessages(parsed.filter((m) => !isDummyConsultation(m)));
           }
         }
       } catch {
@@ -817,7 +817,7 @@ function App() {
 
     const handleCustomSync = (e) => {
       if (Array.isArray(e.detail)) {
-        setConsultationMessages(e.detail);
+        setConsultationMessages(e.detail.filter((m) => !isDummyConsultation(m)));
       }
     };
 
@@ -831,10 +831,11 @@ function App() {
     };
   }, []);
 
-  // Persist consultation messages
+  // Persist consultation messages (pastikan data dummy lama dibuang dari storage)
   useEffect(() => {
     try {
-      localStorage.setItem('teradesk_consultations_v1', JSON.stringify(consultationMessages));
+      const cleanMessages = (consultationMessages || []).filter((m) => !isDummyConsultation(m));
+      localStorage.setItem('teradesk_consultations_v1', JSON.stringify(cleanMessages));
     } catch {
       // ignore
     }
@@ -976,8 +977,14 @@ function App() {
     });
 
     const unsubConsultations = subscribeConsultations((cloudMessages) => {
-      if (Array.isArray(cloudMessages) && cloudMessages.length > 0) {
-        setConsultationMessages(cloudMessages);
+      if (Array.isArray(cloudMessages)) {
+        const cleanList = cloudMessages.filter((m) => !isDummyConsultation(m));
+        setConsultationMessages(cleanList);
+        try {
+          localStorage.setItem('teradesk_consultations_v1', JSON.stringify(cleanList));
+        } catch {
+          // ignore
+        }
       }
     });
 
@@ -1161,14 +1168,17 @@ function App() {
     let currentList = [];
     try {
       const saved = localStorage.getItem('teradesk_consultations_v1');
-      if (saved) {
-        currentList = JSON.parse(saved);
+      if (saved !== null) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          currentList = parsed.filter((m) => !isDummyConsultation(m));
+        }
       }
     } catch {
       // ignore
     }
-    if (!Array.isArray(currentList) || currentList.length === 0) {
-      currentList = consultationMessages;
+    if (!Array.isArray(currentList)) {
+      currentList = (consultationMessages || []).filter((m) => !isDummyConsultation(m));
     }
 
     const created = {
@@ -1245,17 +1255,45 @@ function App() {
   };
 
   const handleDeleteConsultation = (id) => {
-    setConsultationMessages((prev) => prev.filter((msg) => msg.id !== id));
+    setConsultationMessages((prev) => {
+      const next = prev.filter((msg) => msg.id !== id && !isDummyConsultation(msg));
+      try {
+        localStorage.setItem('teradesk_consultations_v1', JSON.stringify(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
     if (isFirebaseConfigured) {
       deleteConsultationFromDb(id);
     }
   };
 
-  const handleResetConsultations = () => {
-    setConsultationMessages(initialDefaultConsultations);
-    if (isFirebaseConfigured) {
-      resetConsultationsInDb(initialDefaultConsultations);
+  const handleClearAllConsultations = () => {
+    setConsultationMessages([]);
+    try {
+      localStorage.setItem('teradesk_consultations_v1', JSON.stringify([]));
+    } catch {
+      // ignore
     }
+    if (isFirebaseConfigured) {
+      clearAllConsultationsFromDb();
+    }
+    handleAddActivityLog({
+      category: 'module_submit',
+      type: 'warning',
+      userName: authUser?.name || 'Administrator',
+      userNim: authUser?.nim || '23404053',
+      userRole: authUser?.role || 'BPH',
+      userDivision: 'BPH',
+      moduleName: 'Kotak Masuk Konsultasi',
+      event: 'Kosongkan Kotak Masuk',
+      details: 'Semua permohonan konsultasi di kotak masuk telah dikosongkan dan dibersihkan.',
+    });
+  };
+
+  const handleResetConsultations = () => {
+    handleClearAllConsultations();
   };
 
   // Synchronize browser history and popstate (back/forward buttons)
@@ -1745,6 +1783,7 @@ function App() {
           onMarkAllConsultationsRead={handleMarkAllConsultationsRead}
           onDeleteConsultation={handleDeleteConsultation}
           onResetConsultations={handleResetConsultations}
+          onClearAllConsultations={handleClearAllConsultations}
           activityLogs={activityLogs}
           onAddActivityLog={handleAddActivityLog}
           onClearActivityLogs={handleClearActivityLogs}
