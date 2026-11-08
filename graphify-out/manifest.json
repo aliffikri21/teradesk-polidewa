@@ -12,8 +12,8 @@
     "semantic_hash": ""
   },
   "src/App.jsx": {
-    "mtime": 1794156134.106242,
-    "seen": 1794156204.0228808,
+    "mtime": 1794156234.8086574,
+    "seen": 1794156346.2754657,
     "ast_hash": "e5f0a23cb487ed974e04979615531090",
     "semantic_hash": ""
   },
@@ -24,8 +24,8 @@
     "semantic_hash": ""
   },
   "src/components/ContactModal.jsx": {
-    "mtime": 1794156141.1170156,
-    "seen": 1794156204.0228808,
+    "mtime": 1794156235.0268378,
+    "seen": 1794156346.2754657,
     "ast_hash": "ca82fed31e13c953195daa70ddc8a156",
     "semantic_hash": ""
   },
@@ -42,14 +42,14 @@
     "semantic_hash": ""
   },
   "src/components/Footer.jsx": {
-    "mtime": 1794156148.2982354,
-    "seen": 1794156204.0228808,
+    "mtime": 1794156235.1804404,
+    "seen": 1794156346.2754657,
     "ast_hash": "46193880c03a28b64106a3f4bfd35afc",
     "semantic_hash": ""
   },
   "src/components/Hero.jsx": {
-    "mtime": 1794156174.2171547,
-    "seen": 1794156204.0228808,
+    "mtime": 1794156235.366158,
+    "seen": 1794156346.2754657,
     "ast_hash": "2a9e97c737bf4345ae35a35c06490794",
     "semantic_hash": ""
   },
@@ -810,8 +810,8 @@
     "semantic_hash": ""
   },
   "src/components/services/AttendanceServicePage.jsx": {
-    "mtime": 1794156051.268241,
-    "seen": 1794156204.0238814,
+    "mtime": 1794156236.8715951,
+    "seen": 1794156346.2754657,
     "ast_hash": "9e3fb2d11d7638631f3b6a9332f05c61",
     "semantic_hash": ""
   },
@@ -822,8 +822,8 @@
     "semantic_hash": ""
   },
   "src/components/services/HelpdeskServicePage.jsx": {
-    "mtime": 1794156063.6483016,
-    "seen": 1794156204.0238814,
+    "mtime": 1794156236.9935372,
+    "seen": 1794156346.2754657,
     "ast_hash": "576d40a1e61766c49800de7e34ad1638",
     "semantic_hash": ""
   },
@@ -864,9 +864,9 @@
     "semantic_hash": ""
   },
   "src/components/admin/AdminDashboardPage.jsx": {
-    "mtime": 1794155994.0554142,
-    "seen": 1794156204.0228808,
-    "ast_hash": "280d24f426a6169b90b137e26647025c",
+    "mtime": 1794156370.1588612,
+    "seen": 1794156486.7991605,
+    "ast_hash": "3fe6a7d5a468e4b2289c8c67319d3db6",
     "semantic_hash": ""
   },
   "public/logo-teramedia.png": {
@@ -888,8 +888,8 @@
     "semantic_hash": ""
   },
   "src/components/services/KkmServicePage.jsx": {
-    "mtime": 1794156071.611715,
-    "seen": 1794156204.0238814,
+    "mtime": 1794156237.1781645,
+    "seen": 1794156346.2754657,
     "ast_hash": "385adbdd681b13fe557e7139614823e4",
     "semantic_hash": ""
   },
@@ -960,8 +960,8 @@
     "semantic_hash": ""
   },
   "src/components/services/ActivityArchiveServicePage.jsx": {
-    "mtime": 1794156086.5537271,
-    "seen": 1794156204.0238814,
+    "mtime": 1794156236.6817586,
+    "seen": 1794156346.2754657,
     "ast_hash": "543671eb0416c79e2af1f6cb8f3d0313",
     "semantic_hash": ""
   },
@@ -1056,14 +1056,14 @@
     "semantic_hash": ""
   },
   "src/components/common/CommandPalette.jsx": {
-    "mtime": 1794156111.82432,
-    "seen": 1794156204.0228808,
-    "ast_hash": "4eb9549b2b4e8c17ae082394f7b3fb3c",
+    "mtime": 1794156458.762722,
+    "seen": 1794156486.7991605,
+    "ast_hash": "f2d1c7838447374a2ade2ff780a0ff1f",
     "semantic_hash": ""
   },
   "src/components/services/PublicAttendanceModal.jsx": {
-    "mtime": 1794156098.2900605,
-    "seen": 1794156204.0238814,
+    "mtime": 1794156237.447826,
+    "seen": 1794156346.2754657,
     "ast_hash": "d1a15f14c8c1e86540b9ca74475a6c9d",
     "semantic_hash": ""
   },

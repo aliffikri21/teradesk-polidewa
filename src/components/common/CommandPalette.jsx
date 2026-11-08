@@ -743,17 +743,18 @@ export default function CommandPalette({
         </div>
 
         {/* 2. Category Filter Pills */}
-        <div className="px-3.5 sm:px-4 py-2 border-b border-slate-100 bg-slate-50/70 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+        <div className="px-4 sm:px-5 py-3 sm:py-3.5 border-b border-slate-100 bg-slate-50/80 flex items-center gap-2 overflow-x-auto no-scrollbar">
           {CATEGORY_TABS.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
+                type="button"
                 onClick={() => {
                   setActiveTab(tab.id);
                   setSelectedIndex(0);
                 }}
-                className={`px-3 py-1 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-150 cursor-pointer flex items-center gap-1.5 ${
+                className={`px-3.5 py-1.5 sm:py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-150 cursor-pointer flex items-center gap-1.5 ${
                   isActive
                     ? 'bg-slate-900 text-white font-bold shadow-xs'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/70'
@@ -761,7 +762,7 @@ export default function CommandPalette({
               >
                 <span>{tab.label}</span>
                 {tab.id === 'modul' && (
-                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${isActive ? 'bg-slate-800 text-blue-300' : 'bg-slate-200/80 text-slate-600'}`}>
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${isActive ? 'bg-slate-800 text-blue-300' : 'bg-slate-200/80 text-slate-600'}`}>
                     11
                   </span>
                 )}
@@ -773,7 +774,7 @@ export default function CommandPalette({
         {/* 3. Results List */}
         <div
           ref={listRef}
-          className="flex-1 overflow-y-auto p-2 sm:p-2.5 space-y-1 divide-y divide-slate-100 custom-scrollbar bg-white"
+          className="flex-1 overflow-y-auto p-2.5 sm:p-3 space-y-1 divide-y divide-slate-100 custom-scrollbar bg-white"
         >
           {filteredItems.length === 0 ? (
             <div className="py-12 px-4 text-center flex flex-col items-center justify-center">

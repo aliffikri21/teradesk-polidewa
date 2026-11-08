@@ -1747,7 +1747,7 @@ const AdminDashboardPage = ({
             className="w-full py-2 px-3 rounded-xl border border-rose-200 text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 transition-all cursor-pointer flex items-center justify-center gap-1.5 mb-2"
           >
             <LogOut size={13} />
-            <span>Hancurkan Sesi</span>
+            <span>Log Out</span>
           </button>
 
           {isMobile && (
@@ -5356,7 +5356,7 @@ const AdminDashboardPage = ({
                     className="flex items-center gap-2 bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-bold cursor-pointer transition-all shadow-xs"
                   >
                     <LogOut size={14} />
-                    <span>Hancurkan Sesi Sekarang</span>
+                    <span>Log Out</span>
                   </button>
                 </div>
               </div>
