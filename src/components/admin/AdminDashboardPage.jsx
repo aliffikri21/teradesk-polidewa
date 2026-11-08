@@ -1862,18 +1862,35 @@ const AdminDashboardPage = ({
               </button>
 
               {isNotificationsOpen && (
-                <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-xl border border-slate-200 p-4 z-50">
-                  <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-2">
-                    <p className="text-xs font-bold text-slate-900">Notifikasi & Pesan Masuk</p>
-                    {unreadConsultationsCount > 0 && (
-                      <button
-                        onClick={onMarkAllConsultationsRead}
-                        className="text-[10px] text-blue-600 font-semibold hover:underline cursor-pointer"
-                      >
-                        Tandai Semua Dibaca
-                      </button>
-                    )}
-                  </div>
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setIsNotificationsOpen(false)}
+                  />
+                  <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-xl border border-slate-200 p-4 z-50">
+                    <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-2">
+                      <p className="text-xs font-bold text-slate-900">Notifikasi & Pesan Masuk</p>
+                      <div className="flex items-center gap-2">
+                        {unreadConsultationsCount > 0 && (
+                          <button
+                            type="button"
+                            onClick={onMarkAllConsultationsRead}
+                            className="text-[10px] text-blue-600 font-semibold hover:underline cursor-pointer"
+                          >
+                            Tandai Semua Dibaca
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setIsNotificationsOpen(false)}
+                          className="text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+                          title="Tutup Notifikasi"
+                          aria-label="Tutup Notifikasi"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    </div>
 
                   {/* Consultation Inflow section */}
                   {consultationMessages.length > 0 && (
@@ -1928,7 +1945,8 @@ const AdminDashboardPage = ({
                     ))}
                   </div>
                 </div>
-              )}
+              </>
+            )}
             </div>
 
             {/* Quick Add Student Button */}
@@ -5885,8 +5903,14 @@ const AdminDashboardPage = ({
 
       {/* 3. MODAL: TAMBAH MAHASISWA BARU */}
       {isAddFormOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-md w-full p-6 animate-in fade-in zoom-in-95 duration-150">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs"
+          onClick={() => setIsAddFormOpen(false)}
+        >
+          <div
+            className="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-md w-full p-6 animate-in fade-in zoom-in-95 duration-150 relative"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm">
@@ -5897,10 +5921,13 @@ const AdminDashboardPage = ({
                 </h3>
               </div>
               <button
+                type="button"
                 onClick={() => setIsAddFormOpen(false)}
-                className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+                className="text-slate-400 hover:text-slate-700 p-2 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer z-20"
+                title="Tutup Modal"
+                aria-label="Tutup Modal"
               >
-                <X size={16} />
+                <X size={18} />
               </button>
             </div>
 
@@ -6070,8 +6097,14 @@ const AdminDashboardPage = ({
 
       {/* 4. MODAL: EDIT DATA MAHASISWA & AKUN */}
       {isEditModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-md w-full p-6 animate-in fade-in zoom-in-95 duration-150">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs"
+          onClick={() => setIsEditModalOpen(false)}
+        >
+          <div
+            className="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-md w-full p-6 animate-in fade-in zoom-in-95 duration-150 relative"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-xs">
@@ -6087,10 +6120,13 @@ const AdminDashboardPage = ({
                 </div>
               </div>
               <button
+                type="button"
                 onClick={() => setIsEditModalOpen(false)}
-                className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+                className="text-slate-400 hover:text-slate-700 p-2 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer z-20"
+                title="Tutup Modal"
+                aria-label="Tutup Modal"
               >
-                <X size={16} />
+                <X size={18} />
               </button>
             </div>
 
@@ -6280,9 +6316,15 @@ const AdminDashboardPage = ({
 
       {/* 5. MODAL: ADD / EDIT PROGRAM KERJA */}
       {isProkerModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-lg w-full p-6 animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs"
+          onClick={() => setIsProkerModalOpen(false)}
+        >
+          <div
+            className="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-lg w-full p-6 animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5 sticky top-0 bg-white z-20">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-xs">
                   <Bookmark size={15} />
@@ -6297,10 +6339,13 @@ const AdminDashboardPage = ({
                 </div>
               </div>
               <button
+                type="button"
                 onClick={() => setIsProkerModalOpen(false)}
-                className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+                className="text-slate-400 hover:text-slate-700 p-2 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer z-20"
+                title="Tutup Modal"
+                aria-label="Tutup Modal"
               >
-                <X size={16} />
+                <X size={18} />
               </button>
             </div>
 
@@ -6509,8 +6554,10 @@ const AdminDashboardPage = ({
           >
             {/* Close button */}
             <button
+              type="button"
               onClick={() => setSelectedMessage(null)}
-              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer"
+              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer z-20"
+              title="Tutup detail pesan"
               aria-label="Tutup detail pesan"
             >
               <X size={16} />
@@ -6645,8 +6692,14 @@ const AdminDashboardPage = ({
 
       {/* MODAL POP UP: DETAIL PESANAN TIKET DESAIN PUBDOK */}
       {selectedPubdokTicket && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white rounded-3xl max-w-2xl w-full border border-slate-200 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col max-h-[90vh]">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150"
+          onClick={() => setSelectedPubdokTicket(null)}
+        >
+          <div
+            className="bg-white rounded-3xl max-w-2xl w-full border border-slate-200 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col max-h-[90vh] relative"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Modal Header */}
             <div className="p-5 sm:p-6 border-b border-slate-100 flex items-start justify-between bg-slate-50/70">
               <div>
@@ -6668,8 +6721,9 @@ const AdminDashboardPage = ({
               <button
                 type="button"
                 onClick={() => setSelectedPubdokTicket(null)}
-                className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-xl transition-colors cursor-pointer"
+                className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-xl transition-colors cursor-pointer z-20"
                 title="Tutup Modal"
+                aria-label="Tutup Modal"
               >
                 <X size={18} />
               </button>

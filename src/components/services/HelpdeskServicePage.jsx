@@ -441,8 +441,14 @@ const HelpdeskServicePage = (props) => {
 
       {/* MODAL POP UP: DETAIL PESANAN TIKET DESAIN */}
       {selectedTicket && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="bg-slate-900 border border-white/20 rounded-3xl max-w-xl w-full shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col max-h-[90vh]">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-150"
+          onClick={() => setSelectedTicket(null)}
+        >
+          <div
+            className="bg-slate-900 border border-white/20 rounded-3xl max-w-xl w-full shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col max-h-[90vh] relative"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Header Modal */}
             <div className="p-5 sm:p-6 border-b border-white/10 flex items-start justify-between bg-white/5">
               <div>
@@ -464,8 +470,9 @@ const HelpdeskServicePage = (props) => {
               <button
                 type="button"
                 onClick={() => setSelectedTicket(null)}
-                className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-colors cursor-pointer"
+                className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-colors cursor-pointer z-20"
                 title="Tutup Modal"
+                aria-label="Tutup Modal"
               >
                 <X size={18} />
               </button>

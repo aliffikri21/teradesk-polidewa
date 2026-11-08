@@ -156,8 +156,9 @@ const Footer = ({ onOpenDevDashboard }) => {
             <button
               type="button"
               onClick={() => setIsCreditModalOpen(false)}
+              title="Tutup modal developer credit"
               aria-label="Tutup modal developer credit"
-              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer z-10"
+              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer z-20"
             >
               <X size={16} />
             </button>

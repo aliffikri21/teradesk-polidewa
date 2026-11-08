@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ShieldAlert, Search } from 'lucide-react';
+import { ShieldAlert, Search, X } from 'lucide-react';
 import Hero from './components/Hero';
 import Features from './components/Features';
 import AboutUs from './components/AboutUs';
@@ -1886,8 +1886,25 @@ function App() {
 
       {/* Access Denied Modal (Role Restriction) */}
       {accessDeniedInfo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-md w-full border border-slate-100 shadow-2xl text-center animate-in zoom-in-95 duration-150">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200"
+          onClick={() => setAccessDeniedInfo(null)}
+        >
+          <div
+            className="bg-white rounded-3xl p-6 sm:p-7 max-w-md w-full border border-slate-100 shadow-2xl text-center animate-in zoom-in-95 duration-150 relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button X */}
+            <button
+              type="button"
+              onClick={() => setAccessDeniedInfo(null)}
+              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer z-20"
+              title="Tutup Jendela"
+              aria-label="Tutup Jendela"
+            >
+              <X size={16} />
+            </button>
+
             <div className="w-14 h-14 rounded-2xl bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center mx-auto mb-4 shadow-xs">
               <ShieldAlert size={28} />
             </div>
@@ -1909,6 +1926,7 @@ function App() {
               </p>
             </div>
             <button
+              type="button"
               onClick={() => setAccessDeniedInfo(null)}
               className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-[0.99]"
             >

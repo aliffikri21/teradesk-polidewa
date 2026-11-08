@@ -2269,14 +2269,26 @@ const AttendanceServicePage = (props) => {
           MODAL: CHECK-IN PRESENSI DUAL MODE (PIN & QR SCANNER)
           ========================================================================= */}
       {isCheckinModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-200 rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl relative animate-in fade-in zoom-in-95">
+        <div
+          className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4"
+          onClick={() => {
+            setIsCheckinModalOpen(false);
+            setCheckinError('');
+          }}
+        >
+          <div
+            className="bg-white border border-slate-200 rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl relative animate-in fade-in zoom-in-95"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
+              type="button"
               onClick={() => {
                 setIsCheckinModalOpen(false);
                 setCheckinError('');
               }}
-              className="absolute right-5 top-5 text-slate-400 hover:text-slate-600 transition-colors"
+              className="absolute right-5 top-5 p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer z-20"
+              title="Tutup Modal"
+              aria-label="Tutup Modal"
             >
               <X size={18} />
             </button>
@@ -2416,11 +2428,20 @@ const AttendanceServicePage = (props) => {
           MODAL: AJUKAN IZIN / SAKIT
           ========================================================================= */}
       {isLeaveModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-200 rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl relative animate-in fade-in zoom-in-95">
+        <div
+          className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4"
+          onClick={() => setIsLeaveModalOpen(false)}
+        >
+          <div
+            className="bg-white border border-slate-200 rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl relative animate-in fade-in zoom-in-95"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
+              type="button"
               onClick={() => setIsLeaveModalOpen(false)}
-              className="absolute right-5 top-5 text-slate-400 hover:text-slate-600 transition-colors"
+              className="absolute right-5 top-5 p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer z-20"
+              title="Tutup Modal"
+              aria-label="Tutup Modal"
             >
               <X size={18} />
             </button>
@@ -2503,11 +2524,20 @@ const AttendanceServicePage = (props) => {
           MODAL: BUAT SESI RAPAT BARU
           ========================================================================= */}
       {isNewSessionModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-200 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl relative animate-in fade-in zoom-in-95 max-h-[90vh] overflow-y-auto">
+        <div
+          className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4"
+          onClick={() => setIsNewSessionModalOpen(false)}
+        >
+          <div
+            className="bg-white border border-slate-200 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl relative animate-in fade-in zoom-in-95 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
+              type="button"
               onClick={() => setIsNewSessionModalOpen(false)}
-              className="absolute right-5 top-5 text-slate-400 hover:text-slate-600 transition-colors"
+              className="absolute right-5 top-5 p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer z-20"
+              title="Tutup Modal"
+              aria-label="Tutup Modal"
             >
               <X size={18} />
             </button>
@@ -2742,11 +2772,20 @@ const AttendanceServicePage = (props) => {
           MODAL: EDIT DATA AGENDA RAPAT (KHUSUS KOORDINATOR DIVISI)
           ========================================================================= */}
       {isEditSessionModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-200 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl relative animate-in fade-in zoom-in-95 max-h-[90vh] overflow-y-auto">
+        <div
+          className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4"
+          onClick={() => setIsEditSessionModalOpen(false)}
+        >
+          <div
+            className="bg-white border border-slate-200 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl relative animate-in fade-in zoom-in-95 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
+              type="button"
               onClick={() => setIsEditSessionModalOpen(false)}
-              className="absolute right-5 top-5 text-slate-400 hover:text-slate-600 transition-colors"
+              className="absolute right-5 top-5 p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer z-20"
+              title="Tutup Modal"
+              aria-label="Tutup Modal"
             >
               <X size={18} />
             </button>
@@ -2988,11 +3027,20 @@ const AttendanceServicePage = (props) => {
           MODAL: TAMBAH ACTION ITEM NOTULA BARU
           ========================================================================= */}
       {isAddActionItemOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-200 rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl relative animate-in fade-in zoom-in-95">
+        <div
+          className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4"
+          onClick={() => setIsAddActionItemOpen(false)}
+        >
+          <div
+            className="bg-white border border-slate-200 rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl relative animate-in fade-in zoom-in-95"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
+              type="button"
               onClick={() => setIsAddActionItemOpen(false)}
-              className="absolute right-5 top-5 text-slate-400 hover:text-slate-600 transition-colors"
+              className="absolute right-5 top-5 p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer z-20"
+              title="Tutup Modal"
+              aria-label="Tutup Modal"
             >
               <X size={18} />
             </button>

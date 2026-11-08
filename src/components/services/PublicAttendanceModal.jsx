@@ -245,15 +245,24 @@ export default function PublicAttendanceModal({
   if (!isOpen || !session) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-[#070d24] flex flex-col items-center justify-start sm:justify-center p-3 sm:p-6 overscroll-contain transform-gpu">
-      <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden my-auto transform-gpu">
+    <div
+      className="fixed inset-0 z-50 overflow-y-auto bg-[#070d24] flex flex-col items-center justify-start sm:justify-center p-3 sm:p-6 overscroll-contain transform-gpu"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div
+        className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden my-auto transform-gpu"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header Bar */}
         <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-5 sm:p-6 relative">
           <button
             onClick={onClose}
             type="button"
-            className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-colors cursor-pointer"
-            aria-label="Tutup"
+            className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-colors cursor-pointer z-20"
+            title="Tutup Modal"
+            aria-label="Tutup Modal"
           >
             <X size={18} />
           </button>

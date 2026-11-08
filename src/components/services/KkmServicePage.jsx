@@ -901,11 +901,20 @@ const KkmServicePage = (props) => {
 
         {/* Modal: Tambah Order Pre-Order */}
         {orderModalOpen && (
-          <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl max-w-md w-full border border-slate-200 shadow-2xl p-6 relative">
+          <div
+            className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4"
+            onClick={() => setOrderModalOpen(false)}
+          >
+            <div
+              className="bg-white rounded-2xl max-w-md w-full border border-slate-200 shadow-2xl p-6 relative"
+              onClick={(e) => e.stopPropagation()}
+            >
               <button
+                type="button"
                 onClick={() => setOrderModalOpen(false)}
-                className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+                className="absolute right-4 top-4 text-slate-400 hover:text-slate-700 p-2 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer z-20"
+                title="Tutup Modal"
+                aria-label="Tutup Modal"
               >
                 <X size={18} />
               </button>

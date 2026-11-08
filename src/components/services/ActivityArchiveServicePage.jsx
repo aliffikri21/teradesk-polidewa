@@ -470,8 +470,10 @@ const ActivityArchiveServicePage = (props) => {
           >
             {/* Close Button */}
             <button
+              type="button"
               onClick={() => setSelectedActivity(null)}
-              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer z-10"
+              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer z-20"
+              title="Tutup detail kegiatan"
               aria-label="Tutup detail kegiatan"
             >
               <X size={16} />
@@ -586,8 +588,11 @@ const ActivityArchiveServicePage = (props) => {
           >
             {/* Close */}
             <button
+              type="button"
               onClick={() => setIsAddModalOpen(false)}
-              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer"
+              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer z-20"
+              title="Tutup formulir"
+              aria-label="Tutup formulir"
             >
               <X size={16} />
             </button>

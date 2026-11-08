@@ -712,14 +712,16 @@ export default function CommandPalette({
 
           {query && (
             <button
+              type="button"
               onClick={() => {
                 setQuery('');
                 inputRef.current?.focus();
               }}
               className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+              title="Hapus kata kunci"
               aria-label="Hapus kata kunci"
             >
-              <X size={16} />
+              <X size={14} />
             </button>
           )}
 
@@ -728,6 +730,16 @@ export default function CommandPalette({
               ESC
             </kbd>
           </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+            title="Tutup Jendela (ESC)"
+            aria-label="Tutup Jendela"
+          >
+            <X size={18} />
+          </button>
         </div>
 
         {/* 2. Category Filter Pills */}

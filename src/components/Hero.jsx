@@ -213,40 +213,46 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [] }) => {
 
         {/* Mobile Dropdown Menu Drawer */}
         {isMobileMenuOpen && (
-          <div className="md:hidden mx-auto w-[calc(100%-2rem)] max-w-6xl mt-2 p-3 bg-[#080f29]/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-[0_20px_45px_rgba(0,0,0,0.65)] animate-in fade-in slide-in-from-top-2 duration-200">
-            <div className="flex flex-col gap-1">
-              <a
-                href="#beranda"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-colors flex items-center justify-between ${
-                  activeSection === 'beranda' ? 'bg-white/15 text-white' : 'text-slate-300 hover:bg-white/10 hover:text-white'
-                }`}
-              >
-                <span>Beranda</span>
-                {activeSection === 'beranda' && <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />}
-              </a>
-              <a
-                href="#fitur"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-colors flex items-center justify-between ${
-                  activeSection === 'fitur' ? 'bg-white/15 text-white' : 'text-slate-300 hover:bg-white/10 hover:text-white'
-                }`}
-              >
-                <span>Fitur Layanan</span>
-                {activeSection === 'fitur' && <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />}
-              </a>
-              <a
-                href="#tentang-kami"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-colors flex items-center justify-between ${
-                  activeSection === 'tentang-kami' ? 'bg-white/15 text-white' : 'text-slate-300 hover:bg-white/10 hover:text-white'
-                }`}
-              >
-                <span>Tentang Kami</span>
-                {activeSection === 'tentang-kami' && <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />}
-              </a>
+          <>
+            <div
+              className="fixed inset-0 z-40 md:hidden"
+              onClick={() => setIsMobileMenuOpen(false)}
+            />
+            <div className="md:hidden mx-auto w-[calc(100%-2rem)] max-w-6xl mt-2 p-3 bg-[#080f29]/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-[0_20px_45px_rgba(0,0,0,0.65)] animate-in fade-in slide-in-from-top-2 duration-200 relative z-50">
+              <div className="flex flex-col gap-1">
+                <a
+                  href="#beranda"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-colors flex items-center justify-between ${
+                    activeSection === 'beranda' ? 'bg-white/15 text-white' : 'text-slate-300 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  <span>Beranda</span>
+                  {activeSection === 'beranda' && <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />}
+                </a>
+                <a
+                  href="#fitur"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-colors flex items-center justify-between ${
+                    activeSection === 'fitur' ? 'bg-white/15 text-white' : 'text-slate-300 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  <span>Fitur Layanan</span>
+                  {activeSection === 'fitur' && <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />}
+                </a>
+                <a
+                  href="#tentang-kami"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-colors flex items-center justify-between ${
+                    activeSection === 'tentang-kami' ? 'bg-white/15 text-white' : 'text-slate-300 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  <span>Tentang Kami</span>
+                  {activeSection === 'tentang-kami' && <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />}
+                </a>
+              </div>
             </div>
-          </div>
+          </>
         )}
       </div>
 

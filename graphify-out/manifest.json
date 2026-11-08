@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "src/App.jsx": {
-    "mtime": 1794155365.3885567,
-    "seen": 1794155401.0089183,
-    "ast_hash": "3728cab6b2d00fe021b059542b862cb5",
+    "mtime": 1794156134.106242,
+    "seen": 1794156204.0228808,
+    "ast_hash": "e5f0a23cb487ed974e04979615531090",
     "semantic_hash": ""
   },
   "src/components/AboutUs.jsx": {
@@ -24,9 +24,9 @@
     "semantic_hash": ""
   },
   "src/components/ContactModal.jsx": {
-    "mtime": 1793874655.6272354,
-    "seen": 1793974203.7211328,
-    "ast_hash": "ebc35e5aff436014941fe8751577e063",
+    "mtime": 1794156141.1170156,
+    "seen": 1794156204.0228808,
+    "ast_hash": "ca82fed31e13c953195daa70ddc8a156",
     "semantic_hash": ""
   },
   "src/components/Features.jsx": {
@@ -42,15 +42,15 @@
     "semantic_hash": ""
   },
   "src/components/Footer.jsx": {
-    "mtime": 1793982679.2254276,
-    "seen": 1794057580.4550753,
-    "ast_hash": "13f5d22a6214ce4dec956c16f91eb288",
+    "mtime": 1794156148.2982354,
+    "seen": 1794156204.0228808,
+    "ast_hash": "46193880c03a28b64106a3f4bfd35afc",
     "semantic_hash": ""
   },
   "src/components/Hero.jsx": {
-    "mtime": 1794083925.7965395,
-    "seen": 1794084891.590423,
-    "ast_hash": "23240a41735b2dfbe7d96e6c3269b406",
+    "mtime": 1794156174.2171547,
+    "seen": 1794156204.0228808,
+    "ast_hash": "2a9e97c737bf4345ae35a35c06490794",
     "semantic_hash": ""
   },
   "src/main.jsx": {
@@ -810,9 +810,9 @@
     "semantic_hash": ""
   },
   "src/components/services/AttendanceServicePage.jsx": {
-    "mtime": 1794121337.3168342,
-    "seen": 1794154679.4097254,
-    "ast_hash": "da11d650f97b4753037684ae435e904d",
+    "mtime": 1794156051.268241,
+    "seen": 1794156204.0238814,
+    "ast_hash": "9e3fb2d11d7638631f3b6a9332f05c61",
     "semantic_hash": ""
   },
   "src/components/services/FinanceServicePage.jsx": {
@@ -822,9 +822,9 @@
     "semantic_hash": ""
   },
   "src/components/services/HelpdeskServicePage.jsx": {
-    "mtime": 1794072901.0156286,
-    "seen": 1794073292.575924,
-    "ast_hash": "56d79ef5093fc5dd1834bb0d2af98f70",
+    "mtime": 1794156063.6483016,
+    "seen": 1794156204.0238814,
+    "ast_hash": "576d40a1e61766c49800de7e34ad1638",
     "semantic_hash": ""
   },
   "src/components/services/HrServicePage.jsx": {
@@ -864,9 +864,9 @@
     "semantic_hash": ""
   },
   "src/components/admin/AdminDashboardPage.jsx": {
-    "mtime": 1794155348.3888125,
-    "seen": 1794155401.0089183,
-    "ast_hash": "cb2ed045ba283b2dfa3db1896aed488b",
+    "mtime": 1794155994.0554142,
+    "seen": 1794156204.0228808,
+    "ast_hash": "280d24f426a6169b90b137e26647025c",
     "semantic_hash": ""
   },
   "public/logo-teramedia.png": {
@@ -888,9 +888,9 @@
     "semantic_hash": ""
   },
   "src/components/services/KkmServicePage.jsx": {
-    "mtime": 1794081396.8364172,
-    "seen": 1794083233.4512107,
-    "ast_hash": "c277aadeab0e92f04107b1f804f05e64",
+    "mtime": 1794156071.611715,
+    "seen": 1794156204.0238814,
+    "ast_hash": "385adbdd681b13fe557e7139614823e4",
     "semantic_hash": ""
   },
   "src/data/defaultProker.js": {
@@ -960,14 +960,14 @@
     "semantic_hash": ""
   },
   "src/components/services/ActivityArchiveServicePage.jsx": {
-    "mtime": 1794081395.8191245,
-    "seen": 1794083233.4512107,
-    "ast_hash": "3f42277818a91cb900aaa1c0839042fc",
+    "mtime": 1794156086.5537271,
+    "seen": 1794156204.0238814,
+    "ast_hash": "543671eb0416c79e2af1f6cb8f3d0313",
     "semantic_hash": ""
   },
   "src/data/defaultConsultations.js": {
-    "mtime": 1794155209.8045664,
-    "seen": 1794155401.0089183,
+    "mtime": 1794155538.548916,
+    "seen": 1794156204.0238814,
     "ast_hash": "24fdf4b880c8e3d4e1300157d547eff9",
     "semantic_hash": ""
   },
@@ -984,8 +984,8 @@
     "semantic_hash": ""
   },
   "src/services/consultationService.js": {
-    "mtime": 1794155223.3027802,
-    "seen": 1794155401.0089183,
+    "mtime": 1794155538.7668045,
+    "seen": 1794156204.0238814,
     "ast_hash": "7bb69e4b141adc1243785094beb92919",
     "semantic_hash": ""
   },
@@ -1056,15 +1056,15 @@
     "semantic_hash": ""
   },
   "src/components/common/CommandPalette.jsx": {
-    "mtime": 1794083925.911429,
-    "seen": 1794084891.590423,
-    "ast_hash": "3f997a1b3d07b2c0c3c9f96c1879a0a8",
+    "mtime": 1794156111.82432,
+    "seen": 1794156204.0228808,
+    "ast_hash": "4eb9549b2b4e8c17ae082394f7b3fb3c",
     "semantic_hash": ""
   },
   "src/components/services/PublicAttendanceModal.jsx": {
-    "mtime": 1794154893.4151862,
-    "seen": 1794155401.0089183,
-    "ast_hash": "947b66618a1d68c31cf6074e148f049c",
+    "mtime": 1794156098.2900605,
+    "seen": 1794156204.0238814,
+    "ast_hash": "d1a15f14c8c1e86540b9ca74475a6c9d",
     "semantic_hash": ""
   },
   "src/utils/geoDistance.js": {
