@@ -245,10 +245,10 @@ export default function PublicAttendanceModal({
   if (!isOpen || !session) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden my-6">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-[#070d24] flex flex-col items-center justify-start sm:justify-center p-3 sm:p-6 overscroll-contain transform-gpu">
+      <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden my-auto transform-gpu">
         {/* Header Bar */}
-        <div className="bg-gradient-to-r from-slate-900 via-purple-950 to-slate-900 text-white p-5 sm:p-6 relative">
+        <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-5 sm:p-6 relative">
           <button
             onClick={onClose}
             type="button"
@@ -258,8 +258,8 @@ export default function PublicAttendanceModal({
             <X size={18} />
           </button>
 
-          <div className="flex items-center gap-2.5 mb-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+          <div className="flex items-center gap-2 mb-2">
+            <img src="/logo-teramedia.png" alt="TERAMEDIA" className="w-5 h-5 object-contain" />
             <span className="text-[11px] font-bold uppercase tracking-wider text-purple-200">
               Presensi Mandiri Smartphone
             </span>
@@ -281,7 +281,7 @@ export default function PublicAttendanceModal({
         </div>
 
         {/* Content Body */}
-        <div className="p-5 sm:p-6 space-y-5 max-h-[75vh] overflow-y-auto">
+        <div className="p-5 sm:p-6 space-y-5">
           {submissionSuccess ? (
             /* =========================================================================
                SUCCESS CONFIRMATION SCREEN
@@ -522,10 +522,11 @@ export default function PublicAttendanceModal({
                   <input
                     type="text"
                     required
+                    autoComplete="name"
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
                     placeholder="Contoh: Muhammad Akbar / Cindy Claudia"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-base sm:text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all"
                   />
                 </div>
 
@@ -536,11 +537,14 @@ export default function PublicAttendanceModal({
                     </label>
                     <input
                       type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       required
+                      autoComplete="off"
                       value={form.nim}
                       onChange={(e) => setForm({ ...form, nim: e.target.value })}
                       placeholder="Contoh: 23404015"
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-base sm:text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all"
                     />
                   </div>
 
@@ -551,7 +555,7 @@ export default function PublicAttendanceModal({
                     <select
                       value={form.division}
                       onChange={(e) => setForm({ ...form, division: e.target.value })}
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all cursor-pointer"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-base sm:text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all cursor-pointer"
                     >
                       {OFFICIAL_DIVISIONS.map((div) => (
                         <option key={div} value={div}>
@@ -604,7 +608,7 @@ export default function PublicAttendanceModal({
                         ? 'Contoh: Hadir di Gazebo Lap. Pancasila Palopo'
                         : 'Alasan izin / sakit...'
                     }
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-base sm:text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all"
                   />
                 </div>
 

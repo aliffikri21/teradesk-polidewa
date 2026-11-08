@@ -1651,11 +1651,34 @@ function App() {
 
   return (
     <div className={`min-h-screen font-sans flex flex-col ${
-      currentView.page === 'landing'
+      currentView.page === 'landing' && !activePublicAttendanceId
         ? 'bg-[#060D25] text-white landing-page-root'
         : 'bg-[#F8FAFC] text-slate-800 selection:bg-blue-600 selection:text-white'
     }`}>
-      {currentView.page === 'landing' ? (
+      {/* 1. Mode Presensi Mandiri Mobile / Tamu: Render mandiri dan ringan tanpa membebani GPU dengan background landing page */}
+      {activePublicAttendanceId ? (
+        <PublicAttendanceModal
+          isOpen={true}
+          onClose={() => {
+            setActivePublicAttendanceId(null);
+            if (typeof window !== 'undefined' && window.location.search.includes('presensi')) {
+              const cleanUrl = window.location.origin + window.location.pathname;
+              window.history.replaceState({}, document.title, cleanUrl);
+            }
+          }}
+          session={
+            attendanceSessions.find((s) => s.id === activePublicAttendanceId) ||
+            attendanceSessions.find((s) => s.status === 'active') ||
+            attendanceSessions[0]
+          }
+          allRecords={attendanceList}
+          onAddAttendanceRecord={handleAddAttendanceRecord}
+          onOpenPortal={() => {
+            setActivePublicAttendanceId(null);
+            handleNavigate('portal');
+          }}
+        />
+      ) : currentView.page === 'landing' ? (
         <div className="landing-page-root w-full flex flex-col">
           {/* Hero Section with Embedded Nav & Sliced Widgets */}
           <Hero
@@ -1856,26 +1879,6 @@ function App() {
         </div>
       )}
 
-      {/* Public Attendance Modal (Scannable QR check-in untuk smartphone anggota/tamu non-login) */}
-      <PublicAttendanceModal
-        isOpen={Boolean(activePublicAttendanceId)}
-        onClose={() => {
-          setActivePublicAttendanceId(null);
-          if (typeof window !== 'undefined' && window.location.search.includes('presensi')) {
-            const cleanUrl = window.location.origin + window.location.pathname;
-            window.history.replaceState({}, document.title, cleanUrl);
-          }
-        }}
-        session={
-          attendanceSessions.find((s) => s.id === activePublicAttendanceId) ||
-          attendanceSessions.find((s) => s.status === 'active') ||
-          attendanceSessions[0]
-        }
-        allRecords={attendanceList}
-        onAddAttendanceRecord={handleAddAttendanceRecord}
-        onOpenPortal={() => handleNavigate('portal')}
-      />
-
       {/* Contact Modal */}
       <ContactModal
         isOpen={isContactOpen}
@@ -1883,8 +1886,8 @@ function App() {
         onSubmitMessage={handleSendConsultation}
       />
 
-      {/* Floating Spotlight Command Palette Trigger Pill (Khusus di luar Landing Page) */}
-      {currentView.page !== 'landing' && (
+      {/* Floating Spotlight Command Palette Trigger Pill (Khusus di luar Landing Page & Bukan di mode presensi HP) */}
+      {currentView.page !== 'landing' && !activePublicAttendanceId && (
         <button
           type="button"
           onClick={() => setIsCommandPaletteOpen(true)}
