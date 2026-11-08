@@ -36,8 +36,8 @@
     "semantic_hash": ""
   },
   "src/components/FeaturesPortal.jsx": {
-    "mtime": 1794159741.240267,
-    "seen": 1794159870.4947855,
+    "mtime": 1794160319.811195,
+    "seen": 1794160791.8321464,
     "ast_hash": "599fd69fd730682c5fc427c29ca1046e",
     "semantic_hash": ""
   },
@@ -846,8 +846,8 @@
     "semantic_hash": ""
   },
   "src/components/services/ServicePageLayout.jsx": {
-    "mtime": 1794159786.0947647,
-    "seen": 1794159870.4947855,
+    "mtime": 1794160320.1545935,
+    "seen": 1794160791.8321464,
     "ast_hash": "5684ffe69e987f7dbc888894636a4787",
     "semantic_hash": ""
   },
@@ -864,9 +864,9 @@
     "semantic_hash": ""
   },
   "src/components/admin/AdminDashboardPage.jsx": {
-    "mtime": 1794159839.5789914,
-    "seen": 1794159870.4947855,
-    "ast_hash": "d66cd55458fad124053b33c76d59ec60",
+    "mtime": 1794160740.9146228,
+    "seen": 1794160791.8321464,
+    "ast_hash": "3e83ea76f0ed0bb398f4ffef1d1d60d6",
     "semantic_hash": ""
   },
   "public/logo-teramedia.png": {
@@ -1056,8 +1056,8 @@
     "semantic_hash": ""
   },
   "src/components/common/CommandPalette.jsx": {
-    "mtime": 1794159709.7177467,
-    "seen": 1794159870.4947855,
+    "mtime": 1794160320.0521631,
+    "seen": 1794160791.8321464,
     "ast_hash": "5dda8d5672b910eb896432d64e5dabbb",
     "semantic_hash": ""
   },
