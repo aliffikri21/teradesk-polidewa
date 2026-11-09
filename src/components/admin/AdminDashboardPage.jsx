@@ -1159,6 +1159,82 @@ const AdminDashboardPage = ({
     };
   }, [adminAttendanceList, adminAttendanceSessions, activeAttendanceSession]);
 
+  // Real-Time Division Attendance & Cadre Statistics for Executive Dashboard
+  const [executiveDivisionView, setExecutiveDivisionView] = useState('attendance'); // 'attendance' | 'members'
+
+  const executiveDivisionStats = useMemo(() => {
+    const sessionMultiplier = Math.max(1, (adminAttendanceSessions || []).length);
+    const totalMembers = (accounts || []).length;
+
+    const stats = OFFICIAL_DIVISIONS.map((divName) => {
+      const cfg = getDivisionConfig(divName);
+      const members = (accounts || []).filter(
+        (a) => normalizeDivisionName(a.division) === divName
+      );
+      const memberCount = members.length;
+      const memberPct = totalMembers > 0 ? Math.round((memberCount / totalMembers) * 100) : 0;
+
+      const divRecs = (adminAttendanceList || []).filter(
+        (r) => normalizeDivisionName(r.division) === divName
+      );
+
+      const hadirTepat = divRecs.filter((r) => r.status && r.status.includes('Tepat')).length;
+      const hadirTerlambat = divRecs.filter((r) => r.status && r.status.includes('Terlambat')).length;
+      const izinSakit = divRecs.filter((r) => r.status && (r.status.includes('Izin') || r.status.includes('Sakit'))).length;
+      const totalHadirDiv = hadirTepat + hadirTerlambat;
+
+      const expectedCount = memberCount > 0 ? (memberCount * sessionMultiplier) : (totalHadirDiv > 0 ? totalHadirDiv : 1);
+      const effectiveTarget = Math.max(expectedCount, totalHadirDiv);
+
+      const ratePct = memberCount > 0 || totalHadirDiv > 0
+        ? Math.min(100, Math.round((totalHadirDiv / effectiveTarget) * 100))
+        : 0;
+
+      const onTimePct = totalHadirDiv > 0
+        ? Math.round((hadirTepat / totalHadirDiv) * 100)
+        : 100;
+
+      const tepatPct = Math.min(100, Math.round((hadirTepat / effectiveTarget) * 100));
+      const telatPct = Math.min(100, Math.round((hadirTerlambat / effectiveTarget) * 100));
+      const izinPct = Math.min(100, Math.round((izinSakit / effectiveTarget) * 100));
+      const belumPct = Math.max(0, 100 - (tepatPct + telatPct + izinPct));
+
+      return {
+        name: divName,
+        cfg,
+        memberCount,
+        memberPct,
+        totalHadir: totalHadirDiv,
+        hadirTepat,
+        hadirTerlambat,
+        izinSakit,
+        effectiveTarget,
+        ratePct,
+        onTimePct,
+        tepatPct,
+        telatPct,
+        izinPct,
+        belumPct,
+      };
+    });
+
+    const rankedByRate = [...stats].sort((a, b) => b.ratePct - a.ratePct || b.onTimePct - a.onTimePct);
+    const topDivision = rankedByRate[0] || stats[0];
+
+    const totalExpectedAll = stats.reduce((sum, d) => sum + d.effectiveTarget, 0);
+    const totalHadirAll = stats.reduce((sum, d) => sum + d.totalHadir, 0);
+    const overallRatePct = totalExpectedAll > 0 ? Math.round((totalHadirAll / totalExpectedAll) * 100) : 0;
+
+    return {
+      stats,
+      rankedByRate,
+      topDivision,
+      totalMembers,
+      totalHadirAll,
+      overallRatePct,
+    };
+  }, [accounts, adminAttendanceList, adminAttendanceSessions]);
+
   const addLog = (event, type = 'info', extra = {}) => {
     const time = getTimestamp();
     const date = new Date().toLocaleDateString('id-ID', {
@@ -2766,64 +2842,230 @@ const AdminDashboardPage = ({
               {/* ROW 3: DIVISI DISTRIBUTION & INTEGRATED SERVICES TABLE */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 
-                {/* LEFT CARD (40%): Distribusi Anggota per Divisi */}
+                {/* LEFT CARD (40%): Statistik Kehadiran & Partisipasi per Divisi (REAL-TIME ANALYTICS) */}
                 <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
                   <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2 text-xs font-semibold text-slate-600">
-                        <Users size={16} className="text-indigo-500" />
-                        <span>Distribusi Anggota per Divisi</span>
+                    {/* Header with Title and Mode Switch */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center border border-purple-100">
+                          <BarChart3 size={15} />
+                        </div>
+                        <div>
+                          <h3 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                            <span>Statistik Kehadiran per Divisi</span>
+                            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                              Live
+                            </span>
+                          </h3>
+                          <p className="text-[10px] text-slate-400 font-medium">
+                            {executiveDivisionStats.totalMembers} Kader Aktif • 6 Divisi
+                          </p>
+                        </div>
                       </div>
-                      <span className="text-[11px] font-bold text-slate-500">48 Kader Aktif</span>
+
+                      {/* View Switch: Kehadiran vs Komposisi Kader */}
+                      <div className="flex items-center bg-slate-100 p-0.5 rounded-lg text-[10px] font-bold self-start sm:self-auto">
+                        <button
+                          type="button"
+                          onClick={() => setExecutiveDivisionView('attendance')}
+                          className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
+                            executiveDivisionView === 'attendance'
+                              ? 'bg-white text-slate-900 shadow-xs'
+                              : 'text-slate-500 hover:text-slate-800'
+                          }`}
+                        >
+                          Kehadiran
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setExecutiveDivisionView('members')}
+                          className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
+                            executiveDivisionView === 'members'
+                              ? 'bg-white text-slate-900 shadow-xs'
+                              : 'text-slate-500 hover:text-slate-800'
+                          }`}
+                        >
+                          Kader
+                        </button>
+                      </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-2 text-left mb-4">
-                      <div>
-                        <p className="text-[10px] text-slate-400 font-medium flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-violet-600"></span> BPH & Kesekretariatan
-                        </p>
-                        <p className="text-sm font-bold text-slate-900 mt-0.5">14 Kader (29%)</p>
+                    {/* Top Executive Summary Pill / Banner */}
+                    {executiveDivisionView === 'attendance' ? (
+                      <div className="mb-4 bg-gradient-to-r from-purple-50/80 via-indigo-50/40 to-slate-50/60 p-3 rounded-xl border border-purple-100/80 flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="w-6 h-6 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                            <Trophy size={13} />
+                          </div>
+                          <div className="min-w-0">
+                            <span className="text-[10px] font-semibold text-slate-400 block uppercase tracking-wider">
+                              Divisi Terdisiplin
+                            </span>
+                            <span className="text-xs font-extrabold text-slate-800 truncate block">
+                              {executiveDivisionStats.topDivision?.cfg.shortName || 'BPH'}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <span className="text-xs font-black text-purple-700 bg-purple-100/70 px-2 py-0.5 rounded-md border border-purple-200">
+                            {executiveDivisionStats.topDivision?.ratePct || 0}% Hadir
+                          </span>
+                          <span className="text-[10px] text-slate-400 block mt-0.5 font-medium">
+                            {executiveDivisionStats.topDivision?.onTimePct || 0}% Tepat
+                          </span>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-[10px] text-slate-400 font-medium flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-teal-400"></span> Pubdok & Humas
-                        </p>
-                        <p className="text-sm font-bold text-slate-900 mt-0.5">20 Kader (42%)</p>
+                    ) : (
+                      <div className="mb-4 bg-gradient-to-r from-blue-50/80 via-slate-50 to-white p-3 rounded-xl border border-blue-100/80 flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="w-6 h-6 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
+                            <Users size={13} />
+                          </div>
+                          <div className="min-w-0">
+                            <span className="text-[10px] font-semibold text-slate-400 block uppercase tracking-wider">
+                              Total Pengurus Terdaftar
+                            </span>
+                            <span className="text-xs font-extrabold text-slate-800 truncate block">
+                              {executiveDivisionStats.totalMembers} Mahasiswa
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setCurrentNav('students')}
+                          className="text-[11px] font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer"
+                        >
+                          <span>Kelola SDM</span>
+                          <ArrowRight size={11} />
+                        </button>
                       </div>
-                      <div>
-                        <p className="text-[10px] text-slate-400 font-medium flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span> Kaderisasi & KKM
-                        </p>
-                        <p className="text-sm font-bold text-slate-900 mt-0.5">14 Kader (29%)</p>
+                    )}
+
+                    {/* Chart Body: Ranked Horizontal Bars */}
+                    {executiveDivisionView === 'attendance' ? (
+                      <div className="space-y-3">
+                        {executiveDivisionStats.rankedByRate.map((d) => (
+                          <div key={d.name} className="group">
+                            <div className="flex items-center justify-between text-xs mb-1">
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                <span className={`text-[10px] font-extrabold px-1.5 py-0.2 rounded-md border ${d.cfg.badgeColor}`}>
+                                  {d.cfg.shortName}
+                                </span>
+                                <span className="text-xs font-medium text-slate-700 truncate max-w-[150px] sm:max-w-[180px]" title={d.name}>
+                                  {d.name.replace(/Divisi\s*/, '')}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <span className="text-xs font-black text-slate-900">
+                                  {d.ratePct}%
+                                </span>
+                                <span className="text-[10px] text-slate-400 font-mono hidden sm:inline">
+                                  ({d.totalHadir}/{d.effectiveTarget})
+                                </span>
+                                <span
+                                  className={`text-[9px] font-bold px-1.5 py-0.2 rounded-md border ${
+                                    d.ratePct >= 80
+                                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                      : d.ratePct >= 50
+                                      ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                      : 'bg-rose-50 text-rose-700 border-rose-200'
+                                  }`}
+                                >
+                                  {d.ratePct >= 80 ? 'Prima' : d.ratePct >= 50 ? 'Cukup' : 'Rendah'}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Stacked Progress Bar */}
+                            <div
+                              className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden flex shadow-inner cursor-pointer"
+                              title={`${d.name}: Tepat ${d.hadirTepat}, Terlambat ${d.hadirTerlambat}, Izin/Sakit ${d.izinSakit}, Target ${d.effectiveTarget}`}
+                            >
+                              {d.tepatPct > 0 && (
+                                <div
+                                  style={{ width: `${d.tepatPct}%` }}
+                                  className="bg-emerald-500 h-full transition-all duration-500 hover:opacity-90"
+                                />
+                              )}
+                              {d.telatPct > 0 && (
+                                <div
+                                  style={{ width: `${d.telatPct}%` }}
+                                  className="bg-amber-400 h-full transition-all duration-500 hover:opacity-90"
+                                />
+                              )}
+                              {d.izinPct > 0 && (
+                                <div
+                                  style={{ width: `${d.izinPct}%` }}
+                                  className="bg-purple-400 h-full transition-all duration-500 hover:opacity-90"
+                                />
+                              )}
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {executiveDivisionStats.stats.map((d) => (
+                          <div key={d.name} className="group">
+                            <div className="flex items-center justify-between text-xs mb-1">
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                <span className={`text-[10px] font-extrabold px-1.5 py-0.2 rounded-md border ${d.cfg.badgeColor}`}>
+                                  {d.cfg.shortName}
+                                </span>
+                                <span className="text-xs font-medium text-slate-700 truncate max-w-[150px] sm:max-w-[180px]" title={d.name}>
+                                  {d.name.replace(/Divisi\s*/, '')}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <span className="text-xs font-black text-slate-900">
+                                  {d.memberCount} Kader
+                                </span>
+                                <span className="text-[10px] text-slate-400 font-mono">
+                                  ({d.memberPct}%)
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Member Progress Bar */}
+                            <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden shadow-inner">
+                              <div
+                                style={{ width: `${d.memberPct}%` }}
+                                className={`h-full transition-all duration-500 ${d.cfg.barColor}`}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
-                  {/* Half-Donut Gauge SVG */}
-                  <div className="w-full flex items-center justify-center pt-2">
-                    <svg viewBox="0 0 240 130" className="w-48 overflow-visible">
-                      <path
-                        d="M 30,120 A 90,90 0 0,1 210,120"
-                        fill="none"
-                        stroke="#F1F5F9"
-                        strokeWidth="24"
-                        strokeLinecap="round"
-                      />
-                      <path
-                        d="M 120,30 A 90,90 0 0,1 210,120"
-                        fill="none"
-                        stroke="#2DD4BF"
-                        strokeWidth="24"
-                        strokeLinecap="round"
-                      />
-                      <path
-                        d="M 30,120 A 90,90 0 0,1 125,30"
-                        fill="none"
-                        stroke="#5C46E5"
-                        strokeWidth="24"
-                        strokeLinecap="round"
-                      />
-                    </svg>
+                  {/* Footer Legend & Action */}
+                  <div className="pt-3 mt-4 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-500">
+                    {executiveDivisionView === 'attendance' ? (
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        <span className="flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Tepat
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-full bg-amber-400"></span> Terlambat
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-full bg-purple-400"></span> Izin
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-slate-400">Proporsi kader aktif berdasarkan database SDM</span>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => setCurrentNav('attendance')}
+                      className="font-bold text-purple-600 hover:text-purple-700 flex items-center gap-1 cursor-pointer shrink-0"
+                    >
+                      <span>Lihat Rincian</span>
+                      <ArrowRight size={11} />
+                    </button>
                   </div>
                 </div>
 
