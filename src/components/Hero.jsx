@@ -517,7 +517,7 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [], leadershipPr
           {/* -------------------------------------------------------------------
               COLUMN 2: Center Showcase Card Stack (React Bits CardSwap Component)
               ------------------------------------------------------------------- */}
-          <div className="relative w-full max-w-[365px] sm:max-w-[385px] lg:max-w-[355px] xl:max-w-[430px] 2xl:max-w-[470px] lg:mt-2 xl:mt-4 select-none shrink-0 flex flex-col items-center">
+          <div className="hidden md:flex relative w-full max-w-[365px] sm:max-w-[385px] lg:max-w-[355px] xl:max-w-[430px] 2xl:max-w-[470px] lg:mt-2 xl:mt-4 select-none shrink-0 flex-col items-center">
             <CardSwap
               ref={cardSwapRef}
               width={360}
