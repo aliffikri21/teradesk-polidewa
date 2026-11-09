@@ -381,7 +381,7 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [], leadershipPr
               COLUMN 1: Left Dark Frosted Overlapping Stack (Program Kerja Cards)
               ------------------------------------------------------------------- */}
           <div
-            className="relative w-full max-w-[270px] sm:max-w-[280px] lg:max-w-[260px] xl:w-[295px] 2xl:w-[330px] min-h-[215px] sm:min-h-[230px] xl:min-h-[240px] 2xl:min-h-[255px] lg:mt-2 select-none shrink-0"
+            className="relative w-full max-w-[315px] sm:max-w-[330px] lg:max-w-[295px] xl:w-[325px] 2xl:w-[355px] min-h-[220px] sm:min-h-[230px] xl:min-h-[240px] 2xl:min-h-[255px] lg:mt-2 select-none shrink-0"
             onMouseEnter={() => setIsProkerHovered(true)}
             onMouseLeave={() => setIsProkerHovered(false)}
           >
@@ -416,7 +416,7 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [], leadershipPr
             )}
 
             {/* Layer 1: Front Active Card (Kartu Utama di depan) */}
-            <div className="relative z-30 h-full flex flex-col justify-between bg-[#0c1433]/85 backdrop-blur-md rounded-2xl sm:rounded-3xl p-4 sm:p-5 xl:p-6 2xl:p-7 border border-white/20 shadow-[0_22px_55px_rgba(0,0,0,0.7)] transition-all duration-300">
+            <div className="relative z-30 h-full flex flex-col justify-between bg-[#0c1433]/85 backdrop-blur-md rounded-2xl sm:rounded-3xl p-4 sm:p-5 xl:p-6 2xl:p-7 border border-white/20 shadow-[0_22px_55px_rgba(0,0,0,0.7)] transition-all duration-300 overflow-hidden">
               {/* Animated Content Wrapper (Cross-slide & Smooth Fade) */}
               <div
                 className="transition-all duration-240 ease-out"
@@ -428,15 +428,15 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [], leadershipPr
                 }}
               >
                 {/* Card Header: Badge & Stepper Controls */}
-                <div className="flex items-center justify-between gap-2 mb-3">
-                  <div className="flex items-center gap-2 bg-white/10 w-fit px-3 py-1.5 rounded-lg text-xs xl:text-[13px] 2xl:text-sm font-medium text-white border border-white/10 shadow-xs">
-                    <Bookmark size={14} className="text-white fill-white/80" />
-                    <span className="truncate max-w-[145px] sm:max-w-[165px]">{currentProker.badge || 'Update Program Kerja'}</span>
+                <div className="flex items-center justify-between gap-2 mb-3 min-w-0 w-full">
+                  <div className="flex items-center gap-2 bg-white/10 min-w-0 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs xl:text-[13px] 2xl:text-sm font-medium text-white border border-white/10 shadow-xs truncate">
+                    <Bookmark size={14} className="text-white fill-white/80 shrink-0" />
+                    <span className="truncate">{currentProker.badge || 'Update Program Kerja'}</span>
                   </div>
 
                   {/* Navigation controls when multiple proker exist */}
                   {displayProkers.length > 1 && (
-                    <div className="flex items-center gap-0.5 bg-white/10 backdrop-blur-sm px-1.5 py-0.5 rounded-full border border-white/15 text-[10px] text-slate-300 shadow-xs">
+                    <div className="flex items-center gap-0.5 bg-white/10 backdrop-blur-sm px-2 py-0.5 rounded-full border border-white/15 text-[10px] text-slate-300 shadow-xs shrink-0">
                       <button
                         type="button"
                         onClick={(e) => {
@@ -478,20 +478,26 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [], leadershipPr
               </div>
 
               {/* Bottom Row: Action link + Minimalist Pagination Dots */}
-              <div className="flex items-center justify-between pt-2.5 border-t border-white/10 mt-auto">
+              <div className="flex items-center justify-between gap-2 pt-2.5 border-t border-white/10 mt-auto w-full min-w-0">
                 <button
-                  onClick={() => onNavigateToPortal && onNavigateToPortal(currentProker.actionServiceId || 'par')}
-                  className="text-[11px] xl:text-xs 2xl:text-sm text-slate-300 hover:text-white flex items-center gap-1.5 transition-colors font-normal cursor-pointer group/link"
+                  type="button"
+                  onClick={() => {
+                    if (onNavigateToPortal) {
+                      onNavigateToPortal(currentProker.actionServiceId || 'par');
+                    }
+                  }}
+                  className="text-[11px] xl:text-xs 2xl:text-sm text-slate-300 hover:text-white flex items-center gap-1.5 transition-colors font-normal cursor-pointer group/link min-w-0 truncate"
                 >
-                  <span className="group-hover/link:underline">{currentProker.actionText || 'cek asesmen program kerja'}</span>
-                  <ArrowRight size={13} strokeWidth={2} className="group-hover/link:translate-x-0.5 transition-transform" />
+                  <span className="group-hover/link:underline truncate">{currentProker.actionText || 'cek asesmen program kerja'}</span>
+                  <ArrowRight size={13} strokeWidth={2} className="group-hover/link:translate-x-0.5 transition-transform shrink-0" />
                 </button>
 
                 {displayProkers.length > 1 && (
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 shrink-0">
                     {displayProkers.map((_, idx) => (
                       <button
                         key={idx}
+                        type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleSelectProker(idx);
