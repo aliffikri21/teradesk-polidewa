@@ -34,6 +34,7 @@ import {
 import {
   subscribeAccounts,
   addAccountToDb,
+  addAccountsBatchToDb,
   updateAccountInDb,
   updatePasswordInDb,
   deleteAccountFromDb,
@@ -1574,6 +1575,37 @@ function App() {
     });
   };
 
+  const handleAddBatchAccounts = (newAccounts) => {
+    if (!Array.isArray(newAccounts) || newAccounts.length === 0) return;
+    const existingNims = new Set(registeredAccounts.map((a) => String(a.nim)));
+    const uniqueNew = newAccounts.filter((a) => a?.nim && !existingNims.has(String(a.nim)));
+    if (uniqueNew.length === 0) return;
+
+    setRegisteredAccounts((prev) => {
+      const updated = [...uniqueNew, ...prev];
+      try {
+        localStorage.setItem('teradesk_dev_accounts_v4', JSON.stringify(updated));
+      } catch {
+        // ignore
+      }
+      return updated;
+    });
+
+    addAccountsBatchToDb(uniqueNew);
+
+    handleAddActivityLog({
+      category: 'system',
+      type: 'success',
+      userName: authUser?.name || 'Administrator',
+      userNim: authUser?.nim || '23404053',
+      userRole: authUser?.role || 'BPH',
+      userDivision: 'BPH',
+      moduleName: 'Manajemen Akun',
+      event: `Import Batch: ${uniqueNew.length} Akun Mahasiswa`,
+      details: `Berhasil mengimpor ${uniqueNew.length} akun mahasiswa baru secara massal.`,
+    });
+  };
+
   const handleUpdatePassword = (nim, newPassword) => {
     setRegisteredAccounts((prev) =>
       prev.map((acc) => (acc.nim === nim ? { ...acc, password: newPassword } : acc))
@@ -1768,6 +1800,7 @@ function App() {
           onNavigateToService={(serviceId) => handleNavigate('service', serviceId)}
           accounts={registeredAccounts}
           onAddAccount={handleAddAccount}
+          onAddBatchAccounts={handleAddBatchAccounts}
           onUpdateAccount={handleUpdateAccount}
           onUpdatePassword={handleUpdatePassword}
           onDeleteAccount={handleDeleteAccount}
@@ -1839,6 +1872,7 @@ function App() {
           onDeleteProker={handleDeleteProker}
           accounts={registeredAccounts}
           onAddAccount={handleAddAccount}
+          onAddBatchAccounts={handleAddBatchAccounts}
           onAddActivityLog={handleAddActivityLog}
           tickets={designTickets}
           onAddTicket={handleAddTicket}

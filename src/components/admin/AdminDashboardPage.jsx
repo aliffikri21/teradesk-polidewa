@@ -308,6 +308,7 @@ const AdminDashboardPage = ({
   onNavigateToService,
   accounts,
   onAddAccount,
+  onAddBatchAccounts,
   onUpdateAccount,
   onUpdatePassword,
   onDeleteAccount,
@@ -609,10 +610,6 @@ const AdminDashboardPage = ({
   // Copy Feedback state
   const [copiedJson, setCopiedJson] = useState(false);
   const [copiedNim, setCopiedNim] = useState(null);
-
-  // Import JSON State
-  const [importJsonText, setImportJsonText] = useState('');
-  const [importStatus, setImportStatus] = useState(null);
 
   // Notifications popup toggle
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -1774,34 +1771,286 @@ const AdminDashboardPage = ({
     addLog('File teradesk_registered_accounts.json diunduh', 'info');
   };
 
-  const handleImportJson = () => {
-    setImportStatus(null);
-    try {
-      const parsed = JSON.parse(importJsonText);
-      if (!Array.isArray(parsed)) {
-        setImportStatus({ ok: false, msg: 'Format JSON harus berupa Array daftar akun.' });
-        return;
-      }
-      let addedCount = 0;
-      parsed.forEach((item) => {
-        if (item.nim && item.password && !accounts.some((a) => a.nim === item.nim)) {
-          onAddAccount({
-            nim: String(item.nim),
-            name: item.name || 'Mahasiswa',
-            division: item.division || 'BPH',
-            role: item.role || 'Anggota',
-            password: String(item.password),
+  // State & Handlers for Batch Import Accounts (Script, CSV, & Excel)
+  const [isBatchImportModalOpen, setIsBatchImportModalOpen] = useState(false);
+  const [batchImportTab, setBatchImportTab] = useState('script'); // 'script' | 'file'
+  const [batchRawScript, setBatchRawScript] = useState('');
+  const [batchFileName, setBatchFileName] = useState('');
+  const [batchImportError, setBatchImportError] = useState('');
+  const [batchImportSuccess, setBatchImportSuccess] = useState('');
+  const [isImportingBatch, setIsImportingBatch] = useState(false);
+
+  // Parser: Supports JSON Array, CSV/Tab lines, and normalized object maps
+  const parseBatchAccounts = (rawText, existingAccounts) => {
+    if (!rawText || !rawText.trim()) return { valid: [], duplicates: [], invalid: [] };
+    const trimmed = rawText.trim();
+    const existingNimSet = new Set((existingAccounts || []).map((a) => String(a.nim).trim()));
+    const seenNewNims = new Set();
+    const valid = [];
+    const duplicates = [];
+    const invalid = [];
+
+    // 1. Coba parse sebagai format JSON array
+    if ((trimmed.startsWith('[') && trimmed.endsWith(']')) || (trimmed.startsWith('{') && trimmed.endsWith('}'))) {
+      try {
+        let parsed = JSON.parse(trimmed);
+        if (!Array.isArray(parsed)) {
+          parsed = [parsed];
+        }
+        parsed.forEach((item, index) => {
+          const rawNim = String(item.nim || item.NIM || item.Nim || '').trim();
+          const rawName = String(item.name || item.nama || item.Nama || item.fullname || '').trim();
+          if (!rawNim || !rawName) {
+            invalid.push({ index: index + 1, data: item, reason: 'NIM dan Nama wajib diisi' });
+            return;
+          }
+          if (existingNimSet.has(rawNim) || seenNewNims.has(rawNim)) {
+            duplicates.push({ index: index + 1, nim: rawNim, name: rawName, reason: 'NIM sudah terdaftar di sistem' });
+            return;
+          }
+          seenNewNims.add(rawNim);
+          valid.push({
+            nim: rawNim,
+            name: rawName,
+            division: normalizeDivisionName(item.division || item.divisi || 'Divisi Kesekretariatan'),
+            role: item.role || item.jabatan || 'Anggota Aktif',
+            password: String(item.password || 'password123'),
+            canAccessAdmin: Boolean(item.canAccessAdmin ?? item.isAdmin ?? false),
             createdAt: item.createdAt || getDateStamp(),
             isDefault: false,
           });
-          addedCount++;
-        }
+        });
+        return { valid, duplicates, invalid };
+      } catch {
+        // Lanjutkan ke parser baris CSV/teks jika bukan JSON valid
+      }
+    }
+
+    // 2. Parse sebagai format baris teks (CSV / TSV / Delimited)
+    const lines = trimmed.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    lines.forEach((line, index) => {
+      const lowerLine = line.toLowerCase();
+      if (index === 0 && (lowerLine.includes('nim') || lowerLine.includes('nama'))) {
+        return;
+      }
+
+      let delimiter = ',';
+      if (line.includes('\t')) delimiter = '\t';
+      else if (line.includes(';')) delimiter = ';';
+
+      const parts = line.split(delimiter).map((p) => p.trim());
+      if (parts.length < 2) {
+        invalid.push({ index: index + 1, line, reason: 'Baris minimal harus berisi NIM dan Nama' });
+        return;
+      }
+
+      const rawNim = parts[0].replace(/^["']|["']$/g, '').trim();
+      const rawName = parts[1].replace(/^["']|["']$/g, '').trim();
+      const rawDiv = parts[2] ? parts[2].replace(/^["']|["']$/g, '').trim() : 'Divisi Kesekretariatan';
+      const rawRole = parts[3] ? parts[3].replace(/^["']|["']$/g, '').trim() : 'Anggota Aktif';
+      const rawPass = parts[4] ? parts[4].replace(/^["']|["']$/g, '').trim() : 'password123';
+      const rawAdmin = parts[5] ? (parts[5].toLowerCase().includes('true') || parts[5] === '1' || parts[5].toLowerCase().includes('ya')) : false;
+
+      if (!rawNim || !rawName) {
+        invalid.push({ index: index + 1, line, reason: 'NIM atau Nama kosong' });
+        return;
+      }
+
+      if (existingNimSet.has(rawNim) || seenNewNims.has(rawNim)) {
+        duplicates.push({ index: index + 1, nim: rawNim, name: rawName, reason: 'NIM sudah terdaftar' });
+        return;
+      }
+
+      seenNewNims.add(rawNim);
+      valid.push({
+        nim: rawNim,
+        name: rawName,
+        division: normalizeDivisionName(rawDiv),
+        role: rawRole,
+        password: rawPass || 'password123',
+        canAccessAdmin: Boolean(rawAdmin),
+        createdAt: getDateStamp(),
+        isDefault: false,
       });
-      addLog(`Import JSON: ${addedCount} akun baru ditambahkan`, 'success');
-      setImportStatus({ ok: true, msg: `Berhasil mengimpor ${addedCount} akun baru ke sistem!` });
-      setImportJsonText('');
-    } catch {
-      setImportStatus({ ok: false, msg: 'Sintaks JSON tidak valid. Periksa tanda koma dan kurung kurawal.' });
+    });
+
+    return { valid, duplicates, invalid };
+  };
+
+  const batchParseResult = useMemo(() => {
+    return parseBatchAccounts(batchRawScript, accounts);
+  }, [batchRawScript, accounts]);
+
+  const handleFillSampleJson = () => {
+    const sample = [
+      {
+        nim: '23404060',
+        name: 'Rian Pratama',
+        division: 'Divisi Kesekretariatan',
+        role: 'Staff E-Arsip',
+        password: 'password123',
+        canAccessAdmin: false,
+      },
+      {
+        nim: '23404061',
+        name: 'Nabila Az-Zahra',
+        division: 'Divisi Publikasi dan Dokumentasi',
+        role: 'Desainer Feed Instagram',
+        password: 'password123',
+        canAccessAdmin: false,
+      },
+      {
+        nim: '23404062',
+        name: 'Muhammad Fadhil',
+        division: 'Divisi Humas',
+        role: 'Koordinator Jaringan Media',
+        password: 'password123',
+        canAccessAdmin: false,
+      },
+      {
+        nim: '23404063',
+        name: 'Aisyah Putri',
+        division: 'Divisi Kaderisasi',
+        role: 'Staff Asesmen Rapor',
+        password: 'password123',
+        canAccessAdmin: false,
+      },
+    ];
+    setBatchRawScript(JSON.stringify(sample, null, 2));
+    setBatchImportError('');
+  };
+
+  const handleFillSampleCsv = () => {
+    const sample = `NIM, Nama, Divisi, Jabatan, Password, AksesAdmin
+23404060, Rian Pratama, Divisi Kesekretariatan, Staff E-Arsip, password123, false
+23404061, Nabila Az-Zahra, Divisi Publikasi dan Dokumentasi, Desainer Feed, password123, false
+23404062, Muhammad Fadhil, Divisi Humas, Staff Kemitraan, password123, false
+23404063, Aisyah Putri, Divisi Kaderisasi, Staff Kaderisasi, password123, false`;
+    setBatchRawScript(sample);
+    setBatchImportError('');
+  };
+
+  const handleDownloadExcelTemplate = () => {
+    const templateData = [
+      {
+        NIM: '23404060',
+        Nama: 'Rian Pratama',
+        Divisi: 'Divisi Kesekretariatan',
+        Jabatan: 'Staff E-Arsip',
+        Password: 'password123',
+        'Akses Admin': 'Tidak',
+      },
+      {
+        NIM: '23404061',
+        Nama: 'Nabila Az-Zahra',
+        Divisi: 'Divisi Publikasi dan Dokumentasi',
+        Jabatan: 'Desainer Feed Instagram',
+        Password: 'password123',
+        'Akses Admin': 'Tidak',
+      },
+      {
+        NIM: '23404062',
+        Nama: 'Muhammad Fadhil',
+        Divisi: 'Divisi Humas',
+        Jabatan: 'Koordinator Jaringan Kampus',
+        Password: 'password123',
+        'Akses Admin': 'Ya',
+      },
+    ];
+    const ws = XLSX.utils.json_to_sheet(templateData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Template_Akun');
+    XLSX.writeFile(wb, 'Template_Import_Akun_TeraDesk.xlsx');
+    playNotificationChime(0.5);
+  };
+
+  const handleBatchFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setBatchFileName(file.name);
+    setBatchImportError('');
+
+    const reader = new FileReader();
+    if (file.name.endsWith('.json')) {
+      reader.onload = (evt) => {
+        try {
+          const content = evt.target.result;
+          setBatchRawScript(content);
+        } catch {
+          setBatchImportError('Gagal membaca file JSON.');
+        }
+      };
+      reader.readAsText(file);
+    } else {
+      reader.onload = (evt) => {
+        try {
+          const data = new Uint8Array(evt.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          const jsonRows = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+
+          if (!Array.isArray(jsonRows) || jsonRows.length === 0) {
+            setBatchImportError('File spreadsheet kosong atau format worksheet tidak terbaca.');
+            return;
+          }
+
+          const normalized = jsonRows.map((row) => ({
+            nim: String(row.NIM || row.nim || row.Nim || row['Nomor Induk Mahasiswa'] || '').trim(),
+            name: String(row.Nama || row.nama || row.Name || row['Nama Lengkap'] || '').trim(),
+            division: String(row.Divisi || row.divisi || row.Division || 'Divisi Kesekretariatan').trim(),
+            role: String(row.Jabatan || row.jabatan || row.Role || 'Anggota Aktif').trim(),
+            password: String(row.Password || row.password || row['Kata Sandi'] || 'password123').trim(),
+            canAccessAdmin: Boolean(
+              String(row['Akses Admin'] || row.canAccessAdmin || row.isAdmin || '').toLowerCase().includes('true') ||
+              String(row['Akses Admin'] || row.canAccessAdmin || '').toLowerCase().includes('ya')
+            ),
+          }));
+
+          setBatchRawScript(JSON.stringify(normalized, null, 2));
+        } catch (err) {
+          console.error('Error parsing excel:', err);
+          setBatchImportError('Gagal memproses file spreadsheet. Pastikan format file sesuai.');
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+  };
+
+  const handleExecuteBatchImport = () => {
+    if (batchParseResult.valid.length === 0) {
+      setBatchImportError('Tidak ada akun valid yang dapat diimpor.');
+      return;
+    }
+
+    setIsImportingBatch(true);
+    try {
+      if (onAddBatchAccounts) {
+        onAddBatchAccounts(batchParseResult.valid);
+      } else {
+        batchParseResult.valid.forEach((acc) => onAddAccount(acc));
+      }
+
+      addLog(`Import Massal: ${batchParseResult.valid.length} akun mahasiswa berhasil ditambahkan`, 'success', {
+        module: 'Manajemen Akun',
+        category: 'accounts',
+      });
+
+      playNotificationChime(0.5);
+      setBatchImportSuccess(`Berhasil mengimpor ${batchParseResult.valid.length} akun mahasiswa!`);
+
+      setTimeout(() => {
+        setIsBatchImportModalOpen(false);
+        setBatchRawScript('');
+        setBatchFileName('');
+        setBatchImportSuccess('');
+        setBatchImportError('');
+        setIsImportingBatch(false);
+      }, 1500);
+    } catch (err) {
+      console.error('Error importing batch:', err);
+      setBatchImportError('Terjadi kesalahan saat memproses impor data.');
+      setIsImportingBatch(false);
     }
   };
 
@@ -6178,7 +6427,15 @@ const AdminDashboardPage = ({
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2.5">
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <button
+                    onClick={() => setIsBatchImportModalOpen(true)}
+                    className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs"
+                    title="Import banyak akun sekaligus via script JSON, CSV, atau file Excel"
+                  >
+                    <Upload size={14} />
+                    <span>Import Script / Excel</span>
+                  </button>
                   <button
                     onClick={() => setIsAddFormOpen(true)}
                     className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-slate-800 transition-all cursor-pointer shadow-xs"
@@ -6560,26 +6817,19 @@ const AdminDashboardPage = ({
                 </pre>
 
                 {/* Import section */}
-                <div className="pt-4 border-t border-slate-100 space-y-3">
-                  <p className="text-xs font-bold text-slate-800">Impor Data Akun dari JSON</p>
-                  <textarea
-                    value={importJsonText}
-                    onChange={(e) => setImportJsonText(e.target.value)}
-                    placeholder='Tempel array JSON di sini, contoh: [{"nim": "23404099", "name": "Budi", "password": "pass"}]'
-                    rows={4}
-                    className="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs font-mono focus:outline-hidden focus:border-blue-600"
-                  />
-                  {importStatus && (
-                    <p className={`text-xs font-semibold ${importStatus.ok ? 'text-emerald-600' : 'text-rose-600'}`}>
-                      {importStatus.msg}
+                <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-bold text-slate-800">Impor Massal Data Akun (Script & Spreadsheet)</p>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Gunakan modul import terpadu untuk memasukkan puluhan akun sekaligus via JSON, CSV, atau Excel.
                     </p>
-                  )}
+                  </div>
                   <button
-                    onClick={handleImportJson}
-                    className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-blue-700 transition-colors cursor-pointer"
+                    onClick={() => setIsBatchImportModalOpen(true)}
+                    className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer shrink-0 shadow-xs"
                   >
                     <Upload size={14} />
-                    <span>Mulai Impor Akun</span>
+                    <span>Buka Modal Import Script</span>
                   </button>
                 </div>
               </div>
@@ -7068,7 +7318,7 @@ const AdminDashboardPage = ({
             className="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-md w-full p-6 animate-in fade-in zoom-in-95 duration-150 relative"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm">
                   <Plus size={16} />
@@ -7085,6 +7335,26 @@ const AdminDashboardPage = ({
                 aria-label="Tutup Modal"
               >
                 <X size={18} />
+              </button>
+            </div>
+
+            {/* Quick Link to Batch Import */}
+            <div className="mb-4 bg-indigo-50/80 border border-indigo-100 rounded-2xl p-3 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Sparkles size={14} className="text-indigo-600 shrink-0" />
+                <span className="text-xs text-indigo-950 font-medium">
+                  Mau input banyak akun sekaligus? Gunakan fitur <strong>Import Script</strong>.
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsAddFormOpen(false);
+                  setIsBatchImportModalOpen(true);
+                }}
+                className="text-xs font-bold text-indigo-600 hover:text-indigo-800 hover:underline shrink-0 cursor-pointer"
+              >
+                Buka Import ↗
               </button>
             </div>
 
@@ -7248,6 +7518,270 @@ const AdminDashboardPage = ({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: BATCH IMPORT ACCOUNTS (SCRIPT, CSV, & EXCEL) */}
+      {isBatchImportModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/50 backdrop-blur-xs overflow-y-auto"
+          onClick={() => {
+            if (!isImportingBatch) setIsBatchImportModalOpen(false);
+          }}
+        >
+          <div
+            className="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-3xl w-full p-5 sm:p-6 animate-in fade-in zoom-in-95 duration-150 relative my-auto max-h-[92vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-4 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
+                  <Upload size={20} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">
+                    Import Massal Data Mahasiswa & Akun
+                  </h3>
+                  <p className="text-xs text-slate-500 font-medium">
+                    Impor banyak akun sekaligus melalui script JSON, CSV/teks, atau file Excel (.xlsx).
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!isImportingBatch) setIsBatchImportModalOpen(false);
+                }}
+                className="text-slate-400 hover:text-slate-700 p-2 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
+                title="Tutup Modal"
+                aria-label="Tutup Modal"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-4 overflow-y-auto pr-1 flex-1">
+              {/* Method Switch & Quick Actions Bar */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/80 p-3 rounded-2xl border border-slate-200/70">
+                <div className="flex items-center bg-slate-200/70 p-0.5 rounded-xl text-xs font-bold self-start sm:self-auto">
+                  <button
+                    type="button"
+                    onClick={() => setBatchImportTab('script')}
+                    className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                      batchImportTab === 'script'
+                        ? 'bg-white text-slate-900 shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Tempel Script / Teks
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBatchImportTab('file')}
+                    className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                      batchImportTab === 'file'
+                        ? 'bg-white text-slate-900 shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Upload Berkas Excel/CSV
+                  </button>
+                </div>
+
+                {/* Quick Sample / Template Buttons */}
+                <div className="flex flex-wrap items-center gap-1.5 text-xs font-semibold">
+                  <button
+                    type="button"
+                    onClick={handleFillSampleJson}
+                    className="px-2.5 py-1 bg-white hover:bg-indigo-50 hover:text-indigo-600 text-slate-700 rounded-lg border border-slate-200/80 transition-all cursor-pointer shadow-2xs"
+                  >
+                    Contoh JSON
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleFillSampleCsv}
+                    className="px-2.5 py-1 bg-white hover:bg-indigo-50 hover:text-indigo-600 text-slate-700 rounded-lg border border-slate-200/80 transition-all cursor-pointer shadow-2xs"
+                  >
+                    Contoh CSV
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDownloadExcelTemplate}
+                    className="px-2.5 py-1 bg-white hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 rounded-lg border border-slate-200/80 transition-all cursor-pointer flex items-center gap-1 shadow-2xs"
+                    title="Download format spreadsheet .xlsx"
+                  >
+                    <Download size={12} />
+                    <span>Template Excel</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Input Area based on Tab */}
+              {batchImportTab === 'script' ? (
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      Area Tempel Script (JSON Array atau Baris CSV)
+                    </label>
+                    <span className="text-[11px] text-slate-400 font-medium">
+                      Kolom: NIM, Nama, Divisi, Jabatan, Password, AksesAdmin
+                    </span>
+                  </div>
+                  <textarea
+                    value={batchRawScript}
+                    onChange={(e) => {
+                      setBatchRawScript(e.target.value);
+                      setBatchImportError('');
+                    }}
+                    rows={7}
+                    placeholder={`Contoh JSON:\n[\n  { "nim": "23404060", "name": "Rian Pratama", "division": "Divisi Kesekretariatan", "role": "Staff", "password": "pass" }\n]\n\nAtau Contoh Baris CSV:\n23404060, Rian Pratama, Divisi Kesekretariatan, Staff, password123, false`}
+                    className="w-full p-3 bg-slate-900 text-slate-100 rounded-2xl text-xs font-mono leading-relaxed border border-slate-800 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 shadow-inner"
+                  />
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    Pilih Berkas Spreadsheet atau JSON
+                  </label>
+                  <label className="flex flex-col items-center justify-center border-2 border-dashed border-indigo-200 hover:border-indigo-400 bg-indigo-50/30 hover:bg-indigo-50/60 rounded-2xl p-6 cursor-pointer transition-all">
+                    <div className="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center mb-2 shadow-2xs">
+                      <FileSpreadsheet size={24} />
+                    </div>
+                    <span className="text-xs font-bold text-slate-800">
+                      {batchFileName ? batchFileName : 'Klik atau seret file .xlsx, .csv, atau .json ke sini'}
+                    </span>
+                    <span className="text-[11px] text-slate-400 mt-1">
+                      Mendukung format Microsoft Excel (.xlsx), Comma Separated (.csv), dan JSON
+                    </span>
+                    <input
+                      type="file"
+                      accept=".xlsx, .xls, .csv, .json"
+                      onChange={handleBatchFileUpload}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+              )}
+
+              {/* Live Validation Badges Summary */}
+              {batchRawScript.trim() && (
+                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200/80 space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-xs font-bold text-slate-700">
+                      Hasil Analisis & Validasi Script:
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                        ✓ {batchParseResult.valid.length} Siap Diimpor
+                      </span>
+                      {batchParseResult.duplicates.length > 0 && (
+                        <span className="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                          ⚠ {batchParseResult.duplicates.length} Duplikat (Dilewati)
+                        </span>
+                      )}
+                      {batchParseResult.invalid.length > 0 && (
+                        <span className="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-200">
+                          ✕ {batchParseResult.invalid.length} Format Salah
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Preview Table of Parsed Accounts */}
+                  {batchParseResult.valid.length > 0 && (
+                    <div className="overflow-x-auto max-h-44 border border-slate-200 rounded-xl bg-white shadow-2xs">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-slate-100/80 text-[10px] font-bold text-slate-500 uppercase sticky top-0">
+                          <tr>
+                            <th className="py-2 px-3">NIM</th>
+                            <th className="py-2 px-3">NAMA LENGKAP</th>
+                            <th className="py-2 px-3">DIVISI</th>
+                            <th className="py-2 px-3">JABATAN</th>
+                            <th className="py-2 px-3">AKSES ADMIN</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+                          {batchParseResult.valid.slice(0, 8).map((acc) => (
+                            <tr key={acc.nim} className="hover:bg-slate-50/80">
+                              <td className="py-2 px-3 font-mono font-bold text-slate-900">{acc.nim}</td>
+                              <td className="py-2 px-3">{acc.name}</td>
+                              <td className="py-2 px-3 text-slate-500 text-[11px]">{acc.division}</td>
+                              <td className="py-2 px-3 text-slate-500 text-[11px]">{acc.role}</td>
+                              <td className="py-2 px-3">
+                                {acc.canAccessAdmin ? (
+                                  <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                    Admin
+                                  </span>
+                                ) : (
+                                  <span className="text-[10px] text-slate-400">Portal</span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      {batchParseResult.valid.length > 8 && (
+                        <div className="p-2 bg-slate-50 text-center text-[11px] text-slate-500 font-medium">
+                          ... dan {batchParseResult.valid.length - 8} akun lainnya siap diproses
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {batchImportError && (
+                <p className="text-xs font-semibold text-rose-600 bg-rose-50 p-2.5 rounded-xl border border-rose-100">
+                  {batchImportError}
+                </p>
+              )}
+
+              {batchImportSuccess && (
+                <p className="text-xs font-semibold text-emerald-600 bg-emerald-50 p-2.5 rounded-xl border border-emerald-100 flex items-center gap-2">
+                  <CheckCircle2 size={15} />
+                  <span>{batchImportSuccess}</span>
+                </p>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-3 shrink-0 mt-2">
+              <span className="text-xs text-slate-500 font-medium hidden sm:inline">
+                {batchParseResult.valid.length > 0
+                  ? `Siap mengimpor ${batchParseResult.valid.length} akun ke database.`
+                  : 'Tempel script atau upload berkas untuk memulai.'}
+              </span>
+
+              <div className="flex items-center gap-2.5 ml-auto">
+                <button
+                  type="button"
+                  disabled={isImportingBatch}
+                  onClick={() => setIsBatchImportModalOpen(false)}
+                  className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  disabled={batchParseResult.valid.length === 0 || isImportingBatch}
+                  onClick={handleExecuteBatchImport}
+                  className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-xs cursor-pointer ${
+                    batchParseResult.valid.length > 0 && !isImportingBatch
+                      ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                      : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                  }`}
+                >
+                  <Upload size={14} />
+                  <span>
+                    {isImportingBatch
+                      ? 'Sedang Mengimpor...'
+                      : `Eksekusi Impor (${batchParseResult.valid.length})`}
+                  </span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

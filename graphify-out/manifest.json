@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "src/App.jsx": {
-    "mtime": 1794159654.2925007,
-    "seen": 1794159870.4947855,
-    "ast_hash": "c585ab908bb9411e28b09dafce335103",
+    "mtime": 1794203807.8839624,
+    "seen": 1794204184.5487301,
+    "ast_hash": "11db4c4386bcf7cb7b60e25f7a85761e",
     "semantic_hash": ""
   },
   "src/components/AboutUs.jsx": {
@@ -864,9 +864,9 @@
     "semantic_hash": ""
   },
   "src/components/admin/AdminDashboardPage.jsx": {
-    "mtime": 1794203497.320669,
-    "seen": 1794203550.3759232,
-    "ast_hash": "94ee3839479a070aec88c07981ab3481",
+    "mtime": 1794204126.0790813,
+    "seen": 1794204184.5487301,
+    "ast_hash": "63d0cc798d0245a9a6ae242c3860113d",
     "semantic_hash": ""
   },
   "public/logo-teramedia.png": {
@@ -1008,9 +1008,9 @@
     "semantic_hash": ""
   },
   "src/services/accountService.js": {
-    "mtime": 1794120720.7648375,
-    "seen": 1794121316.8490973,
-    "ast_hash": "55af85fe189ae439745539907f00ee3e",
+    "mtime": 1794203764.3693736,
+    "seen": 1794204184.5487301,
+    "ast_hash": "1c10d58c58aa17b6074e08170f658193",
     "semantic_hash": ""
   },
   "src/utils/deviceDetector.js": {

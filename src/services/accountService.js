@@ -81,6 +81,26 @@ export const addAccountToDb = async (account) => {
 };
 
 /**
+ * Menyimpan sekumpulan akun baru sekaligus (batch insert) ke Firestore.
+ */
+export const addAccountsBatchToDb = async (accountsList) => {
+  if (!isFirebaseConfigured || !db || !Array.isArray(accountsList) || accountsList.length === 0) return;
+
+  try {
+    const batch = writeBatch(db);
+    accountsList.forEach((acc) => {
+      if (acc?.nim) {
+        const docRef = doc(db, COLLECTION_NAME, String(acc.nim));
+        batch.set(docRef, { ...acc, nim: String(acc.nim) }, { merge: true });
+      }
+    });
+    await batch.commit();
+  } catch (error) {
+    console.error('❌ [Firestore Accounts] Gagal batch insert akun ke cloud:', error);
+  }
+};
+
+/**
  * Memperbarui akun di Firestore.
  */
 export const updateAccountInDb = async (originalNim, updatedAccount) => {
