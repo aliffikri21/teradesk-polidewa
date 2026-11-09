@@ -1,6 +1,55 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ArrowRight, Bookmark, ChevronLeft, ChevronRight, Menu, X } from 'lucide-react';
 import { initialDefaultProker } from '../data/defaultProker';
+import CardSwap, { Card } from './CardSwap';
+
+const defaultCenterCards = [
+  {
+    id: 'arsip',
+    badge: 'Arsip Administrasi',
+    titleLine1: 'Kelola Organisasi -',
+    titleLine2: 'Dengan',
+    titleEmphasis: 'Mudah',
+    metricValue: '89%',
+    metricLabel: 'Proker Telah',
+    metricSub: 'Terlaksana 🔥',
+    period: 'Periode 2025',
+    image: '/images/img1.JPG',
+    imageAlt: 'Dokumentasi Mahasiswa TERAMEDIA di Pantai',
+    sparkleColor: '#2563EB',
+    actionServiceId: 'archive',
+  },
+  {
+    id: 'surat',
+    badge: 'E-Surat & LPJ Resmi',
+    titleLine1: 'Tata Kelola Surat -',
+    titleLine2: 'Bebas',
+    titleEmphasis: 'Bentrok',
+    metricValue: '96%',
+    metricLabel: 'Surat Terbit',
+    metricSub: 'Resmi & Valid 📄',
+    period: 'Format Standar',
+    image: '/images/about/img4.webp',
+    imageAlt: 'Pelatihan dan Workshop Mahasiswa TERAMEDIA',
+    sparkleColor: '#ea9804',
+    actionServiceId: 'par',
+  },
+  {
+    id: 'aset',
+    badge: 'Logistik & Inventaris',
+    titleLine1: 'Peralatan Multimedia -',
+    titleLine2: 'Selalu',
+    titleEmphasis: 'Terlacak',
+    metricValue: '98%',
+    metricLabel: 'Aset Siap',
+    metricSub: 'Operasional 🎥',
+    period: 'Tracking Real-time',
+    image: '/images/about/img2.webp',
+    imageAlt: 'Outbound dan Kebersamaan Mahasiswa TERAMEDIA',
+    sparkleColor: '#10B981',
+    actionServiceId: 'asset',
+  },
+];
 
 const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [], leadershipProfiles }) => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -65,6 +114,10 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [], leadershipPr
     return () => clearInterval(interval);
   }, [displayProkers.length, isProkerHovered, isFading, triggerNext]);
 
+  // Ref & State untuk CardSwap Component (React Bits)
+  const cardSwapRef = useRef(null);
+  const [activeCenterIndex, setActiveCenterIndex] = useState(0);
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 40);
@@ -88,7 +141,7 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [], leadershipPr
   return (
     <section
       id="beranda"
-      className="w-full relative min-h-screen h-auto bg-[#04081f] text-white flex flex-col items-center justify-between pt-24 sm:pt-28 lg:pt-20 xl:pt-24 pb-8 sm:pb-10 lg:pb-8 overflow-x-hidden select-none"
+      className="w-full relative min-h-screen h-auto bg-[#04081f] text-white flex flex-col items-center justify-between pt-24 sm:pt-28 lg:pt-20 xl:pt-24 pb-8 sm:pb-10 lg:pb-8 overflow-hidden select-none"
     >
       {/* =========================================================================
           BACKGROUND: 3D Architectural Ribbed Slats (Fluted Wall) + Radial Ambient
@@ -456,61 +509,198 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [], leadershipPr
           </div>
 
           {/* -------------------------------------------------------------------
-              COLUMN 2: Center Showcase Card (Arsip Administrasi)
+              COLUMN 2: Center Showcase Card Stack (React Bits CardSwap Component)
               ------------------------------------------------------------------- */}
-          <div className="w-full max-w-[340px] sm:max-w-[360px] lg:max-w-[330px] xl:w-[410px] 2xl:w-[460px] lg:mt-4 xl:mt-8 bg-white text-slate-900 rounded-[1.75rem] sm:rounded-[2.25rem] xl:rounded-[2.5rem] 2xl:rounded-[3rem] p-4 sm:p-5 lg:p-5 xl:p-7 2xl:p-8 shadow-[0_25px_60px_rgba(0,0,0,0.6)] border border-gray-100 relative z-20 select-none shrink-0">
-            {/* Top Capsule inside card */}
-            <div className="text-center mb-2">
-              <span className="bg-gray-100 text-gray-600 px-3.5 py-1 rounded-full border border-gray-200/80 text-xs xl:text-[13px] 2xl:text-sm font-medium inline-block">
-                Arsip Administrasi
-              </span>
-            </div>
-
-            {/* Heading inside card */}
-            <h3 className="text-xl sm:text-[24px] lg:text-[22px] xl:text-[28px] 2xl:text-[32px] font-bold leading-tight mb-3 lg:mb-3.5 xl:mb-4 text-slate-900 text-center tracking-tight">
-              Kelola Organisasi - <br />
-              Dengan <span className="italic font-bold">Mudah</span>
-            </h3>
-
-            {/* Progress & Period Row */}
-            <div className="flex justify-between items-center mb-3 sm:mb-4 px-1">
-              <div className="flex items-center gap-2.5 sm:gap-3">
-                {/* 89% Navy Circle */}
-                <div className="w-11 h-11 sm:w-12 sm:h-12 xl:w-13 xl:h-13 2xl:w-14 2xl:h-14 rounded-full border-[3px] sm:border-[3.5px] border-[#0a237a] flex items-center justify-center text-xs xl:text-sm 2xl:text-base font-bold text-[#0a237a] bg-blue-50/40 shrink-0">
-                  89%
-                </div>
-                <div className="text-xs sm:text-[13px] xl:text-sm 2xl:text-[15px] font-bold leading-tight text-slate-900">
-                  Proker Telah <br /> Terlaksana 🔥
-                </div>
-              </div>
-
-              {/* Periode 2025 Blue Underline */}
-              <span className="text-[#1e3a8a] text-xs xl:text-[13px] 2xl:text-sm font-semibold underline underline-offset-4 cursor-default">
-                Periode 2025
-              </span>
-            </div>
-
-            {/* Photo Container with Sparkle Star */}
-            <div className="w-full h-32 sm:h-36 lg:h-36 xl:h-44 2xl:h-48 rounded-2xl overflow-visible relative border border-gray-100 shadow-inner select-none">
-              <div className="w-full h-full rounded-2xl overflow-hidden">
-                <img
-                  src="/images/img1.JPG"
-                  alt="Dokumentasi Mahasiswa TERAMEDIA"
-                  draggable="false"
-                  className="w-full h-full object-cover object-bottom select-none"
-                />
-              </div>
-
-              {/* 4-Point Blue Sparkle Star Floating at Top-Right Edge of Photo */}
-              <div className="absolute -top-3 sm:-top-4 -right-2 sm:-right-3 z-30 pointer-events-none drop-shadow-[0_4px_12px_rgba(37,99,235,0.45)]">
-                <svg
-                  viewBox="0 0 24 24"
-                  className="w-6 h-6 sm:w-7 sm:h-7 xl:w-8 xl:h-8 2xl:w-9 2xl:h-9 fill-[#2563EB]"
-                  xmlns="http://www.w3.org/2000/svg"
+          <div className="relative w-full max-w-[365px] sm:max-w-[385px] lg:max-w-[355px] xl:max-w-[430px] 2xl:max-w-[470px] lg:mt-2 xl:mt-4 select-none shrink-0 flex flex-col items-center">
+            <CardSwap
+              ref={cardSwapRef}
+              width={360}
+              height={445}
+              cardDistance={26}
+              verticalDistance={28}
+              depth={40}
+              skewAmount={2}
+              cardRadius={36}
+              visibleCards={3}
+              delay={5000}
+              autoplay={true}
+              pauseOnHover={true}
+              draggable={true}
+              speed={1.05}
+              bounce={0}
+              parallax={0.12}
+              hoverSpread={0.05}
+              theme="light"
+              onChange={(idx) => setActiveCenterIndex(idx)}
+              className="w-full"
+            >
+              {defaultCenterCards.map((card, idx) => (
+                <Card
+                  key={card.id}
+                  className="p-4 sm:p-5 xl:p-6 bg-white text-slate-900 flex flex-col justify-between h-full select-none cursor-grab active:cursor-grabbing border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.22)] rounded-[2rem] sm:rounded-[2.25rem]"
                 >
-                  <path d="M12 0C12 6.627 17.373 12 24 12C17.373 12 12 17.373 12 24C12 17.373 6.627 12 0 12C6.627 12 12 6.627 12 0Z" />
-                </svg>
+                  {/* Top Capsule & Stepper Controls */}
+                  <div className="flex items-center justify-between mb-2 px-0.5">
+                    <span className="bg-gray-100 text-gray-700 px-3.5 py-1 rounded-full border border-gray-200/80 text-xs xl:text-[13px] font-semibold inline-block truncate max-w-[200px]">
+                      {card.badge}
+                    </span>
+
+                    {/* Stepper controls */}
+                    <div className="flex items-center gap-1 bg-gray-100/90 px-2 py-0.5 rounded-full border border-gray-200 text-[10px] text-gray-500 font-mono">
+                      <button
+                        type="button"
+                        onKeyDown={(e) => {
+                          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') e.preventDefault();
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          cardSwapRef.current?.prev();
+                        }}
+                        className="hover:text-slate-900 transition-colors p-0.5 cursor-pointer"
+                        title="Kartu Sebelumnya"
+                      >
+                        <ChevronLeft size={12} />
+                      </button>
+                      <span className="font-bold text-slate-800 px-0.5">
+                        {idx + 1}/{defaultCenterCards.length}
+                      </span>
+                      <button
+                        type="button"
+                        onKeyDown={(e) => {
+                          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') e.preventDefault();
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          cardSwapRef.current?.next();
+                        }}
+                        className="hover:text-slate-900 transition-colors p-0.5 cursor-pointer"
+                        title="Kartu Selanjutnya"
+                      >
+                        <ChevronRight size={12} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Heading inside card */}
+                  <h3 className="text-xl sm:text-[23px] xl:text-[26px] 2xl:text-[29px] font-bold leading-tight mb-2 sm:mb-2.5 text-slate-900 text-center tracking-tight">
+                    {card.titleLine1} <br />
+                    {card.titleLine2} <span className="italic font-bold">{card.titleEmphasis}</span>
+                  </h3>
+
+                  {/* Progress & Period Row */}
+                  <div className="flex justify-between items-center mb-2.5 sm:mb-3 px-0.5">
+                    <div className="flex items-center gap-2.5 sm:gap-3">
+                      {/* Circle Metric */}
+                      <div
+                        className="w-11 h-11 xl:w-12 xl:h-12 rounded-full border-[3px] sm:border-[3.5px] flex items-center justify-center text-xs xl:text-sm font-bold bg-blue-50/40 shrink-0"
+                        style={{
+                          borderColor: card.sparkleColor,
+                          color: card.sparkleColor,
+                        }}
+                      >
+                        {card.metricValue}
+                      </div>
+                      <div className="text-xs sm:text-[13px] xl:text-sm font-bold leading-tight text-slate-900">
+                        {card.metricLabel} <br /> {card.metricSub}
+                      </div>
+                    </div>
+
+                    {/* Period Button / Badge */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (onNavigateToPortal) {
+                          onNavigateToPortal(card.actionServiceId);
+                        }
+                      }}
+                      className="text-xs xl:text-[13px] font-semibold underline underline-offset-4 cursor-pointer hover:opacity-80 transition-opacity"
+                      style={{ color: card.sparkleColor }}
+                    >
+                      {card.period}
+                    </button>
+                  </div>
+
+                  {/* Photo Container with Sparkle Star */}
+                  <div className="w-full h-34 sm:h-38 xl:h-44 rounded-2xl overflow-visible relative border border-gray-100 shadow-inner select-none mt-auto">
+                    <div className="w-full h-full rounded-2xl overflow-hidden">
+                      <img
+                        src={card.image}
+                        alt={card.imageAlt}
+                        draggable="false"
+                        className="w-full h-full object-cover object-bottom select-none pointer-events-none"
+                      />
+                    </div>
+
+                    {/* 4-Point Colored Sparkle Star Floating at Top-Right Edge of Photo */}
+                    <div className="absolute -top-3 -right-2.5 z-30 pointer-events-none drop-shadow-[0_4px_12px_rgba(37,99,235,0.45)]">
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="w-6 h-6 xl:w-7 xl:h-7"
+                        style={{ fill: card.sparkleColor }}
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path d="M12 0C12 6.627 17.373 12 24 12C17.373 12 12 17.373 12 24C12 17.373 6.627 12 0 12C6.627 12 12 6.627 12 0Z" />
+                      </svg>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </CardSwap>
+
+            {/* Minimalist Navigation Bar: External Prev Button + Dots + External Next Button */}
+            <div className="flex items-center justify-center gap-3 mt-3 z-30">
+              <button
+                type="button"
+                onKeyDown={(e) => {
+                  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') e.preventDefault();
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  cardSwapRef.current?.prev();
+                }}
+                className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 border border-white/20 text-slate-200 hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-xs"
+                title="Kartu Sebelumnya"
+              >
+                <ChevronLeft size={14} />
+              </button>
+
+              <div className="flex items-center gap-1.5">
+                {defaultCenterCards.map((_, dotIdx) => (
+                  <button
+                    key={dotIdx}
+                    type="button"
+                    onKeyDown={(e) => {
+                      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') e.preventDefault();
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (dotIdx !== activeCenterIndex) {
+                        cardSwapRef.current?.next();
+                      }
+                    }}
+                    className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                      dotIdx === activeCenterIndex ? 'w-5 bg-white shadow-xs' : 'w-1.5 bg-white/30 hover:bg-white/60'
+                    }`}
+                    title={`Buka kartu ${dotIdx + 1}`}
+                  />
+                ))}
               </div>
+
+              <button
+                type="button"
+                onKeyDown={(e) => {
+                  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') e.preventDefault();
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  cardSwapRef.current?.next();
+                }}
+                className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 border border-white/20 text-slate-200 hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-xs"
+                title="Kartu Selanjutnya"
+              >
+                <ChevronRight size={14} />
+              </button>
             </div>
           </div>
 
