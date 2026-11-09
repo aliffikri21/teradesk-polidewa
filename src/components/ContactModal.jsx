@@ -37,7 +37,7 @@ const ContactModal = ({ isOpen, onClose, onSubmitMessage }) => {
       onClick={handleReset}
     >
       <div
-        className="relative w-full max-w-lg bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-[0_25px_70px_rgba(0,0,0,0.35)] text-slate-900 animate-in zoom-in-95 duration-200 select-none overflow-hidden"
+        className="relative w-full max-w-lg bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-[0_25px_70px_rgba(0,0,0,0.35)] text-slate-900 animate-in zoom-in-95 duration-200 select-none overflow-hidden max-h-[92vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Subtle Ambient Corner Accent */}

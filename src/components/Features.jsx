@@ -107,25 +107,25 @@ const featuresData = [
 
 const Features = ({ onNavigateToPortal }) => {
   return (
-    <section id="fitur" className="w-full bg-[#F0F4F8] text-slate-900 py-20 px-4 sm:px-6 md:px-12 border-t border-gray-100 scroll-mt-20">
+    <section id="fitur" className="w-full bg-[#F0F4F8] text-slate-900 py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 xl:px-12 border-t border-gray-100 scroll-mt-20">
       <div className="max-w-7xl mx-auto flex flex-col items-center">
         
         {/* Section Category Header */}
-        <div className="flex flex-col items-center text-center max-w-3xl mb-14">
-          <span className="text-xs font-semibold text-[#4338CA] bg-[#E0E7FF] px-5 py-1.5 rounded-full mb-4 inline-block">
+        <div className="flex flex-col items-center text-center max-w-3xl mb-10 sm:mb-14">
+          <span className="text-xs font-semibold text-[#4338CA] bg-[#E0E7FF] px-5 py-1.5 rounded-full mb-3 sm:mb-4 inline-block">
             Fitur Unggulan
           </span>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight mb-3">
             Solusi Lengkap untuk Manajemen <br className="hidden sm:inline" />
             Organisasi Modern
           </h2>
-          <p className="text-slate-600 text-xs sm:text-sm md:text-base leading-relaxed">
+          <p className="text-slate-600 text-xs sm:text-sm md:text-base leading-relaxed px-2">
             Kelola program kerja, administrasi, aset, dan kolaborasi per divisi dalam satu platform digital terpadu UKM TERAMEDIA.
           </p>
         </div>
 
         {/* 11 Feature Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6 w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 w-full">
           {featuresData.map((item, index) => {
             const Icon = item.icon;
             return (
@@ -140,7 +140,7 @@ const Features = ({ onNavigateToPortal }) => {
                     <div className="w-11 h-11 rounded-2xl bg-[#EEF2FF] text-[#4F46E5] flex items-center justify-center group-hover:scale-105 group-hover:bg-[#4F46E5] group-hover:text-white transition-all duration-200 shadow-2xs shrink-0">
                       <Icon size={20} strokeWidth={2} />
                     </div>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-50 text-slate-600 border border-slate-200/80 text-right leading-tight">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-50 text-slate-600 border border-slate-200/80 text-right leading-tight max-w-[65%] truncate">
                       {item.division}
                     </span>
                   </div>

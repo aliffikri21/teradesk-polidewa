@@ -350,7 +350,6 @@ const AdminDashboardPage = ({
   onUpdatePassword,
   onDeleteAccount,
   onDeleteBatchAccounts,
-  onResetAccounts,
   onImpersonate,
   onForceDestroySession,
   authUser,
@@ -7748,29 +7747,87 @@ const AdminDashboardPage = ({
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                            Periode Kepengurusan
-                          </label>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          Periode Kepengurusan
+                        </label>
+                        <input
+                          type="text"
+                          value={leadershipForm.ketumPeriod}
+                          onChange={(e) => setLeadershipForm((prev) => ({ ...prev, ketumPeriod: e.target.value }))}
+                          placeholder="Periode 2025-2026"
+                          className="w-full px-3 py-2 bg-white rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1.5 flex items-center justify-between">
+                          <span>Foto Profil / Avatar</span>
+                          <span className="text-[10px] text-slate-400 font-normal">Upload File Gambar atau Tempel URL</span>
+                        </label>
+
+                        <div className="space-y-2">
+                          {leadershipForm.ketumAvatarUrl ? (
+                            <div className="flex items-center gap-3 p-2.5 bg-white rounded-xl border border-slate-200 shadow-2xs">
+                              <img
+                                src={leadershipForm.ketumAvatarUrl}
+                                alt="Foto Ketua Umum"
+                                className="w-10 h-10 rounded-full object-cover border border-slate-200 shadow-xs shrink-0"
+                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                              />
+                              <div className="min-w-0 flex-1">
+                                <span className="text-[11px] font-bold text-slate-800 block truncate">
+                                  {leadershipForm.ketumAvatarUrl.startsWith('data:') ? 'Foto Terunggah dari Perangkat' : 'Foto dari URL Web'}
+                                </span>
+                                <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+                                  <Check size={11} /> Foto Aktif &amp; Siap Ditampilkan
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <label
+                                  htmlFor="upload-ketum-settings"
+                                  className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-bold transition-colors cursor-pointer flex items-center gap-1"
+                                  title="Ganti foto dengan file lain"
+                                >
+                                  <Upload size={12} />
+                                  <span>Ganti</span>
+                                </label>
+                                <button
+                                  type="button"
+                                  onClick={() => setLeadershipForm((prev) => ({ ...prev, ketumAvatarUrl: '' }))}
+                                  className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition-colors cursor-pointer"
+                                  title="Hapus foto dan gunakan avatar inisial"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                              <label
+                                htmlFor="upload-ketum-settings"
+                                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white hover:bg-blue-50/50 border border-dashed border-blue-300 hover:border-blue-500 rounded-xl text-xs font-bold text-blue-600 hover:text-blue-700 transition-all cursor-pointer shadow-2xs group"
+                              >
+                                <Upload size={14} className="group-hover:-translate-y-0.5 transition-transform" />
+                                <span>Pilih &amp; Upload Foto dari Komputer / HP</span>
+                              </label>
+                            </div>
+                          )}
+
                           <input
-                            type="text"
-                            value={leadershipForm.ketumPeriod}
-                            onChange={(e) => setLeadershipForm((prev) => ({ ...prev, ketumPeriod: e.target.value }))}
-                            placeholder="Periode 2025-2026"
-                            className="w-full px-3 py-2 bg-white rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium"
+                            id="upload-ketum-settings"
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleLeadershipPhotoUpload(e, 'ketumAvatarUrl')}
+                            className="hidden"
                           />
-                        </div>
-                        <div>
-                          <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                            URL Foto / Avatar (Opsional)
-                          </label>
+
                           <input
                             type="text"
                             value={leadershipForm.ketumAvatarUrl}
                             onChange={(e) => setLeadershipForm((prev) => ({ ...prev, ketumAvatarUrl: e.target.value }))}
-                            placeholder="https://... atau kosongkan untuk avatar inisial"
-                            className="w-full px-3 py-2 bg-white rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-mono text-[11px]"
+                            placeholder="Atau tempel link URL foto langsung di sini..."
+                            className="w-full px-3 py-1.5 bg-white rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-mono text-[11px]"
                           />
                         </div>
                       </div>
@@ -7801,7 +7858,7 @@ const AdminDashboardPage = ({
 
               <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-6">
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                  <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs font-bold text-slate-900">Tombol Cepat Pengembang</p>
                       <p className="text-[11px] text-slate-500">Akses cepat menggunakan tombol kombinasi keyboard</p>
@@ -7809,25 +7866,6 @@ const AdminDashboardPage = ({
                     <kbd className="px-2.5 py-1 bg-slate-100 rounded-lg text-xs font-mono font-bold text-slate-700">
                       Ctrl + Shift + D
                     </kbd>
-                  </div>
-
-                  <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-                    <div>
-                      <p className="text-xs font-bold text-slate-900">Reset Akun Organisasi</p>
-                      <p className="text-[11px] text-slate-500">Kembalikan daftar akun ke default akun Alif Fikri</p>
-                    </div>
-                    <button
-                      onClick={() => {
-                        if (window.confirm('Reset semua akun mahasiswa kembali ke akun default Alif Fikri?')) {
-                          onResetAccounts();
-                          addLog('Akun direset ke default', 'warning');
-                        }
-                      }}
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-bold text-slate-700 transition-colors cursor-pointer"
-                    >
-                      <RefreshCw size={13} />
-                      <span>Reset Akun</span>
-                    </button>
                   </div>
                 </div>
               </div>
@@ -9263,16 +9301,75 @@ const AdminDashboardPage = ({
                     </div>
 
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                        URL Foto / Avatar (Opsional)
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1.5 flex items-center justify-between">
+                        <span>Foto Profil / Avatar</span>
+                        <span className="text-[10px] text-slate-400 font-normal">Upload File Gambar atau Tempel URL</span>
                       </label>
-                      <input
-                        type="text"
-                        value={leadershipForm.pembinaAvatarUrl}
-                        onChange={(e) => setLeadershipForm((prev) => ({ ...prev, pembinaAvatarUrl: e.target.value }))}
-                        placeholder="https://... atau kosongkan untuk avatar inisial"
-                        className="w-full px-3 py-1.5 bg-white rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-mono text-[11px]"
-                      />
+
+                      <div className="space-y-2">
+                        {leadershipForm.pembinaAvatarUrl ? (
+                          <div className="flex items-center gap-3 p-2 bg-white rounded-xl border border-slate-200 shadow-2xs">
+                            <img
+                              src={leadershipForm.pembinaAvatarUrl}
+                              alt="Foto Pembina"
+                              className="w-9 h-9 rounded-full object-cover border border-slate-200 shadow-xs shrink-0"
+                              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                            />
+                            <div className="min-w-0 flex-1">
+                              <span className="text-[11px] font-bold text-slate-800 block truncate">
+                                {leadershipForm.pembinaAvatarUrl.startsWith('data:') ? 'Foto Terunggah dari Perangkat' : 'Foto dari URL Web'}
+                              </span>
+                              <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+                                <Check size={11} /> Foto Aktif &amp; Siap Ditampilkan
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <label
+                                htmlFor="upload-pembina-modal"
+                                className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-bold transition-colors cursor-pointer flex items-center gap-1"
+                                title="Ganti foto dengan file lain"
+                              >
+                                <Upload size={12} />
+                                <span>Ganti</span>
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() => setLeadershipForm((prev) => ({ ...prev, pembinaAvatarUrl: '' }))}
+                                className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition-colors cursor-pointer"
+                                title="Hapus foto dan gunakan avatar inisial"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <label
+                              htmlFor="upload-pembina-modal"
+                              className="flex-1 flex items-center justify-center gap-2 px-3 py-1.5 bg-white hover:bg-blue-50/50 border border-dashed border-blue-300 hover:border-blue-500 rounded-xl text-xs font-bold text-blue-600 hover:text-blue-700 transition-all cursor-pointer shadow-2xs group"
+                            >
+                              <Upload size={13} className="group-hover:-translate-y-0.5 transition-transform" />
+                              <span>Pilih &amp; Upload Foto dari Komputer / HP</span>
+                            </label>
+                          </div>
+                        )}
+
+                        <input
+                          id="upload-pembina-modal"
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleLeadershipPhotoUpload(e, 'pembinaAvatarUrl')}
+                          className="hidden"
+                        />
+
+                        <input
+                          type="text"
+                          value={leadershipForm.pembinaAvatarUrl}
+                          onChange={(e) => setLeadershipForm((prev) => ({ ...prev, pembinaAvatarUrl: e.target.value }))}
+                          placeholder="Atau tempel link URL foto langsung di sini..."
+                          className="w-full px-3 py-1.5 bg-white rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-mono text-[11px]"
+                        />
+                      </div>
                     </div>
                   </div>
 
@@ -9313,28 +9410,86 @@ const AdminDashboardPage = ({
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                          Periode Kepengurusan
-                        </label>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        Periode Kepengurusan
+                      </label>
+                      <input
+                        type="text"
+                        value={leadershipForm.ketumPeriod}
+                        onChange={(e) => setLeadershipForm((prev) => ({ ...prev, ketumPeriod: e.target.value }))}
+                        placeholder="Periode 2025-2026"
+                        className="w-full px-3 py-1.5 bg-white rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1.5 flex items-center justify-between">
+                        <span>Foto Profil / Avatar</span>
+                        <span className="text-[10px] text-slate-400 font-normal">Upload File Gambar atau Tempel URL</span>
+                      </label>
+
+                      <div className="space-y-2">
+                        {leadershipForm.ketumAvatarUrl ? (
+                          <div className="flex items-center gap-3 p-2 bg-white rounded-xl border border-slate-200 shadow-2xs">
+                            <img
+                              src={leadershipForm.ketumAvatarUrl}
+                              alt="Foto Ketua Umum"
+                              className="w-9 h-9 rounded-full object-cover border border-slate-200 shadow-xs shrink-0"
+                              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                            />
+                            <div className="min-w-0 flex-1">
+                              <span className="text-[11px] font-bold text-slate-800 block truncate">
+                                {leadershipForm.ketumAvatarUrl.startsWith('data:') ? 'Foto Terunggah dari Perangkat' : 'Foto dari URL Web'}
+                              </span>
+                              <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+                                <Check size={11} /> Foto Aktif &amp; Siap Ditampilkan
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <label
+                                htmlFor="upload-ketum-modal"
+                                className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-bold transition-colors cursor-pointer flex items-center gap-1"
+                                title="Ganti foto dengan file lain"
+                              >
+                                <Upload size={12} />
+                                <span>Ganti</span>
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() => setLeadershipForm((prev) => ({ ...prev, ketumAvatarUrl: '' }))}
+                                className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition-colors cursor-pointer"
+                                title="Hapus foto dan gunakan avatar inisial"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <label
+                              htmlFor="upload-ketum-modal"
+                              className="flex-1 flex items-center justify-center gap-2 px-3 py-1.5 bg-white hover:bg-indigo-50/50 border border-dashed border-indigo-300 hover:border-indigo-500 rounded-xl text-xs font-bold text-indigo-600 hover:text-indigo-700 transition-all cursor-pointer shadow-2xs group"
+                            >
+                              <Upload size={13} className="group-hover:-translate-y-0.5 transition-transform" />
+                              <span>Pilih &amp; Upload Foto dari Komputer / HP</span>
+                            </label>
+                          </div>
+                        )}
+
                         <input
-                          type="text"
-                          value={leadershipForm.ketumPeriod}
-                          onChange={(e) => setLeadershipForm((prev) => ({ ...prev, ketumPeriod: e.target.value }))}
-                          placeholder="Periode 2025-2026"
-                          className="w-full px-3 py-1.5 bg-white rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium"
+                          id="upload-ketum-modal"
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleLeadershipPhotoUpload(e, 'ketumAvatarUrl')}
+                          className="hidden"
                         />
-                      </div>
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                          URL Foto / Avatar (Opsional)
-                        </label>
+
                         <input
                           type="text"
                           value={leadershipForm.ketumAvatarUrl}
                           onChange={(e) => setLeadershipForm((prev) => ({ ...prev, ketumAvatarUrl: e.target.value }))}
-                          placeholder="https://... atau kosongkan untuk avatar inisial"
+                          placeholder="Atau tempel link URL foto langsung di sini..."
                           className="w-full px-3 py-1.5 bg-white rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-mono text-[11px]"
                         />
                       </div>

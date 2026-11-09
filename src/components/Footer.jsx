@@ -16,12 +16,12 @@ const Footer = ({ onOpenDevDashboard }) => {
   };
 
   return (
-    <footer className="w-full bg-[#121318] text-white pt-16 pb-8 border-t border-white/5 select-none relative">
-      <div className="max-w-6xl mx-auto px-6 md:px-12">
+    <footer className="w-full bg-[#121318] text-white pt-14 sm:pt-16 pb-8 border-t border-white/5 select-none relative">
+      <div className="max-w-6xl mx-auto px-5 sm:px-8 lg:px-12">
         {/* Main Footer Row */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 pb-14">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-10 pb-12 sm:pb-14">
           {/* Left Column (Brand) */}
-          <div className="md:col-span-4 flex flex-col">
+          <div className="md:col-span-1 lg:col-span-4 flex flex-col">
             <div className="flex items-center gap-3 mb-4">
               <img
                 src="/logo-teramedia.png"
@@ -37,18 +37,18 @@ const Footer = ({ onOpenDevDashboard }) => {
           </div>
 
           {/* Center Column (Subscribe) */}
-          <div className="md:col-span-5 flex flex-col">
+          <div className="md:col-span-1 lg:col-span-5 flex flex-col">
             <p className="text-xs text-gray-300 mb-3 leading-relaxed">
               Subscribe to stay tuned for new web design and latest updates. Let&apos;s do it!
             </p>
-            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 max-w-md">
+            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full max-w-md">
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email Address"
-                className="flex-1 bg-white text-slate-900 placeholder-gray-400 px-4 py-2.5 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium min-h-[44px] select-text cursor-text"
+                className="min-w-0 flex-1 bg-white text-slate-900 placeholder-gray-400 px-4 py-2.5 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium min-h-[44px] select-text cursor-text"
               />
               <button
                 type="submit"
@@ -60,8 +60,8 @@ const Footer = ({ onOpenDevDashboard }) => {
           </div>
 
           {/* Right Column (Socials & Call us) */}
-          <div className="md:col-span-3 flex flex-col justify-between">
-            <div className="mb-4">
+          <div className="md:col-span-2 lg:col-span-3 flex flex-col sm:flex-row lg:flex-col justify-between gap-4">
+            <div>
               <span className="text-xs font-semibold text-gray-300 block mb-2">Follow us</span>
               <div className="flex items-center gap-4 text-gray-400">
                 {/* Instagram */}
@@ -146,7 +146,7 @@ const Footer = ({ onOpenDevDashboard }) => {
           onClick={() => setIsCreditModalOpen(false)}
         >
           <div
-            className="relative w-full max-w-md bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-7 shadow-[0_25px_70px_rgba(0,0,0,0.35)] text-slate-900 animate-in zoom-in-95 duration-200 select-none overflow-hidden"
+            className="relative w-full max-w-md bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-7 shadow-[0_25px_70px_rgba(0,0,0,0.35)] text-slate-900 animate-in zoom-in-95 duration-200 select-none overflow-hidden max-h-[92vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Ambient Top Corner Accent */}

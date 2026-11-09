@@ -40,7 +40,6 @@ import {
   updatePasswordInDb,
   deleteAccountFromDb,
   deleteAccountsBatchFromDb,
-  resetAccountsInDb,
 } from './services/accountService';
 import {
   subscribeTickets,
@@ -1727,13 +1726,6 @@ function App() {
     });
   };
 
-  const handleResetAccounts = () => {
-    if (window.confirm('Kembalikan seluruh daftar akun ke akun bawaan sistem?')) {
-      setRegisteredAccounts(initialDefaultAccounts);
-      resetAccountsInDb(initialDefaultAccounts);
-    }
-  };
-
   const handleImpersonate = (account) => {
     setAuthUser(account);
     setCurrentView({ page: 'portal', serviceId: null });
@@ -1846,7 +1838,6 @@ function App() {
           onUpdatePassword={handleUpdatePassword}
           onDeleteAccount={handleDeleteAccount}
           onDeleteBatchAccounts={handleDeleteBatchAccounts}
-          onResetAccounts={handleResetAccounts}
           onImpersonate={handleImpersonate}
           onForceDestroySession={handleLogout}
           authUser={authUser}

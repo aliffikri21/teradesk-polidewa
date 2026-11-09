@@ -30,19 +30,19 @@ const AboutUs = () => {
   return (
     <section
       id="tentang-kami"
-      className="w-full bg-white text-slate-900 pt-20 sm:pt-24 lg:pt-28 pb-0 scroll-mt-20 select-none overflow-hidden"
+      className="w-full bg-white text-slate-900 pt-16 sm:pt-20 lg:pt-24 pb-0 scroll-mt-20 select-none overflow-hidden"
     >
       {/* =========================================================================
           TEXT CONTENT: Left-aligned clean editorial layout matching design reference
           ========================================================================= */}
-      <div className="w-full max-w-6xl mx-auto px-6 sm:px-10 lg:px-14 mb-10 sm:mb-14">
+      <div className="w-full max-w-6xl mx-auto px-5 sm:px-8 lg:px-12 mb-8 sm:mb-12">
         {/* Section Heading - Left-Aligned */}
-        <h2 className="text-3xl sm:text-4xl md:text-[42px] lg:text-[46px] font-bold text-slate-950 tracking-tight mb-6 sm:mb-7 text-left">
+        <h2 className="text-3xl sm:text-4xl md:text-[40px] lg:text-[44px] font-bold text-slate-950 tracking-tight mb-5 sm:mb-6 text-left">
           Tentang Kami
         </h2>
 
-        {/* Text Paragraphs - Justified alignment, 3 distinct blocks with natural line-height */}
-        <div className="space-y-4 sm:space-y-5 text-slate-800 text-sm sm:text-base md:text-[16px] lg:text-[17px] leading-relaxed max-w-4xl text-justify font-normal">
+        {/* Text Paragraphs - Clean responsive text alignment */}
+        <div className="space-y-4 sm:space-y-5 text-slate-800 text-sm sm:text-base md:text-[16px] lg:text-[17px] leading-relaxed max-w-4xl text-left sm:text-justify font-normal">
           <p>
             TERAMEDIA merupakan suatu organisasi Program Studi Teknologi Rekayasa Multimedia yang dinaungi oleh kampus Politeknik Dewantara. Didirikan pada tahun 14 Februari 2020 hingga saat ini telah aktif selama 6 tahun.
           </p>
@@ -70,7 +70,7 @@ const AboutUs = () => {
           {marqueeList.map((item, index) => (
             <div
               key={index}
-              className="w-[340px] sm:w-[460px] md:w-[560px] lg:w-[640px] xl:w-[720px] h-64 sm:h-72 md:h-84 lg:h-[390px] xl:h-[430px] shrink-0 overflow-hidden relative group cursor-pointer"
+              className="w-[280px] sm:w-[400px] md:w-[500px] lg:w-[600px] xl:w-[700px] h-52 sm:h-64 md:h-72 lg:h-[360px] xl:h-[420px] shrink-0 overflow-hidden relative group cursor-pointer"
             >
               <img
                 src={item.src}
