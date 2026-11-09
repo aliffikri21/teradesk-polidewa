@@ -69,6 +69,7 @@ import {
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { playNotificationChime, getSoundMuted, setSoundMuted } from '../../utils/notificationSound';
+import { initialDefaultLeadership } from '../../data/defaultLeadership';
 import { initialDefaultTickets, sortTicketsNewestFirst } from '../../data/defaultTickets';
 import { getLogDateInfo, getAvailableLogMonths, exportLogsToXLSX } from '../../utils/logExporter';
 import { OFFICIAL_DIVISIONS } from '../../data/defaultAccounts';
@@ -397,6 +398,8 @@ const AdminDashboardPage = ({
   initialNav = 'dashboard',
   onOpenCommandPalette,
   onOpenChangePassword,
+  leadershipProfiles: propLeadershipProfiles,
+  onUpdateLeadershipProfiles: propOnUpdateLeadershipProfiles,
 }) => {
   // Mobile Sidebar Drawer State
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -474,6 +477,35 @@ const AdminDashboardPage = ({
   const handleTestChime = () => {
     playNotificationChime(0.5);
   };
+
+  // Profil Pimpinan & Pembina (Kartu Hero Landing Page)
+  const [leadershipForm, setLeadershipForm] = useState(() => ({
+    pembinaName: propLeadershipProfiles?.pembina?.name || initialDefaultLeadership.pembina.name,
+    pembinaTitle: propLeadershipProfiles?.pembina?.title || initialDefaultLeadership.pembina.title,
+    pembinaAvatarUrl: propLeadershipProfiles?.pembina?.avatarUrl || '',
+    ketumName: propLeadershipProfiles?.ketuaUmum?.name || initialDefaultLeadership.ketuaUmum.name,
+    ketumTitle: propLeadershipProfiles?.ketuaUmum?.title || initialDefaultLeadership.ketuaUmum.title,
+    ketumPeriod: propLeadershipProfiles?.ketuaUmum?.period || initialDefaultLeadership.ketuaUmum.period,
+    ketumAvatarUrl: propLeadershipProfiles?.ketuaUmum?.avatarUrl || '',
+  }));
+  const [leadershipSaveSuccess, setLeadershipSaveSuccess] = useState(false);
+  const [isLeadershipModalOpen, setIsLeadershipModalOpen] = useState(false);
+  const [prevLeadershipProp, setPrevLeadershipProp] = useState(propLeadershipProfiles);
+
+  if (prevLeadershipProp !== propLeadershipProfiles) {
+    setPrevLeadershipProp(propLeadershipProfiles);
+    if (propLeadershipProfiles) {
+      setLeadershipForm({
+        pembinaName: propLeadershipProfiles.pembina?.name || initialDefaultLeadership.pembina.name,
+        pembinaTitle: propLeadershipProfiles.pembina?.title || initialDefaultLeadership.pembina.title,
+        pembinaAvatarUrl: propLeadershipProfiles.pembina?.avatarUrl || '',
+        ketumName: propLeadershipProfiles.ketuaUmum?.name || initialDefaultLeadership.ketuaUmum.name,
+        ketumTitle: propLeadershipProfiles.ketuaUmum?.title || initialDefaultLeadership.ketuaUmum.title,
+        ketumPeriod: propLeadershipProfiles.ketuaUmum?.period || initialDefaultLeadership.ketuaUmum.period,
+        ketumAvatarUrl: propLeadershipProfiles.ketuaUmum?.avatarUrl || '',
+      });
+    }
+  }
 
   // State for Proker Management Tab
   const [prokerSearchQuery, setProkerSearchQuery] = useState('');
@@ -2244,6 +2276,58 @@ const AdminDashboardPage = ({
     }
   };
 
+  const handleSaveLeadership = (e) => {
+    if (e) e.preventDefault();
+    const updated = {
+      pembina: {
+        name: leadershipForm.pembinaName.trim() || initialDefaultLeadership.pembina.name,
+        title: leadershipForm.pembinaTitle.trim() || initialDefaultLeadership.pembina.title,
+        avatarUrl: leadershipForm.pembinaAvatarUrl.trim(),
+      },
+      ketuaUmum: {
+        name: leadershipForm.ketumName.trim() || initialDefaultLeadership.ketuaUmum.name,
+        title: leadershipForm.ketumTitle.trim() || initialDefaultLeadership.ketuaUmum.title,
+        period: leadershipForm.ketumPeriod.trim() || initialDefaultLeadership.ketuaUmum.period,
+        avatarUrl: leadershipForm.ketumAvatarUrl.trim(),
+      },
+    };
+
+    if (propOnUpdateLeadershipProfiles) {
+      propOnUpdateLeadershipProfiles(updated);
+    }
+    addLog('Kartu profil pimpinan hero landing page berhasil diperbarui', 'success', {
+      category: 'system',
+      module: 'Hero Landing Page',
+    });
+    playNotificationChime(0.5);
+    setLeadershipSaveSuccess(true);
+    setTimeout(() => {
+      setLeadershipSaveSuccess(false);
+    }, 3000);
+  };
+
+  const handleResetLeadership = () => {
+    if (window.confirm('Kembalikan data kartu pimpinan di landing page ke profil awal default (M. Ishak & M. Toha)?')) {
+      if (propOnUpdateLeadershipProfiles) {
+        propOnUpdateLeadershipProfiles(initialDefaultLeadership);
+      }
+      setLeadershipForm({
+        pembinaName: initialDefaultLeadership.pembina.name,
+        pembinaTitle: initialDefaultLeadership.pembina.title,
+        pembinaAvatarUrl: initialDefaultLeadership.pembina.avatarUrl || '',
+        ketumName: initialDefaultLeadership.ketuaUmum.name,
+        ketumTitle: initialDefaultLeadership.ketuaUmum.title,
+        ketumPeriod: initialDefaultLeadership.ketuaUmum.period,
+        ketumAvatarUrl: initialDefaultLeadership.ketuaUmum.avatarUrl || '',
+      });
+      addLog('Kartu pimpinan hero direset ke profil default', 'warning', {
+        category: 'system',
+        module: 'Hero Landing Page',
+      });
+      playNotificationChime(0.5);
+    }
+  };
+
   // Filtered accounts based on search query, division, and access rights
   const filteredAccounts = accounts.filter((acc) => {
     const matchDivision =
@@ -2800,6 +2884,15 @@ const AdminDashboardPage = ({
                     </select>
                     <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                   </div>
+
+                  <button
+                    onClick={() => setIsLeadershipModalOpen(true)}
+                    className="flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 px-3.5 py-2 rounded-xl border border-blue-200 text-blue-700 shadow-xs transition-colors cursor-pointer"
+                    title="Ubah Profil Kartu Pimpinan Hero Landing Page"
+                  >
+                    <Sparkles size={13} className="text-blue-600" />
+                    <span>Edit Kartu Hero</span>
+                  </button>
 
                   <button
                     onClick={handleDownloadJson}
@@ -6504,6 +6597,7 @@ const AdminDashboardPage = ({
                     <Plus size={14} />
                     <span>Tambah Mahasiswa</span>
                   </button>
+
                   <button
                     onClick={handleDownloadJson}
                     className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 px-3.5 py-2 rounded-xl text-xs font-semibold hover:bg-slate-50 transition-all cursor-pointer shadow-xs"
@@ -7327,8 +7421,266 @@ const AdminDashboardPage = ({
                   Pengaturan Sistem TeraDesk
                 </h1>
                 <p className="text-xs text-slate-500 font-medium mt-1">
-                  Preferensi lingkungan administrator dan konfigurasi global.
+                  Preferensi lingkungan administrator, konfigurasi visual landing page, dan kontrol global.
                 </p>
+              </div>
+
+              {/* CARD: EDITOR PROFIL PIMPINAN HERO (LANDING PAGE) */}
+              <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center font-bold">
+                      <Sparkles size={20} />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-base font-bold text-slate-900">
+                          Editor Kartu Profil Pimpinan Hero
+                        </h2>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700">
+                          Landing Page
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Ubah nama, jabatan, periode, dan foto profil Pembina &amp; Ketua Umum pada floating cards Hero landing page.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={onBackToLanding}
+                      className="px-3 py-1.5 rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                      title="Lihat hasil di Landing Page"
+                    >
+                      <ExternalLink size={13} />
+                      <span>Buka Landing Page</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleResetLeadership}
+                      className="px-3 py-1.5 rounded-xl border border-slate-200 text-slate-600 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                      title="Reset ke profil default"
+                    >
+                      <RefreshCw size={13} />
+                      <span>Reset Default</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Split View: Live Preview & Form Fields */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                  {/* Left Column: Live Preview Card (Hero Dark Theme) */}
+                  <div className="lg:col-span-5 bg-[#080b16] rounded-2xl p-5 border border-slate-800 shadow-xl relative overflow-hidden flex flex-col justify-between min-h-[320px]">
+                    <div className="absolute inset-0 bg-radial from-blue-900/20 via-transparent to-transparent pointer-events-none" />
+                    
+                    <div className="relative z-10 flex items-center justify-between mb-4 pb-2 border-b border-slate-800/80">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-blue-400 flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+                        Live Preview Hero (Kolom 3)
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-mono">Real-time</span>
+                    </div>
+
+                    <div className="relative z-10 space-y-3.5 my-auto py-2">
+                      {/* Preview Card 1: Pembina */}
+                      <div className="w-full bg-white text-slate-900 rounded-2xl px-4 py-3 flex items-center gap-3.5 shadow-xl border border-gray-100 transition-all">
+                        {leadershipForm.pembinaAvatarUrl ? (
+                          <img
+                            src={leadershipForm.pembinaAvatarUrl}
+                            alt={leadershipForm.pembinaName || 'Pembina'}
+                            className="w-10 h-10 rounded-full object-cover shrink-0 shadow-inner border border-slate-100"
+                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-[#26282d] shrink-0 flex items-center justify-center text-white shadow-inner font-bold text-xs">
+                            {leadershipForm.pembinaName ? leadershipForm.pembinaName.charAt(0) : 'P'}
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-[13px] font-bold leading-tight mb-0.5 text-slate-900 truncate">
+                            {leadershipForm.pembinaName || 'M. Ishak, S.Kom., M.Kom.'}
+                          </p>
+                          <p className="text-[11px] text-gray-500 font-medium truncate">
+                            {leadershipForm.pembinaTitle || 'Pembina TERAMEDIA'}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Preview Card 2: Ketua Umum */}
+                      <div className="w-full bg-white text-slate-900 rounded-2xl px-4 py-3 flex items-center gap-3.5 shadow-xl border border-gray-100 transition-all">
+                        {leadershipForm.ketumAvatarUrl ? (
+                          <img
+                            src={leadershipForm.ketumAvatarUrl}
+                            alt={leadershipForm.ketumName || 'Ketua Umum'}
+                            className="w-10 h-10 rounded-full object-cover shrink-0 shadow-inner border border-slate-100"
+                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-[#26282d] shrink-0 flex items-center justify-center text-white shadow-inner font-bold text-xs">
+                            {leadershipForm.ketumName ? leadershipForm.ketumName.charAt(0) : 'K'}
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-[13px] font-bold leading-tight mb-0.5 text-slate-900 truncate">
+                            {leadershipForm.ketumName || 'Muhammad Toha'}
+                          </p>
+                          <p className="text-[11px] text-gray-600 font-medium leading-tight truncate">
+                            {leadershipForm.ketumTitle || 'Ketua Umum TERAMEDIA'}
+                          </p>
+                          <p className="text-[10px] text-gray-400 truncate">
+                            {leadershipForm.ketumPeriod || 'Periode 2025-2026'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="relative z-10 pt-3 border-t border-slate-800/80 text-[11px] text-slate-400 flex items-center justify-between">
+                      <span>TeraDesk OS • Landing Page</span>
+                      <span className="text-emerald-400 font-semibold">Tersinkronisasi</span>
+                    </div>
+                  </div>
+
+                  {/* Right Column: Form Inputs */}
+                  <form onSubmit={handleSaveLeadership} className="lg:col-span-7 space-y-4">
+                    {/* Pembina Fieldset */}
+                    <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-blue-600"></span>
+                          Kartu 1: Pembina Organisasi
+                        </span>
+                        <span className="text-[10px] font-semibold text-slate-500 bg-white px-2 py-0.5 rounded-md border border-slate-200">Atas</span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                            Nama Lengkap &amp; Gelar
+                          </label>
+                          <input
+                            type="text"
+                            value={leadershipForm.pembinaName}
+                            onChange={(e) => setLeadershipForm((prev) => ({ ...prev, pembinaName: e.target.value }))}
+                            placeholder="M. Ishak, S.Kom., M.Kom."
+                            className="w-full px-3 py-2 bg-white rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                            Jabatan / Keterangan
+                          </label>
+                          <input
+                            type="text"
+                            value={leadershipForm.pembinaTitle}
+                            onChange={(e) => setLeadershipForm((prev) => ({ ...prev, pembinaTitle: e.target.value }))}
+                            placeholder="Pembina TERAMEDIA"
+                            className="w-full px-3 py-2 bg-white rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          URL Foto / Avatar (Opsional)
+                        </label>
+                        <input
+                          type="text"
+                          value={leadershipForm.pembinaAvatarUrl}
+                          onChange={(e) => setLeadershipForm((prev) => ({ ...prev, pembinaAvatarUrl: e.target.value }))}
+                          placeholder="https://... atau kosongkan untuk avatar inisial"
+                          className="w-full px-3 py-2 bg-white rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-mono text-[11px]"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Ketua Umum Fieldset */}
+                    <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-indigo-600"></span>
+                          Kartu 2: Ketua Umum Organisasi
+                        </span>
+                        <span className="text-[10px] font-semibold text-slate-500 bg-white px-2 py-0.5 rounded-md border border-slate-200">Bawah</span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                            Nama Lengkap
+                          </label>
+                          <input
+                            type="text"
+                            value={leadershipForm.ketumName}
+                            onChange={(e) => setLeadershipForm((prev) => ({ ...prev, ketumName: e.target.value }))}
+                            placeholder="Muhammad Toha"
+                            className="w-full px-3 py-2 bg-white rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                            Jabatan / Keterangan
+                          </label>
+                          <input
+                            type="text"
+                            value={leadershipForm.ketumTitle}
+                            onChange={(e) => setLeadershipForm((prev) => ({ ...prev, ketumTitle: e.target.value }))}
+                            placeholder="Ketua Umum TERAMEDIA"
+                            className="w-full px-3 py-2 bg-white rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                            Periode Kepengurusan
+                          </label>
+                          <input
+                            type="text"
+                            value={leadershipForm.ketumPeriod}
+                            onChange={(e) => setLeadershipForm((prev) => ({ ...prev, ketumPeriod: e.target.value }))}
+                            placeholder="Periode 2025-2026"
+                            className="w-full px-3 py-2 bg-white rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                            URL Foto / Avatar (Opsional)
+                          </label>
+                          <input
+                            type="text"
+                            value={leadershipForm.ketumAvatarUrl}
+                            onChange={(e) => setLeadershipForm((prev) => ({ ...prev, ketumAvatarUrl: e.target.value }))}
+                            placeholder="https://... atau kosongkan untuk avatar inisial"
+                            className="w-full px-3 py-2 bg-white rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-mono text-[11px]"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Footer */}
+                    <div className="flex items-center justify-between pt-2">
+                      <div>
+                        {leadershipSaveSuccess && (
+                          <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl animate-in fade-in duration-200">
+                            <CheckCircle2 size={14} />
+                            <span>Perubahan tersimpan &amp; langsung aktif!</span>
+                          </span>
+                        )}
+                      </div>
+
+                      <button
+                        type="submit"
+                        className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-600/20 flex items-center gap-2 transition-all cursor-pointer"
+                      >
+                        <Check size={14} />
+                        <span>Simpan Perubahan Hero</span>
+                      </button>
+                    </div>
+                  </form>
+                </div>
               </div>
 
               <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-6">
@@ -8632,6 +8984,296 @@ const AdminDashboardPage = ({
                   className="w-full sm:w-auto px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer"
                 >
                   Tutup
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: EDITOR KARTU PROFIL PIMPINAN HERO (LANDING PAGE) */}
+      {isLeadershipModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150"
+          onClick={() => setIsLeadershipModalOpen(false)}
+        >
+          <div
+            className="bg-white rounded-3xl max-w-3xl w-full border border-slate-200 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col max-h-[92vh] relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="p-5 sm:p-6 border-b border-slate-100 flex items-start justify-between bg-slate-50/70 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20 shrink-0">
+                  <Sparkles size={20} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-bold text-slate-900">
+                      Editor Kartu Profil Pimpinan Hero
+                    </h3>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700">
+                      Hero Landing Page
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Perubahan nama, jabatan, periode, atau foto akan langsung tampil di kolom kanan Hero landing page.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsLeadershipModalOpen(false)}
+                className="text-slate-400 hover:text-slate-700 p-2 rounded-xl hover:bg-slate-200/60 transition-colors cursor-pointer"
+                title="Tutup Modal"
+                aria-label="Tutup Modal"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Modal Body (Scrollable) */}
+            <div className="p-5 sm:p-6 overflow-y-auto space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
+                {/* Left: Authentic Dark Live Preview */}
+                <div className="md:col-span-5 bg-[#080b16] rounded-2xl p-4 sm:p-5 border border-slate-800 shadow-xl relative overflow-hidden flex flex-col justify-between min-h-[290px]">
+                  <div className="absolute inset-0 bg-radial from-blue-900/20 via-transparent to-transparent pointer-events-none" />
+
+                  <div className="relative z-10 flex items-center justify-between mb-3 pb-2 border-b border-slate-800/80">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-blue-400 flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+                      Live Preview Hero
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-mono">Real-time</span>
+                  </div>
+
+                  <div className="relative z-10 space-y-3 my-auto py-2">
+                    {/* Card 1: Pembina */}
+                    <div className="w-full bg-white text-slate-900 rounded-2xl px-3.5 py-2.5 flex items-center gap-3 shadow-xl border border-gray-100 transition-all">
+                      {leadershipForm.pembinaAvatarUrl ? (
+                        <img
+                          src={leadershipForm.pembinaAvatarUrl}
+                          alt={leadershipForm.pembinaName || 'Pembina'}
+                          className="w-10 h-10 rounded-full object-cover shrink-0 shadow-inner border border-slate-100"
+                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-[#26282d] shrink-0 flex items-center justify-center text-white shadow-inner font-bold text-xs">
+                          {leadershipForm.pembinaName ? leadershipForm.pembinaName.charAt(0) : 'P'}
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <p className="text-[13px] font-bold leading-tight mb-0.5 text-slate-900 truncate">
+                          {leadershipForm.pembinaName || 'M. Ishak, S.Kom., M.Kom.'}
+                        </p>
+                        <p className="text-[11px] text-gray-500 font-medium truncate">
+                          {leadershipForm.pembinaTitle || 'Pembina TERAMEDIA'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Card 2: Ketua Umum */}
+                    <div className="w-full bg-white text-slate-900 rounded-2xl px-3.5 py-2.5 flex items-center gap-3 shadow-xl border border-gray-100 transition-all">
+                      {leadershipForm.ketumAvatarUrl ? (
+                        <img
+                          src={leadershipForm.ketumAvatarUrl}
+                          alt={leadershipForm.ketumName || 'Ketua Umum'}
+                          className="w-10 h-10 rounded-full object-cover shrink-0 shadow-inner border border-slate-100"
+                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-[#26282d] shrink-0 flex items-center justify-center text-white shadow-inner font-bold text-xs">
+                          {leadershipForm.ketumName ? leadershipForm.ketumName.charAt(0) : 'K'}
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <p className="text-[13px] font-bold leading-tight mb-0.5 text-slate-900 truncate">
+                          {leadershipForm.ketumName || 'Muhammad Toha'}
+                        </p>
+                        <p className="text-[11px] text-gray-600 font-medium leading-tight truncate">
+                          {leadershipForm.ketumTitle || 'Ketua Umum TERAMEDIA'}
+                        </p>
+                        <p className="text-[10px] text-gray-400 truncate">
+                          {leadershipForm.ketumPeriod || 'Periode 2025-2026'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="relative z-10 pt-2.5 border-t border-slate-800/80 text-[10px] text-slate-400 flex items-center justify-between">
+                    <span>TeraDesk OS • Landing Page</span>
+                    <span className="text-emerald-400 font-semibold">Tersinkronisasi</span>
+                  </div>
+                </div>
+
+                {/* Right: Form Controls */}
+                <form id="hero-leadership-form" onSubmit={handleSaveLeadership} className="md:col-span-7 space-y-4">
+                  {/* Card 1: Pembina Inputs */}
+                  <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-blue-600"></span>
+                        Kartu 1: Pembina Organisasi
+                      </span>
+                      <span className="text-[10px] font-semibold text-slate-500 bg-white px-2 py-0.5 rounded-md border border-slate-200">Atas</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          Nama Lengkap &amp; Gelar
+                        </label>
+                        <input
+                          type="text"
+                          value={leadershipForm.pembinaName}
+                          onChange={(e) => setLeadershipForm((prev) => ({ ...prev, pembinaName: e.target.value }))}
+                          placeholder="M. Ishak, S.Kom., M.Kom."
+                          className="w-full px-3 py-1.5 bg-white rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          Jabatan / Keterangan
+                        </label>
+                        <input
+                          type="text"
+                          value={leadershipForm.pembinaTitle}
+                          onChange={(e) => setLeadershipForm((prev) => ({ ...prev, pembinaTitle: e.target.value }))}
+                          placeholder="Pembina TERAMEDIA"
+                          className="w-full px-3 py-1.5 bg-white rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        URL Foto / Avatar (Opsional)
+                      </label>
+                      <input
+                        type="text"
+                        value={leadershipForm.pembinaAvatarUrl}
+                        onChange={(e) => setLeadershipForm((prev) => ({ ...prev, pembinaAvatarUrl: e.target.value }))}
+                        placeholder="https://... atau kosongkan untuk avatar inisial"
+                        className="w-full px-3 py-1.5 bg-white rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-mono text-[11px]"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Card 2: Ketua Umum Inputs */}
+                  <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-indigo-600"></span>
+                        Kartu 2: Ketua Umum Organisasi
+                      </span>
+                      <span className="text-[10px] font-semibold text-slate-500 bg-white px-2 py-0.5 rounded-md border border-slate-200">Bawah</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          Nama Lengkap
+                        </label>
+                        <input
+                          type="text"
+                          value={leadershipForm.ketumName}
+                          onChange={(e) => setLeadershipForm((prev) => ({ ...prev, ketumName: e.target.value }))}
+                          placeholder="Muhammad Toha"
+                          className="w-full px-3 py-1.5 bg-white rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          Jabatan / Keterangan
+                        </label>
+                        <input
+                          type="text"
+                          value={leadershipForm.ketumTitle}
+                          onChange={(e) => setLeadershipForm((prev) => ({ ...prev, ketumTitle: e.target.value }))}
+                          placeholder="Ketua Umum TERAMEDIA"
+                          className="w-full px-3 py-1.5 bg-white rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          Periode Kepengurusan
+                        </label>
+                        <input
+                          type="text"
+                          value={leadershipForm.ketumPeriod}
+                          onChange={(e) => setLeadershipForm((prev) => ({ ...prev, ketumPeriod: e.target.value }))}
+                          placeholder="Periode 2025-2026"
+                          className="w-full px-3 py-1.5 bg-white rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          URL Foto / Avatar (Opsional)
+                        </label>
+                        <input
+                          type="text"
+                          value={leadershipForm.ketumAvatarUrl}
+                          onChange={(e) => setLeadershipForm((prev) => ({ ...prev, ketumAvatarUrl: e.target.value }))}
+                          placeholder="https://... atau kosongkan untuk avatar inisial"
+                          className="w-full px-3 py-1.5 bg-white rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-mono text-[11px]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            {/* Modal Footer Controls */}
+            <div className="p-4 sm:p-5 border-t border-slate-100 bg-slate-50/70 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={handleResetLeadership}
+                  className="px-3 py-2 bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-200 text-slate-600 hover:text-rose-600 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  title="Kembalikan data ke profil default"
+                >
+                  <RefreshCw size={13} />
+                  <span>Reset Default</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsLeadershipModalOpen(false);
+                    onBackToLanding?.();
+                  }}
+                  className="px-3 py-2 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <ExternalLink size={13} />
+                  <span>Buka Landing Page</span>
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                {leadershipSaveSuccess && (
+                  <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl">
+                    <CheckCircle2 size={14} />
+                    <span>Tersimpan!</span>
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setIsLeadershipModalOpen(false)}
+                  className="px-4 py-2 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                >
+                  Tutup
+                </button>
+                <button
+                  type="submit"
+                  form="hero-leadership-form"
+                  className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-600/20 flex items-center gap-1.5 transition-all cursor-pointer"
+                >
+                  <Check size={14} />
+                  <span>Simpan Perubahan</span>
                 </button>
               </div>
             </div>

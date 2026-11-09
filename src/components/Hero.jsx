@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { ArrowRight, Bookmark, ChevronLeft, ChevronRight, Menu, X } from 'lucide-react';
 import { initialDefaultProker } from '../data/defaultProker';
 
-const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [] }) => {
+const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [], leadershipProfiles }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState('beranda');
   const [activeProkerIndex, setActiveProkerIndex] = useState(0);
@@ -10,6 +10,19 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [] }) => {
   const [isFading, setIsFading] = useState(false);
   const [fadeDirection, setFadeDirection] = useState('next'); // 'next' | 'prev'
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Profil Pimpinan & Pembina Dinamis (Sinkron dengan Admin Editor)
+  const activePembina = leadershipProfiles?.pembina || {
+    name: 'M. Ishak, S.Kom., M.Kom.',
+    title: 'Pembina TERAMEDIA',
+    avatarUrl: '',
+  };
+  const activeKetum = leadershipProfiles?.ketuaUmum || {
+    name: 'Muhammad Toha',
+    title: 'Ketua Umum TERAMEDIA',
+    period: 'Periode 2025-2026',
+    avatarUrl: '',
+  };
 
   // Filter proker yang diizinkan tampil di hero
   const effectiveProkers = prokerList && prokerList.length > 0 ? prokerList : initialDefaultProker;
@@ -507,26 +520,50 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [] }) => {
               ------------------------------------------------------------------- */}
           <div className="w-full max-w-[280px] sm:max-w-[300px] xl:w-[310px] 2xl:w-[340px] flex flex-col gap-3 2xl:gap-4 select-none shrink-0">
             {/* Card 1: Pembina TERAMEDIA (Shifted right) */}
-            <div className="w-full max-w-[245px] sm:max-w-[260px] xl:w-[265px] 2xl:w-[290px] self-center lg:self-end bg-white text-slate-900 rounded-2xl px-4 py-3 2xl:py-3.5 flex items-center gap-3.5 shadow-xl border border-gray-100">
-              <div className="w-10 h-10 xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 rounded-full bg-[#26282d] shrink-0 flex items-center justify-center text-white shadow-inner" />
+            <div className="w-full max-w-[245px] sm:max-w-[260px] xl:w-[265px] 2xl:w-[290px] self-center lg:self-end bg-white text-slate-900 rounded-2xl px-4 py-3 2xl:py-3.5 flex items-center gap-3.5 shadow-xl border border-gray-100 transition-all duration-300">
+              {activePembina.avatarUrl ? (
+                <img
+                  src={activePembina.avatarUrl}
+                  alt={activePembina.name}
+                  className="w-10 h-10 xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 rounded-full object-cover shrink-0 shadow-inner border border-slate-100"
+                />
+              ) : (
+                <div className="w-10 h-10 xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 rounded-full bg-[#26282d] shrink-0 flex items-center justify-center text-white shadow-inner font-bold text-xs">
+                  {activePembina.name ? activePembina.name.charAt(0) : 'P'}
+                </div>
+              )}
               <div>
                 <p className="text-[13px] xl:text-sm 2xl:text-[15px] font-bold leading-tight mb-0.5 text-slate-900">
-                  M. Ishak, S.Kom., M.Kom.
+                  {activePembina.name}
                 </p>
-                <p className="text-[11px] xl:text-xs 2xl:text-[13px] text-gray-500 font-medium">Pembina TERAMEDIA</p>
+                <p className="text-[11px] xl:text-xs 2xl:text-[13px] text-gray-500 font-medium">
+                  {activePembina.title}
+                </p>
               </div>
             </div>
 
             {/* Card 2: Ketua Umum TERAMEDIA (Slightly shifted) */}
-            <div className="w-full max-w-[240px] sm:max-w-[255px] xl:w-[260px] 2xl:w-[285px] self-center lg:self-end lg:mr-4 bg-white text-slate-900 rounded-2xl px-4 py-3 2xl:py-3.5 flex items-center gap-3.5 shadow-xl border border-gray-100">
-              <div className="w-10 h-10 xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 rounded-full bg-[#26282d] shrink-0 flex items-center justify-center text-white shadow-inner" />
+            <div className="w-full max-w-[240px] sm:max-w-[255px] xl:w-[260px] 2xl:w-[285px] self-center lg:self-end lg:mr-4 bg-white text-slate-900 rounded-2xl px-4 py-3 2xl:py-3.5 flex items-center gap-3.5 shadow-xl border border-gray-100 transition-all duration-300">
+              {activeKetum.avatarUrl ? (
+                <img
+                  src={activeKetum.avatarUrl}
+                  alt={activeKetum.name}
+                  className="w-10 h-10 xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 rounded-full object-cover shrink-0 shadow-inner border border-slate-100"
+                />
+              ) : (
+                <div className="w-10 h-10 xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 rounded-full bg-[#26282d] shrink-0 flex items-center justify-center text-white shadow-inner font-bold text-xs">
+                  {activeKetum.name ? activeKetum.name.charAt(0) : 'K'}
+                </div>
+              )}
               <div>
                 <p className="text-[13px] xl:text-sm 2xl:text-[15px] font-bold leading-tight mb-0.5 text-slate-900">
-                  Muhammad Toha
+                  {activeKetum.name}
                 </p>
                 <p className="text-[11px] xl:text-xs 2xl:text-[13px] text-gray-600 font-medium leading-tight">
-                  Ketua Umum TERAMEDIA <br />
-                  <span className="text-[10px] xl:text-[11px] 2xl:text-xs text-gray-400">Periode 2025-2026</span>
+                  {activeKetum.title} <br />
+                  <span className="text-[10px] xl:text-[11px] 2xl:text-xs text-gray-400">
+                    {activeKetum.period}
+                  </span>
                 </p>
               </div>
             </div>

@@ -13,6 +13,7 @@ import CommandPalette from './components/common/CommandPalette';
 import ChangePasswordModal from './components/common/ChangePasswordModal';
 import PublicAttendanceModal from './components/services/PublicAttendanceModal';
 import { initialDefaultAccounts } from './data/defaultAccounts';
+import { initialDefaultLeadership } from './data/defaultLeadership';
 import { initialDefaultProker } from './data/defaultProker';
 import { isDummyConsultation } from './data/defaultConsultations';
 import { initialDefaultActivityLogs } from './data/defaultActivityLogs';
@@ -193,6 +194,45 @@ function App() {
       // ignore
     }
   }, [prokerList]);
+
+  // Profil Pimpinan & Pembina (Kartu Hero Landing Page)
+  const [leadershipProfiles, setLeadershipProfiles] = useState(() => {
+    try {
+      const saved = localStorage.getItem('teradesk_leadership_profiles_v1');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed?.pembina?.name && parsed?.ketuaUmum?.name) {
+          return parsed;
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return initialDefaultLeadership;
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('teradesk_leadership_profiles_v1', JSON.stringify(leadershipProfiles));
+    } catch {
+      // ignore
+    }
+  }, [leadershipProfiles]);
+
+  const handleUpdateLeadershipProfiles = (updatedProfiles) => {
+    setLeadershipProfiles(updatedProfiles);
+    handleAddActivityLog({
+      category: 'system',
+      type: 'info',
+      userName: authUser?.name || 'Administrator',
+      userNim: authUser?.nim || '23404053',
+      userRole: authUser?.role || 'BPH',
+      userDivision: 'BPH',
+      moduleName: 'Pengaturan Landing',
+      event: 'Pembaruan Kartu Profil Pimpinan',
+      details: `Mengubah data profil Pembina (${updatedProfiles?.pembina?.name}) dan Ketua Umum (${updatedProfiles?.ketuaUmum?.name}) pada landing page.`,
+    });
+  };
 
   // Design Tickets state (Permohonan tiket request desain Pubdok & Helpdesk)
   const [designTickets, setDesignTickets] = useState(() => {
@@ -1762,6 +1802,7 @@ function App() {
               handleNavigate(serviceId ? 'service' : 'portal', serviceId)
             }
             prokerList={prokerList}
+            leadershipProfiles={leadershipProfiles}
           />
 
           {/* Fitur Unggulan Section (11 Cards Grid on Light Background) */}
@@ -1854,6 +1895,8 @@ function App() {
           onOpenPublicAttendanceModal={(sessionId) => setActivePublicAttendanceId(sessionId || null)}
           moduleStatuses={moduleStatuses}
           onToggleModuleStatus={handleToggleModuleStatus}
+          leadershipProfiles={leadershipProfiles}
+          onUpdateLeadershipProfiles={handleUpdateLeadershipProfiles}
         />
       ) : currentView.page === 'service' ? (
         /* Halaman Layanan Spesifik (PAR, Arsip, Aset, Kas, dsb.) */
@@ -1911,6 +1954,8 @@ function App() {
           onAddActivity={handleAddActivity}
           moduleStatuses={moduleStatuses}
           onToggleModuleStatus={handleToggleModuleStatus}
+          leadershipProfiles={leadershipProfiles}
+          onUpdateLeadershipProfiles={handleUpdateLeadershipProfiles}
         />
       ) : (
         /* Halaman Khusus Portal Fitur & Katalog Aplikasi Organisasi */
