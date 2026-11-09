@@ -543,7 +543,7 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [], leadershipPr
               {defaultCenterCards.map((card, idx) => (
                 <Card
                   key={card.id}
-                  className="p-4 sm:p-5 xl:p-6 bg-white text-slate-900 flex flex-col justify-between h-full select-none cursor-grab active:cursor-grabbing border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.22)] rounded-[2rem] sm:rounded-[2.25rem]"
+                  className="p-4 sm:p-5 xl:p-6 bg-white text-slate-900 flex flex-col justify-between h-full select-none cursor-grab active:cursor-grabbing border border-slate-100 rounded-[2rem] sm:rounded-[2.25rem]"
                 >
                   {/* Top Capsule & Stepper Controls */}
                   <div className="flex items-center justify-between mb-2 px-0.5">

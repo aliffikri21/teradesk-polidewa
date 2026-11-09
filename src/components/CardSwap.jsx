@@ -52,7 +52,7 @@ const DEFAULT_ITEMS = [
 
 const PERSPECTIVE = 900;
 const TAU = Math.PI * 2;
-const STEP = 1 / 240;
+const STEP = 1 / 120;
 const PAD = 32;
 const AXES = ['x', 'y', 'z', 'r', 'p'];
 const DOWN = { x: 0, y: 1 };
@@ -294,7 +294,13 @@ const CardSwap = forwardRef(
         const { el, shade } = card;
         if (!el) return;
         el.style.transform = `translate3d(${card.x.toFixed(2)}px, ${card.y.toFixed(2)}px, ${card.z.toFixed(2)}px) rotate(${card.r.toFixed(3)}deg) skewY(${s.skew}deg)`;
-        el.style.zIndex = String(layerOf(card));
+
+        const nextZ = String(layerOf(card));
+        if (card.lastZ !== nextZ) {
+          card.lastZ = nextZ;
+          el.style.zIndex = nextZ;
+        }
+
         const fade = clamp(s.visible - card.p, 0, 1);
         let exitFade = 1;
         if (card.phase === 'exit') {
@@ -304,27 +310,56 @@ const CardSwap = forwardRef(
           exitFade = clamp(1 - (travelled / (clr * 0.75)), 0, 1);
         }
         const effectiveOpacity = Math.min(fade, exitFade);
-        el.style.opacity = effectiveOpacity < 1 ? effectiveOpacity.toFixed(3) : '';
-        el.style.visibility = effectiveOpacity <= 0.001 ? 'hidden' : '';
+        const nextOpacity = effectiveOpacity < 1 ? effectiveOpacity.toFixed(2) : '';
+        if (card.lastOpacity !== nextOpacity) {
+          card.lastOpacity = nextOpacity;
+          el.style.opacity = nextOpacity;
+        }
+
+        const nextVis = effectiveOpacity <= 0.001 ? 'hidden' : '';
+        if (card.lastVis !== nextVis) {
+          card.lastVis = nextVis;
+          el.style.visibility = nextVis;
+        }
+
         if (shade) {
           const depthT = clamp(card.p / Math.max(1, s.visible - 1), 0, 1);
-          shade.style.opacity = (s.dim * 0.62 * depthT).toFixed(3);
+          const nextShadeOpacity = (s.dim * 0.62 * depthT).toFixed(2);
+          if (card.lastShadeOpacity !== nextShadeOpacity) {
+            card.lastShadeOpacity = nextShadeOpacity;
+            shade.style.opacity = nextShadeOpacity;
+          }
         }
-        el.style.cursor = card.phase === 'drag' ? 'grabbing' : card.pos > 0 ? 'pointer' : s.draggable ? 'grab' : '';
-        if (card.pos === 0) el.setAttribute('data-front', '');
-        else el.removeAttribute('data-front');
+
+        const nextCursor = card.phase === 'drag' ? 'grabbing' : card.pos > 0 ? 'pointer' : s.draggable ? 'grab' : '';
+        if (card.lastCursor !== nextCursor) {
+          card.lastCursor = nextCursor;
+          el.style.cursor = nextCursor;
+        }
+
+        const isFront = card.pos === 0;
+        if (card.isFront !== isFront) {
+          card.isFront = isFront;
+          if (isFront) el.setAttribute('data-front', '');
+          else el.removeAttribute('data-front');
+        }
       };
 
-      const writeStage = s => {
+      let lastOriginStr = '';
+      const writeStage = (s, force = false) => {
         const ox = s.bounds.originX + state.px;
         const oy = s.bounds.originY + state.py;
-        stage.style.perspectiveOrigin = `${ox.toFixed(2)}px ${oy.toFixed(2)}px`;
+        const nextOrigin = `${ox.toFixed(1)}px ${oy.toFixed(1)}px`;
+        if (force || nextOrigin !== lastOriginStr) {
+          lastOriginStr = nextOrigin;
+          stage.style.perspectiveOrigin = nextOrigin;
+        }
       };
 
       const integrate = (card, target, omega, zeta, dt) => {
         const k = omega * omega;
         const d = 2 * zeta * omega;
-        const steps = Math.max(1, Math.ceil(dt / STEP));
+        const steps = Math.min(4, Math.max(1, Math.ceil(dt / STEP)));
         const h = dt / steps;
         for (let i = 0; i < steps; i++) {
           for (const axis of AXES) {
@@ -338,7 +373,7 @@ const CardSwap = forwardRef(
       const scalar = (value, velocity, target, omega, zeta, dt) => {
         const k = omega * omega;
         const d = 2 * zeta * omega;
-        const steps = Math.max(1, Math.ceil(dt / STEP));
+        const steps = Math.min(4, Math.max(1, Math.ceil(dt / STEP)));
         const h = dt / steps;
         let x = value;
         let v = velocity;
@@ -539,13 +574,26 @@ const CardSwap = forwardRef(
         const dx = (event.clientX - drag.startX) / state.scale;
         const dy = (event.clientY - drag.startY) / state.scale;
         if (!drag.active) {
-          if (Math.hypot(dx, dy) < 5) return;
+          const absDx = Math.abs(dx);
+          const absDy = Math.abs(dy);
+          if (event.pointerType === 'touch') {
+            // User is scrolling the page vertically on mobile
+            if (absDy > absDx && absDy > 8) {
+              state.drag = null;
+              return;
+            }
+            if (absDx < 12) return;
+          } else {
+            if (Math.hypot(dx, dy) < 5) return;
+          }
           drag.active = true;
           state.dragged = true;
           const card = deck[drag.index];
           card.phase = 'drag';
           card.v = { x: 0, y: 0, z: 0, r: 0, p: 0 };
-          root.setPointerCapture?.(event.pointerId);
+          try {
+            root.setPointerCapture?.(event.pointerId);
+          } catch {}
           root.style.cursor = 'grabbing';
         }
         const card = deck[drag.index];
@@ -698,8 +746,8 @@ const CardSwap = forwardRef(
         schedule();
       });
       intersectionObserver.observe(root);
-      root.addEventListener('pointermove', onMove);
-      root.addEventListener('pointerleave', onLeave);
+      root.addEventListener('pointermove', onMove, { passive: true });
+      root.addEventListener('pointerleave', onLeave, { passive: true });
       root.addEventListener('pointerdown', onDown);
       root.addEventListener('pointerup', onUp);
       root.addEventListener('pointercancel', onUp);

@@ -5,6 +5,7 @@
   outline: none;
   -webkit-tap-highlight-color: transparent;
   overflow: clip;
+  touch-action: pan-y;
 }
 
 .card-swap-sizer {
@@ -29,6 +30,9 @@
   perspective: 900px;
   transform: translate(-50%, -50%);
   pointer-events: none;
+  will-change: transform;
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
 }
 
 .card-swap-slot {
@@ -48,6 +52,11 @@
   touch-action: pan-y;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
 }
 
 .card-swap:focus-visible .card-swap-slot[data-front] {
