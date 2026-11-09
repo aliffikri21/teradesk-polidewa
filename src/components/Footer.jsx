@@ -95,7 +95,7 @@ const Footer = ({ onOpenDevDashboard }) => {
             <div>
               <span className="text-xs font-semibold text-gray-300 block mb-1">Call us</span>
               <p className="text-xs text-gray-400 font-mono tracking-wide">
-                +62 822-9105-9885
+                +62 852-4330-6388
               </p>
             </div>
           </div>

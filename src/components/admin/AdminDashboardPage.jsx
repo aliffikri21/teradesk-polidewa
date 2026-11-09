@@ -2328,6 +2328,63 @@ const AdminDashboardPage = ({
     }
   };
 
+  const handleLeadershipPhotoUpload = (e, fieldKey) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Format file harus berupa gambar (JPG, PNG, WEBP, GIF, dll.)');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (loadEvent) => {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const maxDim = 256;
+          let w = img.width;
+          let h = img.height;
+
+          if (w > h) {
+            if (w > maxDim) {
+              h = Math.round((h * maxDim) / w);
+              w = maxDim;
+            }
+          } else {
+            if (h > maxDim) {
+              w = Math.round((w * maxDim) / h);
+              h = maxDim;
+            }
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+
+          const optimizedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+          setLeadershipForm((prev) => ({
+            ...prev,
+            [fieldKey]: optimizedDataUrl,
+          }));
+        } catch {
+          setLeadershipForm((prev) => ({
+            ...prev,
+            [fieldKey]: loadEvent.target.result,
+          }));
+        }
+      };
+      img.onerror = () => {
+        alert('Gagal memproses file gambar. Silakan coba file gambar lain.');
+      };
+      img.src = loadEvent.target.result;
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
   // Filtered accounts based on search query, division, and access rights
   const filteredAccounts = accounts.filter((acc) => {
     const matchDivision =
@@ -7582,16 +7639,75 @@ const AdminDashboardPage = ({
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                          URL Foto / Avatar (Opsional)
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1.5 flex items-center justify-between">
+                          <span>Foto Profil / Avatar</span>
+                          <span className="text-[10px] text-slate-400 font-normal">Upload File Gambar atau Tempel URL</span>
                         </label>
-                        <input
-                          type="text"
-                          value={leadershipForm.pembinaAvatarUrl}
-                          onChange={(e) => setLeadershipForm((prev) => ({ ...prev, pembinaAvatarUrl: e.target.value }))}
-                          placeholder="https://... atau kosongkan untuk avatar inisial"
-                          className="w-full px-3 py-2 bg-white rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-mono text-[11px]"
-                        />
+
+                        <div className="space-y-2">
+                          {leadershipForm.pembinaAvatarUrl ? (
+                            <div className="flex items-center gap-3 p-2.5 bg-white rounded-xl border border-slate-200 shadow-2xs">
+                              <img
+                                src={leadershipForm.pembinaAvatarUrl}
+                                alt="Foto Pembina"
+                                className="w-10 h-10 rounded-full object-cover border border-slate-200 shadow-xs shrink-0"
+                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                              />
+                              <div className="min-w-0 flex-1">
+                                <span className="text-[11px] font-bold text-slate-800 block truncate">
+                                  {leadershipForm.pembinaAvatarUrl.startsWith('data:') ? 'Foto Terunggah dari Perangkat' : 'Foto dari URL Web'}
+                                </span>
+                                <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+                                  <Check size={11} /> Foto Aktif &amp; Siap Ditampilkan
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <label
+                                  htmlFor="upload-pembina-settings"
+                                  className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-bold transition-colors cursor-pointer flex items-center gap-1"
+                                  title="Ganti foto dengan file lain"
+                                >
+                                  <Upload size={12} />
+                                  <span>Ganti</span>
+                                </label>
+                                <button
+                                  type="button"
+                                  onClick={() => setLeadershipForm((prev) => ({ ...prev, pembinaAvatarUrl: '' }))}
+                                  className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition-colors cursor-pointer"
+                                  title="Hapus foto dan gunakan avatar inisial"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                              <label
+                                htmlFor="upload-pembina-settings"
+                                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white hover:bg-blue-50/50 border border-dashed border-blue-300 hover:border-blue-500 rounded-xl text-xs font-bold text-blue-600 hover:text-blue-700 transition-all cursor-pointer shadow-2xs group"
+                              >
+                                <Upload size={14} className="group-hover:-translate-y-0.5 transition-transform" />
+                                <span>Pilih &amp; Upload Foto dari Komputer / HP</span>
+                              </label>
+                            </div>
+                          )}
+
+                          <input
+                            id="upload-pembina-settings"
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleLeadershipPhotoUpload(e, 'pembinaAvatarUrl')}
+                            className="hidden"
+                          />
+
+                          <input
+                            type="text"
+                            value={leadershipForm.pembinaAvatarUrl}
+                            onChange={(e) => setLeadershipForm((prev) => ({ ...prev, pembinaAvatarUrl: e.target.value }))}
+                            placeholder="Atau tempel link URL foto langsung di sini..."
+                            className="w-full px-3 py-1.5 bg-white rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-mono text-[11px]"
+                          />
+                        </div>
                       </div>
                     </div>
 

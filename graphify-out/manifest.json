@@ -12,8 +12,8 @@
     "semantic_hash": ""
   },
   "src/App.jsx": {
-    "mtime": 1794213486.5627415,
-    "seen": 1794214480.706327,
+    "mtime": 1794216669.1972306,
+    "seen": 1794216832.714111,
     "ast_hash": "9d18196c38549b382e6c2f02141fdbfb",
     "semantic_hash": ""
   },
@@ -42,14 +42,14 @@
     "semantic_hash": ""
   },
   "src/components/Footer.jsx": {
-    "mtime": 1794156235.1804404,
-    "seen": 1794156346.2754657,
-    "ast_hash": "46193880c03a28b64106a3f4bfd35afc",
+    "mtime": 1794216855.084026,
+    "seen": 1794217070.2535186,
+    "ast_hash": "4e349996a5d1ca094f5ed309b5c74e20",
     "semantic_hash": ""
   },
   "src/components/Hero.jsx": {
-    "mtime": 1794213560.5302947,
-    "seen": 1794214480.706327,
+    "mtime": 1794214517.4016867,
+    "seen": 1794215328.6307702,
     "ast_hash": "ca04497492296ab08b269b63e57e13b9",
     "semantic_hash": ""
   },
@@ -864,8 +864,8 @@
     "semantic_hash": ""
   },
   "src/components/admin/AdminDashboardPage.jsx": {
-    "mtime": 1794214421.9579146,
-    "seen": 1794214480.706327,
+    "mtime": 1794214518.0157683,
+    "seen": 1794215328.6307702,
     "ast_hash": "514e82fa529ecc558a09431e398a7a17",
     "semantic_hash": ""
   },
@@ -1080,9 +1080,9 @@
     "semantic_hash": ""
   },
   "src/data/defaultLeadership.js": {
-    "mtime": 1794213290.2307181,
-    "seen": 1794214480.706327,
-    "ast_hash": "6f57553115a772b64521a5c45def1a47",
+    "mtime": 1794214507.444036,
+    "seen": 1794215328.6307702,
+    "ast_hash": "a36bc3a086155d43ce8f55b5521521f7",
     "semantic_hash": ""
   }
 }
