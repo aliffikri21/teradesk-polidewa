@@ -143,10 +143,19 @@ function App() {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed.map((acc) => ({
-            ...acc,
-            canAccessAdmin: acc.canAccessAdmin ?? (acc.nim === '23404053' || acc.role?.toLowerCase().includes('koordinator') || acc.isDefault === true),
-          }));
+          return parsed.map((acc) => {
+            const isAlif = acc.nim === '23404053' || (acc.name && acc.name.toLowerCase().includes('alif fikri'));
+            const divRaw = acc.division || 'Divisi Kesekretariatan';
+            const normalizedDiv = (divRaw.toLowerCase().includes('bph') || divRaw.toLowerCase().includes('presidium') || divRaw.toLowerCase().includes('demisioner'))
+              ? 'BPH (Badan Pengurus Harian)'
+              : divRaw;
+            return {
+              ...acc,
+              division: normalizedDiv,
+              role: isAlif ? 'Developer' : acc.role,
+              canAccessAdmin: acc.canAccessAdmin ?? (isAlif || acc.role?.toLowerCase().includes('koordinator') || acc.isDefault === true),
+            };
+          });
         }
       }
     } catch {

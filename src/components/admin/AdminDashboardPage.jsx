@@ -65,7 +65,8 @@ import {
   FileSpreadsheet,
   Radio,
   BarChart3,
-  Trophy
+  Trophy,
+  Code2,
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { playNotificationChime, getSoundMuted, setSoundMuted } from '../../utils/notificationSound';
@@ -189,6 +190,9 @@ const normalizeRoleName = (rawRole) => {
   const trimmed = String(rawRole).trim();
   const lower = trimmed.toLowerCase();
 
+  if (lower.includes('developer') || lower.includes('pengembang')) {
+    return 'Developer';
+  }
   if (lower.includes('demisioner') || lower.includes('ketua umum')) {
     return 'Demisioner Ketua Umum';
   }
@@ -205,6 +209,7 @@ const normalizeRoleName = (rawRole) => {
 };
 
 const getRoleDisplayLabel = (roleVal) => {
+  if (roleVal === 'Developer') return 'Developer';
   if (roleVal === 'Koordinator Divisi') return 'Koordinator Divisi (Kadiv)';
   if (roleVal === 'Anggota Biasa') return 'Anggota Biasa / Staf';
   if (roleVal === 'BPH (Badan Pengurus Harian)') return 'BPH (Badan Pengurus Harian)';
@@ -343,7 +348,7 @@ const AdminDashboardPage = ({
   onBackToLanding,
   onNavigateToPortal,
   onNavigateToService,
-  accounts,
+  accounts = [],
   onAddAccount,
   onAddBatchAccounts,
   onUpdateAccount,
@@ -416,6 +421,7 @@ const AdminDashboardPage = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDivision, setSelectedDivision] = useState('Semua Divisi');
   const [accessFilter, setAccessFilter] = useState('Semua Akses');
+  const [roleFilter, setRoleFilter] = useState('Semua Jabatan');
   const [dateRangeFilter, setDateRangeFilter] = useState('Semester Ganjil 2026/2027');
   const [timeframeFilter, setTimeframeFilter] = useState('Bulan Ini');
 
@@ -1318,7 +1324,7 @@ const AdminDashboardPage = ({
       actor: extra.actor || {
         name: 'Administrator (Alif Fikri)',
         nim: '23404053',
-        role: 'Demisioner Ketua Umum',
+        role: 'Developer',
         division: 'BPH & Pimpinan Organisasi',
       },
       ...extra,
@@ -1779,7 +1785,15 @@ const AdminDashboardPage = ({
     setNewPasswordVal('');
   };
 
+  const isAccountAlifFikri = (nim, name) => {
+    return nim === '23404053' || Boolean(name && name.toLowerCase().includes('alif fikri'));
+  };
+
   const handleDelete = (nim, name) => {
+    if (isAccountAlifFikri(nim, name)) {
+      alert('Akun pengembang Alif Fikri Haykal diproteksi dan tidak dapat dihapus.');
+      return;
+    }
     if (window.confirm(`Hapus akun mahasiswa ${name} (${nim}) dari database?`)) {
       onDeleteAccount(nim);
       addLog(`Akun mahasiswa dihapus: ${name} (${nim})`, 'warning');
@@ -1788,27 +1802,35 @@ const AdminDashboardPage = ({
   };
 
   const handleDeleteSelected = () => {
-    if (selectedRows.length === 0) return;
-    if (window.confirm(`Hapus ${selectedRows.length} akun mahasiswa yang dipilih?`)) {
+    const validSelection = selectedRows.filter((nim) => nim !== '23404053');
+    if (validSelection.length === 0) {
+      alert('Akun Alif Fikri Haykal diproteksi dan tidak dapat dihapus.');
+      setSelectedRows([]);
+      return;
+    }
+    if (window.confirm(`Hapus ${validSelection.length} akun mahasiswa yang dipilih?`)) {
       if (onDeleteBatchAccounts) {
-        onDeleteBatchAccounts(selectedRows);
+        onDeleteBatchAccounts(validSelection);
       } else {
-        selectedRows.forEach((nim) => onDeleteAccount(nim));
+        validSelection.forEach((nim) => onDeleteAccount(nim));
       }
-      addLog(`${selectedRows.length} akun mahasiswa dihapus massal`, 'warning');
+      addLog(`${validSelection.length} akun mahasiswa dihapus massal`, 'warning');
       setSelectedRows([]);
     }
   };
 
   const handleSelectAll = () => {
-    if (selectedRows.length === filteredAccounts.length) {
+    const selectableAccounts = filteredAccounts.filter((acc) => acc && !isAccountAlifFikri(acc.nim, acc.name));
+    if (selectableAccounts.length === 0) return;
+    if (selectedRows.length === selectableAccounts.length) {
       setSelectedRows([]);
     } else {
-      setSelectedRows(filteredAccounts.map((acc) => acc.nim));
+      setSelectedRows(selectableAccounts.map((acc) => acc.nim));
     }
   };
 
   const handleToggleSelectRow = (nim) => {
+    if (nim === '23404053') return;
     setSelectedRows((prev) =>
       prev.includes(nim) ? prev.filter((id) => id !== nim) : [...prev, nim]
     );
@@ -2384,22 +2406,50 @@ const AdminDashboardPage = ({
     e.target.value = '';
   };
 
-  // Filtered accounts based on search query, division, and access rights
-  const filteredAccounts = accounts.filter((acc) => {
+  // Dynamic list of divisions combining official list with any imported accounts
+  const allDivisionOptions = useMemo(() => {
+    const list = ['Semua Divisi', ...OFFICIAL_DIVISIONS];
+    (accounts || []).forEach((acc) => {
+      if (acc && acc.division) {
+        const normalized = normalizeDivisionName(acc.division);
+        if (normalized && !list.includes(normalized)) {
+          list.push(normalized);
+        }
+      }
+    });
+    return list;
+  }, [accounts]);
+
+  // Dynamic list of roles from current accounts
+  const availableRoles = useMemo(() => {
+    const set = new Set();
+    (accounts || []).forEach((a) => {
+      if (a && a.role && a.role.trim()) set.add(a.role.trim());
+    });
+    return ['Semua Jabatan', ...Array.from(set)];
+  }, [accounts]);
+
+  // Filtered accounts based on search query, division, access rights, and role
+  const filteredAccounts = (accounts || []).filter((acc) => {
+    if (!acc) return false;
     const matchDivision =
-      selectedDivision === 'Semua Divisi' || acc.division === selectedDivision;
+      selectedDivision === 'Semua Divisi' ||
+      acc.division === selectedDivision ||
+      normalizeDivisionName(acc.division) === normalizeDivisionName(selectedDivision);
     const matchAccess =
       accessFilter === 'Semua Akses' ||
       (accessFilter === 'Bisa Akses Admin' && Boolean(acc.canAccessAdmin)) ||
       (accessFilter === 'Hanya Portal (Non-Admin)' && !acc.canAccessAdmin);
+    const matchRole =
+      !roleFilter || roleFilter === 'Semua Jabatan' || acc.role === roleFilter;
     const q = searchQuery.toLowerCase().trim();
     const matchSearch =
       !q ||
-      acc.nim.toLowerCase().includes(q) ||
-      acc.name.toLowerCase().includes(q) ||
-      acc.role.toLowerCase().includes(q) ||
-      acc.division.toLowerCase().includes(q);
-    return matchDivision && matchAccess && matchSearch;
+      (acc.nim && acc.nim.toLowerCase().includes(q)) ||
+      (acc.name && acc.name.toLowerCase().includes(q)) ||
+      (acc.role && acc.role.toLowerCase().includes(q)) ||
+      (acc.division && acc.division.toLowerCase().includes(q));
+    return matchDivision && matchAccess && matchRole && matchSearch;
   });
 
   // Render Sidebar Content (Shared between Desktop Aside & Mobile Drawer)
@@ -2651,7 +2701,7 @@ const AdminDashboardPage = ({
                   {authUser?.name || 'Alif Fikri'}
                 </p>
                 <p className="text-[10px] text-slate-500 truncate">
-                  {authUser?.role || 'Demisioner Ketua Umum'}
+                  {authUser?.role || 'Developer'}
                 </p>
               </div>
             </div>
@@ -2894,7 +2944,7 @@ const AdminDashboardPage = ({
                   {authUser?.name || 'Alif Fikri'}
                 </p>
                 <p className="text-[10px] text-slate-400 font-medium leading-none">
-                  {authUser?.role || 'Demisioner Ketua Umum'}
+                  {authUser?.role || 'Developer'}
                 </p>
               </div>
             </div>
@@ -6679,11 +6729,17 @@ const AdminDashboardPage = ({
                       />
                     </div>
                     <select
-                      value={selectedDivision}
+                      value={
+                        allDivisionOptions.includes(selectedDivision)
+                          ? selectedDivision
+                          : (allDivisionOptions.includes(normalizeDivisionName(selectedDivision))
+                            ? normalizeDivisionName(selectedDivision)
+                            : 'Semua Divisi')
+                      }
                       onChange={(e) => setSelectedDivision(e.target.value)}
                       className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-700 cursor-pointer focus:outline-hidden"
                     >
-                      {divisionsList.map((div) => (
+                      {allDivisionOptions.map((div) => (
                         <option key={div} value={div}>{div}</option>
                       ))}
                     </select>
@@ -6696,6 +6752,32 @@ const AdminDashboardPage = ({
                       <option value="Bisa Akses Admin">Bisa Akses Admin</option>
                       <option value="Hanya Portal (Non-Admin)">Hanya Portal (Non-Admin)</option>
                     </select>
+                    {availableRoles.length > 2 && (
+                      <select
+                        value={roleFilter}
+                        onChange={(e) => setRoleFilter(e.target.value)}
+                        className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-700 cursor-pointer focus:outline-hidden"
+                      >
+                        {availableRoles.map((role) => (
+                          <option key={role} value={role}>{role}</option>
+                        ))}
+                      </select>
+                    )}
+                    {(selectedDivision !== 'Semua Divisi' || accessFilter !== 'Semua Akses' || roleFilter !== 'Semua Jabatan' || searchQuery) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedDivision('Semua Divisi');
+                          setAccessFilter('Semua Akses');
+                          setRoleFilter('Semua Jabatan');
+                          setSearchQuery('');
+                        }}
+                        className="text-xs text-blue-600 hover:text-blue-800 font-semibold px-2 py-1 rounded-lg hover:bg-blue-50 transition-colors cursor-pointer"
+                        title="Reset semua filter"
+                      >
+                        Reset Filter
+                      </button>
+                    )}
                   </div>
 
                   {selectedRows.length > 0 && (
@@ -6709,6 +6791,55 @@ const AdminDashboardPage = ({
                   )}
                 </div>
 
+                {/* Baris Filter Cepat Per Divisi (1 Tombol Filter Per Divisi) */}
+                <div className="px-4 py-2 bg-slate-50/70 border-b border-slate-100 flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1 shrink-0 flex items-center gap-1">
+                    <Filter size={12} />
+                    Divisi:
+                  </span>
+                  {allDivisionOptions.map((div) => {
+                    const isSelected =
+                      selectedDivision === div ||
+                      (selectedDivision !== 'Semua Divisi' &&
+                        normalizeDivisionName(selectedDivision) === normalizeDivisionName(div));
+                    const count = div === 'Semua Divisi'
+                      ? (accounts || []).length
+                      : (accounts || []).filter((a) => {
+                          if (!a || !a.division) return false;
+                          return (
+                            a.division === div ||
+                            normalizeDivisionName(a.division) === normalizeDivisionName(div)
+                          );
+                        }).length;
+                    const config = DIVISION_ANALYTICS_CONFIG[div] || DIVISION_ANALYTICS_CONFIG[normalizeDivisionName(div)];
+                    const label = config ? config.shortName : (div === 'Semua Divisi' ? 'Semua Divisi' : div);
+
+                    return (
+                      <button
+                        key={div}
+                        type="button"
+                        onClick={() => setSelectedDivision(div)}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+                          isSelected
+                            ? 'bg-slate-900 text-white shadow-xs'
+                            : 'bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-100'
+                        }`}
+                      >
+                        <span>{label}</span>
+                        <span
+                          className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                            isSelected
+                              ? 'bg-white/20 text-white'
+                              : 'bg-slate-100 text-slate-600'
+                          }`}
+                        >
+                          {count}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
                 <div className="overflow-x-auto">
                   <table className="w-full text-left">
                     <thead>
@@ -6716,9 +6847,13 @@ const AdminDashboardPage = ({
                         <th className="py-3 px-4 w-8">
                           <input
                             type="checkbox"
-                            checked={filteredAccounts.length > 0 && selectedRows.length === filteredAccounts.length}
+                            checked={
+                              filteredAccounts.filter((a) => a && !isAccountAlifFikri(a.nim, a.name)).length > 0 &&
+                              selectedRows.length === filteredAccounts.filter((a) => a && !isAccountAlifFikri(a.nim, a.name)).length
+                            }
                             onChange={handleSelectAll}
                             className="rounded border-slate-300 cursor-pointer"
+                            title="Pilih semua mahasiswa yang dapat dikelola"
                           />
                         </th>
                         <th className="py-3 px-4">MAHASISWA (NIM & NAMA)</th>
@@ -6733,16 +6868,26 @@ const AdminDashboardPage = ({
                       {filteredAccounts.map((acc) => {
                         const isEditingThis = editingNim === acc.nim;
                         const isPassVisible = visiblePasswords[acc.nim];
+                        const isAlifFikri = isAccountAlifFikri(acc.nim, acc.name);
 
                         return (
                           <tr key={acc.nim} className="hover:bg-slate-50/70 transition-colors">
                             <td className="py-3 px-4">
-                              <input
-                                type="checkbox"
-                                checked={selectedRows.includes(acc.nim)}
-                                onChange={() => handleToggleSelectRow(acc.nim)}
-                                className="rounded border-slate-300 cursor-pointer"
-                              />
+                              {isAlifFikri ? (
+                                <span
+                                  className="inline-flex items-center justify-center w-4 h-4 text-slate-300 cursor-not-allowed"
+                                  title="Akun Pengembang Terproteksi (Tidak Dapat Dipilih / Dihapus)"
+                                >
+                                  <Lock size={12} />
+                                </span>
+                              ) : (
+                                <input
+                                  type="checkbox"
+                                  checked={selectedRows.includes(acc.nim)}
+                                  onChange={() => handleToggleSelectRow(acc.nim)}
+                                  className="rounded border-slate-300 cursor-pointer"
+                                />
+                              )}
                             </td>
                             <td className="py-3 px-4">
                               <div className="flex items-center gap-3">
@@ -6772,7 +6917,14 @@ const AdminDashboardPage = ({
                               <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100 mb-0.5">
                                 {acc.division}
                               </span>
-                              <p className="text-[11px] text-slate-500">{acc.role}</p>
+                              {acc.role === 'Developer' ? (
+                                <div className="flex items-center gap-1 mt-0.5 text-[11px] font-bold text-blue-600">
+                                  <Code2 size={12} className="text-blue-600 shrink-0" />
+                                  <span>Developer</span>
+                                </div>
+                              ) : (
+                                <p className="text-[11px] text-slate-500">{acc.role}</p>
+                              )}
                             </td>
                             <td className="py-3 px-4">
                               <button
@@ -6868,13 +7020,22 @@ const AdminDashboardPage = ({
                                 >
                                   Masuk
                                 </button>
-                                <button
-                                  onClick={() => handleDelete(acc.nim, acc.name)}
-                                  className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                                  title="Hapus Akun"
-                                >
-                                  <Trash2 size={14} />
-                                </button>
+                                {!isAlifFikri ? (
+                                  <button
+                                    onClick={() => handleDelete(acc.nim, acc.name)}
+                                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                                    title="Hapus Akun"
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                ) : (
+                                  <span
+                                    className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200/80 select-none cursor-default"
+                                    title="Akun Master Pengembang (Dilindungi & Tidak Dapat Dihapus)"
+                                  >
+                                    Utama
+                                  </span>
+                                )}
                               </div>
                             </td>
                           </tr>
@@ -6909,7 +7070,7 @@ const AdminDashboardPage = ({
                       {authUser?.name || 'Alif Fikri'}
                     </h2>
                     <p className="text-xs text-slate-500">
-                      NIM: <span className="font-mono font-bold text-slate-800">{authUser?.nim || '23404053'}</span> • Jabatan: <span className="font-semibold text-slate-800">{authUser?.role || 'Demisioner Ketua Umum'}</span>
+                      NIM: <span className="font-mono font-bold text-slate-800">{authUser?.nim || '23404053'}</span> • Jabatan: <span className="font-semibold text-slate-800">{authUser?.role || 'Developer'}</span>
                     </p>
                   </div>
                 </div>
@@ -7051,8 +7212,8 @@ const AdminDashboardPage = ({
           {currentNav === 'logs' && (
             <div className="max-w-5xl mx-auto space-y-6">
               {/* Header with Title and Actions */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
                       Audit Trail Real-Time
@@ -7068,13 +7229,13 @@ const AdminDashboardPage = ({
                     Pemantauan terpusat siapa saja yang baru login, timestamp autentikasi, serta rekaman submit formulir & modul organisasi.
                   </p>
                 </div>
-                <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-2 shrink-0 overflow-x-auto pb-1 sm:pb-0">
                   {/* Dropdown Menu Ekspor XLSX (Bulanan / Tahunan / Semua) */}
-                  <div className="relative">
+                  <div className="relative shrink-0">
                     <button
                       type="button"
                       onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer whitespace-nowrap shrink-0"
                       title="Pilihan Ekspor Spreadsheet Excel (.xlsx)"
                     >
                       <FileSpreadsheet size={14} />
@@ -7149,7 +7310,7 @@ const AdminDashboardPage = ({
 
                   <button
                     onClick={handleExportLogsJson}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors shadow-2xs cursor-pointer"
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors shadow-2xs cursor-pointer whitespace-nowrap shrink-0"
                     title="Unduh log dalam format JSON"
                   >
                     <Download size={14} className="text-slate-500" />
@@ -7158,7 +7319,7 @@ const AdminDashboardPage = ({
                   {onResetActivityLogs && (
                     <button
                       onClick={onResetActivityLogs}
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors cursor-pointer"
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors cursor-pointer whitespace-nowrap shrink-0"
                       title="Reset ke log riwayat default"
                     >
                       <RefreshCw size={13} className="text-slate-400" />
@@ -7170,7 +7331,7 @@ const AdminDashboardPage = ({
                       if (onClearActivityLogs) onClearActivityLogs();
                       setLocalLogs([]);
                     }}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-red-200 bg-red-50 text-xs font-bold text-red-600 hover:bg-red-100 transition-colors cursor-pointer"
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-red-200 bg-red-50 text-xs font-bold text-red-600 hover:bg-red-100 transition-colors cursor-pointer whitespace-nowrap shrink-0"
                     title="Bersihkan seluruh log aktivitas"
                   >
                     <Trash2 size={13} />
@@ -8292,7 +8453,9 @@ const AdminDashboardPage = ({
                               <td className="py-2 px-3 text-slate-500 text-[11px]">{acc.division}</td>
                               <td className="py-2 px-3">
                                 <span className={`text-[11px] font-bold px-2 py-0.5 rounded-md border ${
-                                  acc.role === 'Koordinator Divisi'
+                                  acc.role === 'Developer'
+                                    ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                    : acc.role === 'Koordinator Divisi'
                                     ? 'bg-blue-50 text-blue-700 border-blue-200'
                                     : acc.role === 'Demisioner Ketua Umum'
                                     ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
@@ -8468,7 +8631,7 @@ const AdminDashboardPage = ({
                     onChange={(e) => {
                       const val = e.target.value;
                       setEditFormRole(val);
-                      if (val === 'Koordinator Divisi' || val.includes('BPH') || val.includes('Ketua')) {
+                      if (val === 'Developer' || val === 'Koordinator Divisi' || val.includes('BPH') || val.includes('Ketua')) {
                         setEditFormCanAccessAdmin(true);
                       } else {
                         setEditFormCanAccessAdmin(false);
@@ -8476,6 +8639,9 @@ const AdminDashboardPage = ({
                     }}
                     className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium focus:outline-hidden focus:border-blue-600 bg-white"
                   >
+                    {editingTargetNim === '23404053' && (
+                      <option value="Developer">Developer (Pengembang Sistem)</option>
+                    )}
                     <option value="Koordinator Divisi">Koordinator Divisi (Kadiv)</option>
                     <option value="Anggota Biasa">Anggota Biasa / Staf</option>
                     <option value="BPH (Badan Pengurus Harian)">BPH (Badan Pengurus Harian)</option>

@@ -45,7 +45,7 @@ Routing dikelola melalui state React terpusat di `src/App.jsx` (`currentView: { 
 ### Aturan Autentikasi & Keamanan:
 - Tamu yang mengakses `/admin`, `/portal`, atau `/service/:id` otomatis diarahkan ke halaman login.
 - Sesi login aman bersifat ephemeral (disimpan di state memori). `sessionStorage.clear()` otomatis dieksekusi saat inisialisasi aplikasi untuk menjaga integritas demo.
-- Kredensial default: **NIM**: `23404053` | **Password**: `admin` (Role: Demisioner Ketua Umum, `canAccessAdmin: true`).
+- Kredensial default: **NIM**: `23404053` | **Password**: `admin` (Role: Developer, `canAccessAdmin: true`).
 - **Integrasi Landing ke Admin**: Formulir Kontak Kami di landing page terhubung 100% end-to-end ke tab 'Kotak Masuk Konsultasi' di Admin Dashboard via state `consultationMessages` dan localStorage (`teradesk_consultations_v1`).
 
 ---

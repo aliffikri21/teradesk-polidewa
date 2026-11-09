@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "src/App.jsx": {
-    "mtime": 1794218090.0073562,
-    "seen": 1794218465.6485898,
-    "ast_hash": "ef0a09180f4cdccea8b1d6a744cef90b",
+    "mtime": 1794249737.0035179,
+    "seen": 1794249834.891387,
+    "ast_hash": "bc5f21b5bc32fd1a74afb595e89c1d7d",
     "semantic_hash": ""
   },
   "src/components/AboutUs.jsx": {
@@ -858,15 +858,15 @@
     "semantic_hash": ""
   },
   "src/data/defaultAccounts.js": {
-    "mtime": 1794119559.2404993,
-    "seen": 1794120668.4345076,
-    "ast_hash": "3609913798da768f75502195fee615d5",
+    "mtime": 1794249421.2521653,
+    "seen": 1794249834.891387,
+    "ast_hash": "f76f85011a2a98a39b5914ec192b6030",
     "semantic_hash": ""
   },
   "src/components/admin/AdminDashboardPage.jsx": {
-    "mtime": 1794218090.6810317,
-    "seen": 1794218465.6485898,
-    "ast_hash": "891bc49245d6d8f822cc1b523e0e6450",
+    "mtime": 1794249783.1108403,
+    "seen": 1794249834.891387,
+    "ast_hash": "7f8c5a4ce627ca993961daa5402fe35d",
     "semantic_hash": ""
   },
   "public/logo-teramedia.png": {
@@ -948,9 +948,9 @@
     "semantic_hash": ""
   },
   "agents.md": {
-    "mtime": 1793873698.4609742,
-    "seen": 1793874625.216953,
-    "ast_hash": "eb6c2c9c51d35b3f165350a2c6911a89",
+    "mtime": 1794249419.429579,
+    "seen": 1794249834.891387,
+    "ast_hash": "dfa093d4991756ebf2d7f74b00fe8c02",
     "semantic_hash": ""
   },
   "public/images/about/img5.webp": {
@@ -972,9 +972,9 @@
     "semantic_hash": ""
   },
   "src/data/defaultActivityLogs.js": {
-    "mtime": 1794070742.8021061,
-    "seen": 1794070770.0160267,
-    "ast_hash": "fccca38cd1bfbe2404c8ded440365f8c",
+    "mtime": 1794249421.3944366,
+    "seen": 1794249834.891387,
+    "ast_hash": "ee51c6c1b72f2c89562e0e43aed1b1a5",
     "semantic_hash": ""
   },
   "src/services/activityLogService.js": {

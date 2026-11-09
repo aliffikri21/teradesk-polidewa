@@ -11,7 +11,7 @@ export const initialDefaultAccounts = [
   {
     nim: '23404053',
     name: 'Alif Fikri Haykal',
-    role: 'Demisioner Ketua Umum',
+    role: 'Developer',
     division: 'BPH (Badan Pengurus Harian)',
     password: 'admin',
     createdAt: '2026-11-03',
@@ -78,6 +78,7 @@ export const isUserCoordinator = (user) => {
   if (!user) return false;
   const roleLower = (user.role || '').toLowerCase();
   return (
+    roleLower.includes('developer') ||
     roleLower.includes('koordinator') ||
     roleLower.includes('kadiv') ||
     roleLower.includes('ketua') ||
