@@ -175,6 +175,42 @@ const normalizeDivisionName = (divName) => {
   return trimmed;
 };
 
+// Official Roles in TeraDesk (UKM TERAMEDIA)
+const OFFICIAL_ROLES = [
+  { value: 'Koordinator Divisi', label: 'Koordinator Divisi (Kadiv)', canAdmin: true },
+  { value: 'Anggota Biasa', label: 'Anggota Biasa / Staf', canAdmin: false },
+  { value: 'BPH (Badan Pengurus Harian)', label: 'BPH (Badan Pengurus Harian)', canAdmin: true },
+  { value: 'Demisioner Ketua Umum', label: 'Demisioner Ketua Umum', canAdmin: true },
+];
+
+const normalizeRoleName = (rawRole) => {
+  if (!rawRole) return 'Anggota Biasa';
+  const trimmed = String(rawRole).trim();
+  const lower = trimmed.toLowerCase();
+
+  if (lower.includes('demisioner') || lower.includes('ketua umum')) {
+    return 'Demisioner Ketua Umum';
+  }
+  if (lower.includes('bph') || lower.includes('pengurus harian') || lower.includes('presidium')) {
+    return 'BPH (Badan Pengurus Harian)';
+  }
+  if (lower.includes('koordinator') || lower.includes('kadiv') || lower.includes('kepala divisi')) {
+    return 'Koordinator Divisi';
+  }
+  if (lower.includes('biasa') || lower.includes('staf') || lower.includes('staff') || lower.includes('anggota')) {
+    return 'Anggota Biasa';
+  }
+  return trimmed || 'Anggota Biasa';
+};
+
+const getRoleDisplayLabel = (roleVal) => {
+  if (roleVal === 'Koordinator Divisi') return 'Koordinator Divisi (Kadiv)';
+  if (roleVal === 'Anggota Biasa') return 'Anggota Biasa / Staf';
+  if (roleVal === 'BPH (Badan Pengurus Harian)') return 'BPH (Badan Pengurus Harian)';
+  if (roleVal === 'Demisioner Ketua Umum') return 'Demisioner Ketua Umum';
+  return roleVal || 'Anggota Biasa / Staf';
+};
+
 const availableServices = [
   {
     id: 'par',
@@ -1809,13 +1845,19 @@ const AdminDashboardPage = ({
             return;
           }
           seenNewNims.add(rawNim);
+          const normalizedRole = normalizeRoleName(item.role || item.jabatan || 'Anggota Biasa');
+          const hasAdminExplicit = item.canAccessAdmin !== undefined || item.isAdmin !== undefined;
+          const canAccessAdmin = hasAdminExplicit
+            ? Boolean(item.canAccessAdmin ?? item.isAdmin)
+            : (normalizedRole === 'Koordinator Divisi' || normalizedRole.includes('BPH') || normalizedRole.includes('Demisioner'));
+
           valid.push({
             nim: rawNim,
             name: rawName,
             division: normalizeDivisionName(item.division || item.divisi || 'Divisi Kesekretariatan'),
-            role: item.role || item.jabatan || 'Anggota Aktif',
+            role: normalizedRole,
             password: String(item.password || 'password123'),
-            canAccessAdmin: Boolean(item.canAccessAdmin ?? item.isAdmin ?? false),
+            canAccessAdmin,
             createdAt: item.createdAt || getDateStamp(),
             isDefault: false,
           });
@@ -1847,9 +1889,9 @@ const AdminDashboardPage = ({
       const rawNim = parts[0].replace(/^["']|["']$/g, '').trim();
       const rawName = parts[1].replace(/^["']|["']$/g, '').trim();
       const rawDiv = parts[2] ? parts[2].replace(/^["']|["']$/g, '').trim() : 'Divisi Kesekretariatan';
-      const rawRole = parts[3] ? parts[3].replace(/^["']|["']$/g, '').trim() : 'Anggota Aktif';
+      const rawRole = parts[3] ? parts[3].replace(/^["']|["']$/g, '').trim() : 'Anggota Biasa';
       const rawPass = parts[4] ? parts[4].replace(/^["']|["']$/g, '').trim() : 'password123';
-      const rawAdmin = parts[5] ? (parts[5].toLowerCase().includes('true') || parts[5] === '1' || parts[5].toLowerCase().includes('ya')) : false;
+      const rawAdmin = parts[5] ? (parts[5].toLowerCase().includes('true') || parts[5] === '1' || parts[5].toLowerCase().includes('ya')) : null;
 
       if (!rawNim || !rawName) {
         invalid.push({ index: index + 1, line, reason: 'NIM atau Nama kosong' });
@@ -1862,13 +1904,18 @@ const AdminDashboardPage = ({
       }
 
       seenNewNims.add(rawNim);
+      const normalizedRole = normalizeRoleName(rawRole);
+      const canAccessAdmin = rawAdmin !== null
+        ? Boolean(rawAdmin)
+        : (normalizedRole === 'Koordinator Divisi' || normalizedRole.includes('BPH') || normalizedRole.includes('Demisioner'));
+
       valid.push({
         nim: rawNim,
         name: rawName,
         division: normalizeDivisionName(rawDiv),
-        role: rawRole,
+        role: normalizedRole,
         password: rawPass || 'password123',
-        canAccessAdmin: Boolean(rawAdmin),
+        canAccessAdmin,
         createdAt: getDateStamp(),
         isDefault: false,
       });
@@ -1887,15 +1934,15 @@ const AdminDashboardPage = ({
         nim: '23404060',
         name: 'Rian Pratama',
         division: 'Divisi Kesekretariatan',
-        role: 'Staff E-Arsip',
+        role: 'Koordinator Divisi (Kadiv)',
         password: 'password123',
-        canAccessAdmin: false,
+        canAccessAdmin: true,
       },
       {
         nim: '23404061',
         name: 'Nabila Az-Zahra',
         division: 'Divisi Publikasi dan Dokumentasi',
-        role: 'Desainer Feed Instagram',
+        role: 'Anggota Biasa / Staf',
         password: 'password123',
         canAccessAdmin: false,
       },
@@ -1903,17 +1950,17 @@ const AdminDashboardPage = ({
         nim: '23404062',
         name: 'Muhammad Fadhil',
         division: 'Divisi Humas',
-        role: 'Koordinator Jaringan Media',
+        role: 'BPH (Badan Pengurus Harian)',
         password: 'password123',
-        canAccessAdmin: false,
+        canAccessAdmin: true,
       },
       {
         nim: '23404063',
-        name: 'Aisyah Putri',
-        division: 'Divisi Kaderisasi',
-        role: 'Staff Asesmen Rapor',
+        name: 'Alif Fikri Haykal',
+        division: 'BPH (Badan Pengurus Harian)',
+        role: 'Demisioner Ketua Umum',
         password: 'password123',
-        canAccessAdmin: false,
+        canAccessAdmin: true,
       },
     ];
     setBatchRawScript(JSON.stringify(sample, null, 2));
@@ -1922,10 +1969,10 @@ const AdminDashboardPage = ({
 
   const handleFillSampleCsv = () => {
     const sample = `NIM, Nama, Divisi, Jabatan, Password, AksesAdmin
-23404060, Rian Pratama, Divisi Kesekretariatan, Staff E-Arsip, password123, false
-23404061, Nabila Az-Zahra, Divisi Publikasi dan Dokumentasi, Desainer Feed, password123, false
-23404062, Muhammad Fadhil, Divisi Humas, Staff Kemitraan, password123, false
-23404063, Aisyah Putri, Divisi Kaderisasi, Staff Kaderisasi, password123, false`;
+23404060, Rian Pratama, Divisi Kesekretariatan, Koordinator Divisi (Kadiv), password123, true
+23404061, Nabila Az-Zahra, Divisi Publikasi dan Dokumentasi, Anggota Biasa / Staf, password123, false
+23404062, Muhammad Fadhil, Divisi Humas, BPH (Badan Pengurus Harian), password123, true
+23404063, Alif Fikri Haykal, BPH (Badan Pengurus Harian), Demisioner Ketua Umum, password123, true`;
     setBatchRawScript(sample);
     setBatchImportError('');
   };
@@ -1936,15 +1983,15 @@ const AdminDashboardPage = ({
         NIM: '23404060',
         Nama: 'Rian Pratama',
         Divisi: 'Divisi Kesekretariatan',
-        Jabatan: 'Staff E-Arsip',
+        Jabatan: 'Koordinator Divisi (Kadiv)',
         Password: 'password123',
-        'Akses Admin': 'Tidak',
+        'Akses Admin': 'Ya',
       },
       {
         NIM: '23404061',
         Nama: 'Nabila Az-Zahra',
         Divisi: 'Divisi Publikasi dan Dokumentasi',
-        Jabatan: 'Desainer Feed Instagram',
+        Jabatan: 'Anggota Biasa / Staf',
         Password: 'password123',
         'Akses Admin': 'Tidak',
       },
@@ -1952,7 +1999,15 @@ const AdminDashboardPage = ({
         NIM: '23404062',
         Nama: 'Muhammad Fadhil',
         Divisi: 'Divisi Humas',
-        Jabatan: 'Koordinator Jaringan Kampus',
+        Jabatan: 'BPH (Badan Pengurus Harian)',
+        Password: 'password123',
+        'Akses Admin': 'Ya',
+      },
+      {
+        NIM: '23404063',
+        Nama: 'Alif Fikri Haykal',
+        Divisi: 'BPH (Badan Pengurus Harian)',
+        Jabatan: 'Demisioner Ketua Umum',
         Password: 'password123',
         'Akses Admin': 'Ya',
       },
@@ -1995,17 +2050,23 @@ const AdminDashboardPage = ({
             return;
           }
 
-          const normalized = jsonRows.map((row) => ({
-            nim: String(row.NIM || row.nim || row.Nim || row['Nomor Induk Mahasiswa'] || '').trim(),
-            name: String(row.Nama || row.nama || row.Name || row['Nama Lengkap'] || '').trim(),
-            division: String(row.Divisi || row.divisi || row.Division || 'Divisi Kesekretariatan').trim(),
-            role: String(row.Jabatan || row.jabatan || row.Role || 'Anggota Aktif').trim(),
-            password: String(row.Password || row.password || row['Kata Sandi'] || 'password123').trim(),
-            canAccessAdmin: Boolean(
-              String(row['Akses Admin'] || row.canAccessAdmin || row.isAdmin || '').toLowerCase().includes('true') ||
-              String(row['Akses Admin'] || row.canAccessAdmin || '').toLowerCase().includes('ya')
-            ),
-          }));
+          const normalized = jsonRows.map((row) => {
+            const normalizedRole = normalizeRoleName(row.Jabatan || row.jabatan || row.Role || row.role || 'Anggota Biasa');
+            const rawAdminVal = row['Akses Admin'] ?? row.canAccessAdmin ?? row.isAdmin;
+            const hasAdminExplicit = rawAdminVal !== undefined && rawAdminVal !== '';
+            const canAdmin = hasAdminExplicit
+              ? (String(rawAdminVal).toLowerCase().includes('true') || String(rawAdminVal).toLowerCase().includes('ya') || String(rawAdminVal).toLowerCase().includes('1') || String(rawAdminVal).toLowerCase().includes('admin'))
+              : (normalizedRole === 'Koordinator Divisi' || normalizedRole.includes('BPH') || normalizedRole.includes('Demisioner'));
+
+            return {
+              nim: String(row.NIM || row.nim || row.Nim || row['Nomor Induk Mahasiswa'] || '').trim(),
+              name: String(row.Nama || row.nama || row.Name || row['Nama Lengkap'] || '').trim(),
+              division: String(row.Divisi || row.divisi || row.Division || 'Divisi Kesekretariatan').trim(),
+              role: normalizedRole,
+              password: String(row.Password || row.password || row['Kata Sandi'] || 'password123').trim(),
+              canAccessAdmin: canAdmin,
+            };
+          });
 
           setBatchRawScript(JSON.stringify(normalized, null, 2));
         } catch (err) {
@@ -7636,9 +7697,24 @@ const AdminDashboardPage = ({
                       setBatchImportError('');
                     }}
                     rows={7}
-                    placeholder={`Contoh JSON:\n[\n  { "nim": "23404060", "name": "Rian Pratama", "division": "Divisi Kesekretariatan", "role": "Staff", "password": "pass" }\n]\n\nAtau Contoh Baris CSV:\n23404060, Rian Pratama, Divisi Kesekretariatan, Staff, password123, false`}
+                    placeholder={`Contoh JSON:\n[\n  { "nim": "23404060", "name": "Rian Pratama", "division": "Divisi Kesekretariatan", "role": "Koordinator Divisi (Kadiv)" },\n  { "nim": "23404061", "name": "Nabila Az-Zahra", "division": "Divisi Publikasi dan Dokumentasi", "role": "Anggota Biasa / Staf" }\n]\n\nAtau Contoh Baris CSV:\n23404060, Rian Pratama, Divisi Kesekretariatan, Koordinator Divisi (Kadiv), password123, true\n23404061, Nabila Az-Zahra, Divisi Publikasi dan Dokumentasi, Anggota Biasa / Staf, password123, false`}
                     className="w-full p-3 bg-slate-900 text-slate-100 rounded-2xl text-xs font-mono leading-relaxed border border-slate-800 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 shadow-inner"
                   />
+                  <div className="mt-2.5 flex flex-wrap items-center gap-1.5 p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl text-xs">
+                    <span className="text-[11px] font-bold text-slate-600 mr-1 flex items-center gap-1">
+                      <ShieldCheck size={13} className="text-indigo-600" />
+                      Opsi Jabatan / Peran Resmi:
+                    </span>
+                    {OFFICIAL_ROLES.map((r) => (
+                      <span
+                        key={r.value}
+                        className="px-2 py-0.5 rounded-lg bg-white border border-slate-200 text-slate-800 font-semibold text-[11px] shadow-2xs"
+                        title={r.canAdmin ? 'Hak akses default: Bisa Akses Admin' : 'Hak akses default: Hanya Portal Layanan'}
+                      >
+                        {r.label}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -7708,7 +7784,19 @@ const AdminDashboardPage = ({
                               <td className="py-2 px-3 font-mono font-bold text-slate-900">{acc.nim}</td>
                               <td className="py-2 px-3">{acc.name}</td>
                               <td className="py-2 px-3 text-slate-500 text-[11px]">{acc.division}</td>
-                              <td className="py-2 px-3 text-slate-500 text-[11px]">{acc.role}</td>
+                              <td className="py-2 px-3">
+                                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-md border ${
+                                  acc.role === 'Koordinator Divisi'
+                                    ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                    : acc.role === 'Demisioner Ketua Umum'
+                                    ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                                    : acc.role.includes('BPH')
+                                    ? 'bg-purple-50 text-purple-700 border-purple-200'
+                                    : 'bg-slate-50 text-slate-700 border-slate-200'
+                                }`}>
+                                  {getRoleDisplayLabel(acc.role)}
+                                </span>
+                              </td>
                               <td className="py-2 px-3">
                                 {acc.canAccessAdmin ? (
                                   <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
