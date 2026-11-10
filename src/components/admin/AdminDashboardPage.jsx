@@ -67,6 +67,8 @@ import {
   BarChart3,
   Trophy,
   Code2,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { playNotificationChime, getSoundMuted, setSoundMuted } from '../../utils/notificationSound';
@@ -434,6 +436,29 @@ const AdminDashboardPage = ({
   // Real-time Sound & Toast State for Kotak Masuk Konsultasi
   const [isSoundMutedState, setIsSoundMutedState] = useState(() => getSoundMuted());
   const [inboxToast, setInboxToast] = useState(null);
+
+  // Admin Dark Mode Theme State with LocalStorage persistence
+  const [isAdminDark, setIsAdminDark] = useState(() => {
+    try {
+      const saved = localStorage.getItem('teradesk_admin_theme_v1');
+      if (saved) return saved === 'dark';
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleAdminTheme = () => {
+    setIsAdminDark((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('teradesk_admin_theme_v1', next ? 'dark' : 'light');
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  };
   const knownMessageIdsRef = useRef(new Set((consultationMessages || []).map((m) => m.id)));
   const isFirstMountRef = useRef(true);
 
@@ -2684,6 +2709,27 @@ const AdminDashboardPage = ({
                     <span>Pengaturan Sistem</span>
                   </div>
                 </button>
+
+                {/* Dark Mode Quick Switcher */}
+                <button
+                  type="button"
+                  onClick={toggleAdminTheme}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    isAdminDark
+                      ? 'bg-slate-800 text-amber-400 hover:bg-slate-700/80 border border-slate-700/60'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    {isAdminDark ? <Sun size={16} className="text-amber-400" /> : <Moon size={16} className="text-slate-400" />}
+                    <span>{isAdminDark ? 'Mode Gelap (Aktif)' : 'Mode Terang (Aktif)'}</span>
+                  </div>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                    isAdminDark ? 'bg-amber-400/20 text-amber-300' : 'bg-slate-100 text-slate-500'
+                  }`}>
+                    {isAdminDark ? 'Dark' : 'Light'}
+                  </span>
+                </button>
               </div>
             </div>
           </div>
@@ -2745,7 +2791,11 @@ const AdminDashboardPage = ({
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#F8FAFC] text-slate-800 flex font-sans antialiased selection:bg-blue-600 selection:text-white">
+    <div className={`w-full min-h-screen flex font-sans antialiased selection:bg-blue-600 selection:text-white transition-colors duration-200 ${
+      isAdminDark
+        ? 'admin-dark-theme bg-[#070B18] text-slate-100 dark'
+        : 'bg-[#F8FAFC] text-slate-800'
+    }`}>
       
       {/* 1. LEFT SIDEBAR: DESKTOP ONLY */}
       <aside className="w-64 bg-white border-r border-slate-200/80 shrink-0 hidden lg:flex flex-col justify-between p-5 min-h-screen sticky top-0 h-screen z-20 overflow-y-auto">
@@ -2924,6 +2974,21 @@ const AdminDashboardPage = ({
               </>
             )}
             </div>
+
+            {/* Dark Mode Toggle Button */}
+            <button
+              type="button"
+              onClick={toggleAdminTheme}
+              className={`p-2 rounded-xl border transition-all cursor-pointer flex items-center justify-center ${
+                isAdminDark
+                  ? 'bg-slate-800 border-slate-700 text-amber-400 hover:bg-slate-700 hover:text-amber-300'
+                  : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200 hover:text-slate-900 shadow-2xs'
+              }`}
+              title={isAdminDark ? 'Beralih ke Mode Terang (Light Mode)' : 'Beralih ke Mode Gelap (Dark Mode)'}
+              aria-label="Toggle Dark Mode"
+            >
+              {isAdminDark ? <Sun size={17} /> : <Moon size={17} />}
+            </button>
 
             {/* Quick Add Student Button */}
             <button
@@ -8014,6 +8079,97 @@ const AdminDashboardPage = ({
                       </button>
                     </div>
                   </form>
+                </div>
+              </div>
+
+              {/* CARD: TEMA TAMPILAN PANEL ADMIN (LIGHT / DARK MODE) */}
+              <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center font-bold">
+                      {isAdminDark ? <Moon size={20} className="text-indigo-600" /> : <Sun size={20} className="text-amber-500" />}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-base font-bold text-slate-900">
+                          Tema Tampilan Panel Admin
+                        </h2>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          isAdminDark ? 'bg-indigo-100 text-indigo-700' : 'bg-amber-100 text-amber-800'
+                        }`}>
+                          {isAdminDark ? 'Mode Gelap Aktif' : 'Mode Terang Aktif'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Pilih preferensi visual dashboard admin antara mode terang profesional atau mode gelap obsidian untuk kenyamanan mata.
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={toggleAdminTheme}
+                    className="px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shadow-2xs hover:bg-slate-50 shrink-0"
+                  >
+                    {isAdminDark ? <Sun size={14} className="text-amber-400" /> : <Moon size={14} className="text-slate-600" />}
+                    <span>{isAdminDark ? 'Ganti ke Mode Terang' : 'Ganti ke Mode Gelap'}</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Option 1: Light Mode */}
+                  <div
+                    onClick={() => {
+                      if (isAdminDark) toggleAdminTheme();
+                    }}
+                    className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex flex-col justify-between gap-3 ${
+                      !isAdminDark
+                        ? 'border-blue-600 bg-blue-50/40 shadow-xs'
+                        : 'border-slate-200 hover:border-slate-300 bg-slate-50/50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Sun size={18} className="text-amber-500" />
+                        <span className="text-sm font-bold text-slate-900">Mode Terang (Light)</span>
+                      </div>
+                      {!isAdminDark && (
+                        <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold">
+                          ✓
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      Tampilan bersih dengan palet Slate terang dan kontras tinggi. Sangat optimal untuk penggunaan di siang hari dan presentasi resmi.
+                    </p>
+                  </div>
+
+                  {/* Option 2: Dark Mode */}
+                  <div
+                    onClick={() => {
+                      if (!isAdminDark) toggleAdminTheme();
+                    }}
+                    className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex flex-col justify-between gap-3 ${
+                      isAdminDark
+                        ? 'border-blue-500 bg-blue-900/20 shadow-xs'
+                        : 'border-slate-200 hover:border-slate-300 bg-slate-50/50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Moon size={18} className="text-indigo-400" />
+                        <span className="text-sm font-bold text-slate-900">Mode Gelap (Obsidian Dark)</span>
+                      </div>
+                      {isAdminDark && (
+                        <span className="w-5 h-5 rounded-full bg-blue-500 text-white flex items-center justify-center text-[10px] font-bold">
+                          ✓
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      Tampilan modern dengan palet Obsidian Slate gelap yang ramah mata. Mengurangi kelelahan mata saat bekerja pada malam hari.
+                    </p>
+                  </div>
                 </div>
               </div>
 

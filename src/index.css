@@ -170,3 +170,239 @@
 .animate-marquee-infinite:active {
   animation-play-state: paused;
 }
+
+/* ==========================================================================
+   TeraDesk Admin Console — Modern Dark Mode (Obsidian / Slate Deep Navy)
+   ========================================================================== */
+.admin-dark-theme {
+  background-color: #070B18 !important;
+  color: #F8FAFC !important;
+  color-scheme: dark;
+}
+
+/* Base Surfaces & Structural Containers */
+.admin-dark-theme aside,
+.admin-dark-theme header,
+.admin-dark-theme .bg-white {
+  background-color: #0F172A !important;
+  border-color: #1E293B !important;
+  color: #F8FAFC;
+}
+
+/* Subtle Secondary Backgrounds & Cards */
+.admin-dark-theme .bg-slate-50,
+.admin-dark-theme .bg-slate-50\/60,
+.admin-dark-theme .bg-slate-50\/70,
+.admin-dark-theme .bg-slate-50\/80,
+.admin-dark-theme .bg-slate-50\/90 {
+  background-color: #131E32 !important;
+  border-color: #1E293B !important;
+}
+
+.admin-dark-theme .bg-slate-100,
+.admin-dark-theme .bg-slate-100\/70,
+.admin-dark-theme .bg-slate-100\/80,
+.admin-dark-theme .bg-slate-100\/90 {
+  background-color: #1A2740 !important;
+  border-color: #243552 !important;
+  color: #E2E8F0 !important;
+}
+
+/* Hover States */
+.admin-dark-theme .hover\:bg-slate-50:hover,
+.admin-dark-theme .hover\:bg-slate-50\/70:hover,
+.admin-dark-theme .hover\:bg-slate-50\/80:hover,
+.admin-dark-theme .hover\:bg-slate-100:hover,
+.admin-dark-theme .hover\:bg-slate-100\/70:hover,
+.admin-dark-theme .hover\:bg-slate-100\/80:hover {
+  background-color: #1E293B !important;
+}
+
+.admin-dark-theme .hover\:bg-slate-200:hover {
+  background-color: #2B3A54 !important;
+}
+
+/* Borders & Dividers */
+.admin-dark-theme .border-slate-100,
+.admin-dark-theme .border-slate-200,
+.admin-dark-theme .border-slate-200\/60,
+.admin-dark-theme .border-slate-200\/70,
+.admin-dark-theme .border-slate-200\/80,
+.admin-dark-theme .border-slate-200\/90,
+.admin-dark-theme .border-slate-300,
+.admin-dark-theme .border-slate-300\/60 {
+  border-color: #1E293B !important;
+}
+
+.admin-dark-theme .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+.admin-dark-theme .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #1E293B !important;
+}
+
+/* Text Hierarchy */
+.admin-dark-theme .text-slate-900,
+.admin-dark-theme .text-slate-800 {
+  color: #F8FAFC !important;
+}
+
+.admin-dark-theme .text-slate-700 {
+  color: #E2E8F0 !important;
+}
+
+.admin-dark-theme .text-slate-600 {
+  color: #CBD5E1 !important;
+}
+
+.admin-dark-theme .text-slate-500 {
+  color: #94A3B8 !important;
+}
+
+.admin-dark-theme .text-slate-400 {
+  color: #64748B !important;
+}
+
+/* Primary Dark Buttons (originally bg-slate-900 in light mode) */
+.admin-dark-theme button.bg-slate-900,
+.admin-dark-theme .bg-slate-900 {
+  background-color: #2563EB !important;
+  color: #FFFFFF !important;
+}
+
+.admin-dark-theme button.bg-slate-900:hover,
+.admin-dark-theme .hover\:bg-slate-800:hover {
+  background-color: #1D4ED8 !important;
+}
+
+/* Sidebar Active Items */
+.admin-dark-theme aside button.bg-slate-900 {
+  background-color: #1E293B !important;
+  color: #60A5FA !important;
+  border: 1px solid rgba(96, 165, 250, 0.25) !important;
+}
+
+/* Form Inputs, Selects & Textareas */
+.admin-dark-theme input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]),
+.admin-dark-theme select,
+.admin-dark-theme textarea {
+  background-color: #111A2E !important;
+  border-color: #243552 !important;
+  color: #F8FAFC !important;
+}
+
+.admin-dark-theme input::placeholder,
+.admin-dark-theme textarea::placeholder {
+  color: #64748B !important;
+}
+
+.admin-dark-theme select option {
+  background-color: #0F172A !important;
+  color: #F8FAFC !important;
+}
+
+/* Tables in Dark Mode */
+.admin-dark-theme table thead th {
+  background-color: #111C31 !important;
+  color: #94A3B8 !important;
+  border-color: #1E293B !important;
+}
+
+.admin-dark-theme table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+}
+
+/* Modals & Backdrop */
+.admin-dark-theme .bg-slate-900\/40,
+.admin-dark-theme .bg-slate-900\/60,
+.admin-dark-theme .bg-slate-900\/50 {
+  background-color: rgba(0, 0, 0, 0.75) !important;
+}
+
+/* Badges & Pills Contrast Adaptation in Dark Mode */
+.admin-dark-theme .bg-blue-50 {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+  color: #93C5FD !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
+}
+.admin-dark-theme .text-blue-700 {
+  color: #93C5FD !important;
+}
+
+.admin-dark-theme .bg-emerald-50 {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  color: #6EE7B7 !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+.admin-dark-theme .text-emerald-700,
+.admin-dark-theme .text-emerald-800 {
+  color: #6EE7B7 !important;
+}
+
+.admin-dark-theme .bg-rose-50 {
+  background-color: rgba(244, 63, 94, 0.15) !important;
+  color: #FDA4AF !important;
+  border-color: rgba(244, 63, 94, 0.3) !important;
+}
+.admin-dark-theme .text-rose-700,
+.admin-dark-theme .text-rose-800 {
+  color: #FDA4AF !important;
+}
+
+.admin-dark-theme .bg-amber-50 {
+  background-color: rgba(245, 158, 11, 0.15) !important;
+  color: #FCD34D !important;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+}
+.admin-dark-theme .text-amber-700,
+.admin-dark-theme .text-amber-800 {
+  color: #FCD34D !important;
+}
+
+.admin-dark-theme .bg-indigo-50,
+.admin-dark-theme .bg-indigo-100 {
+  background-color: rgba(99, 102, 241, 0.15) !important;
+  color: #C7D2FE !important;
+  border-color: rgba(99, 102, 241, 0.3) !important;
+}
+.admin-dark-theme .text-indigo-700,
+.admin-dark-theme .text-indigo-800 {
+  color: #C7D2FE !important;
+}
+
+.admin-dark-theme .bg-purple-50,
+.admin-dark-theme .bg-purple-100 {
+  background-color: rgba(168, 85, 247, 0.15) !important;
+  color: #E9D5FF !important;
+  border-color: rgba(168, 85, 247, 0.3) !important;
+}
+.admin-dark-theme .text-purple-700,
+.admin-dark-theme .text-purple-800 {
+  color: #E9D5FF !important;
+}
+
+.admin-dark-theme .bg-sky-50,
+.admin-dark-theme .bg-sky-100 {
+  background-color: rgba(14, 165, 233, 0.15) !important;
+  color: #7DD3FC !important;
+  border-color: rgba(14, 165, 233, 0.3) !important;
+}
+.admin-dark-theme .text-sky-700,
+.admin-dark-theme .text-sky-800 {
+  color: #7DD3FC !important;
+}
+
+/* Preserve bright colored buttons */
+.admin-dark-theme button.bg-blue-600,
+.admin-dark-theme .bg-blue-600 {
+  background-color: #2563EB !important;
+  color: #FFFFFF !important;
+}
+.admin-dark-theme button.bg-emerald-600,
+.admin-dark-theme .bg-emerald-600 {
+  background-color: #059669 !important;
+  color: #FFFFFF !important;
+}
+.admin-dark-theme button.bg-rose-600,
+.admin-dark-theme .bg-rose-600 {
+  background-color: #E11D48 !important;
+  color: #FFFFFF !important;
+}
