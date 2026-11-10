@@ -2822,16 +2822,16 @@ const AdminDashboardPage = ({
       <div className="flex-1 flex flex-col min-w-0">
         
         {/* TOP HEADER BAR */}
-        <header className="h-16 bg-white border-b border-slate-200/80 px-4 sm:px-6 lg:px-8 flex items-center justify-between sticky top-0 z-10">
-          <div className="flex items-center gap-2 sm:gap-3">
+        <header className="h-16 bg-white border-b border-slate-200/80 px-3 sm:px-6 lg:px-8 flex items-center justify-between sticky top-0 z-10 w-full max-w-full overflow-hidden">
+          <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 flex-1 max-w-xs sm:max-w-md lg:max-w-lg">
             {/* Hamburger Button for Mobile (HP) */}
             <button
               onClick={() => setIsMobileSidebarOpen(true)}
-              className="lg:hidden p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+              className="lg:hidden p-1.5 sm:p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
               title="Buka Menu Navigasi"
               aria-label="Buka Menu Navigasi"
             >
-              <Menu size={20} />
+              <Menu size={19} />
             </button>
 
             {/* Search Bar for TeraDesk (Spotlight Command Palette Trigger) */}
@@ -2839,7 +2839,7 @@ const AdminDashboardPage = ({
               onClick={() => {
                 if (onOpenCommandPalette) onOpenCommandPalette();
               }}
-              className="relative w-44 sm:w-72 lg:w-96 cursor-pointer group"
+              className="relative w-full max-w-[130px] xs:max-w-[160px] sm:max-w-xs lg:max-w-sm cursor-pointer group shrink min-w-0"
               role="button"
               tabIndex={0}
               onKeyDown={(e) => {
@@ -2849,12 +2849,12 @@ const AdminDashboardPage = ({
                 }
               }}
             >
-              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-blue-600 transition-colors" />
+              <Search size={15} className="absolute left-2.5 sm:left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-blue-600 transition-colors shrink-0" />
               <input
                 type="text"
                 readOnly
-                placeholder="Cari Layanan, Proposal, atau NIM..."
-                className="w-full pl-9 pr-10 sm:pr-14 py-2 bg-slate-50 hover:bg-slate-100/70 rounded-xl border border-slate-200/80 text-xs font-medium text-slate-800 focus:outline-hidden transition-all placeholder:text-slate-400 cursor-pointer select-none"
+                placeholder="Cari..."
+                className="w-full pl-8 sm:pl-9 pr-2 sm:pr-14 py-1.5 sm:py-2 bg-slate-50 hover:bg-slate-100/70 rounded-xl border border-slate-200/80 text-xs font-medium text-slate-800 focus:outline-hidden transition-all placeholder:text-slate-400 cursor-pointer select-none truncate"
               />
               <span className="hidden sm:inline absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono font-medium text-slate-400 bg-slate-200/60 px-1.5 py-0.5 rounded border border-slate-300/60 group-hover:bg-slate-200 group-hover:text-slate-700 transition-colors">
                 Ctrl + K
@@ -2863,27 +2863,27 @@ const AdminDashboardPage = ({
           </div>
 
           {/* Right Header Controls */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 sm:gap-2.5 shrink-0">
             <button
               onClick={onNavigateToPortal}
-              className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-xl transition-colors cursor-pointer"
+              className="hidden md:flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-xl transition-colors cursor-pointer shrink-0"
             >
               <ExternalLink size={13} />
               <span>Buka Portal Hub</span>
             </button>
 
             {/* Notification Bell */}
-            <div className="relative">
+            <div className="relative shrink-0">
               <button
                 onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-                className="text-slate-400 hover:text-slate-700 p-2 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer relative"
+                className="text-slate-400 hover:text-slate-700 p-1.5 sm:p-2 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer relative flex items-center justify-center"
                 title="Notifikasi & Inbox"
               >
-                <Bell size={18} />
+                <Bell size={17} />
                 {unreadConsultationsCount > 0 ? (
-                  <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-blue-600 ring-2 ring-white animate-pulse"></span>
+                  <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-blue-600 ring-2 ring-white animate-pulse"></span>
                 ) : (
-                  <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-slate-300"></span>
+                  <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-slate-300"></span>
                 )}
               </button>
 
@@ -2893,7 +2893,7 @@ const AdminDashboardPage = ({
                     className="fixed inset-0 z-40"
                     onClick={() => setIsNotificationsOpen(false)}
                   />
-                  <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-xl border border-slate-200 p-4 z-50">
+                  <div className="absolute right-0 mt-2 w-72 sm:w-96 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-xl border border-slate-200 p-4 z-50">
                     <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-2">
                       <p className="text-xs font-bold text-slate-900">Notifikasi & Pesan Masuk</p>
                       <div className="flex items-center gap-2">
@@ -2979,7 +2979,7 @@ const AdminDashboardPage = ({
             <button
               type="button"
               onClick={toggleAdminTheme}
-              className={`p-2 rounded-xl border transition-all cursor-pointer flex items-center justify-center ${
+              className={`p-1.5 sm:p-2 rounded-xl border transition-all cursor-pointer flex items-center justify-center shrink-0 ${
                 isAdminDark
                   ? 'bg-slate-800 border-slate-700 text-amber-400 hover:bg-slate-700 hover:text-amber-300'
                   : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200 hover:text-slate-900 shadow-2xs'
@@ -2987,28 +2987,29 @@ const AdminDashboardPage = ({
               title={isAdminDark ? 'Beralih ke Mode Terang (Light Mode)' : 'Beralih ke Mode Gelap (Dark Mode)'}
               aria-label="Toggle Dark Mode"
             >
-              {isAdminDark ? <Sun size={17} /> : <Moon size={17} />}
+              {isAdminDark ? <Sun size={16} /> : <Moon size={16} />}
             </button>
 
             {/* Quick Add Student Button */}
             <button
               onClick={() => setIsAddFormOpen(true)}
-              className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-colors cursor-pointer shadow-xs"
+              className="flex items-center justify-center gap-1 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold p-1.5 sm:px-3 sm:py-1.5 rounded-xl transition-colors cursor-pointer shadow-xs shrink-0"
+              title="Tambah Data Mahasiswa"
             >
-              <Plus size={14} />
-              <span className="hidden sm:inline">Mahasiswa</span>
+              <Plus size={15} />
+              <span className="hidden md:inline">Mahasiswa</span>
             </button>
 
             {/* User Profile Pill */}
-            <div className="flex items-center gap-2.5 pl-2 border-l border-slate-200">
-              <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center">
+            <div className="flex items-center gap-2 pl-1.5 sm:pl-2.5 border-l border-slate-200/80 shrink-0">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
                 {authUser?.name ? authUser.name.charAt(0).toUpperCase() : 'A'}
               </div>
-              <div className="hidden sm:block text-left">
-                <p className="text-xs font-bold text-slate-900 leading-tight">
+              <div className="hidden md:block text-left">
+                <p className="text-xs font-bold text-slate-900 leading-tight truncate max-w-[100px]">
                   {authUser?.name || 'Alif Fikri'}
                 </p>
-                <p className="text-[10px] text-slate-400 font-medium leading-none">
+                <p className="text-[10px] text-slate-400 font-medium leading-none truncate max-w-[100px]">
                   {authUser?.role || 'Developer'}
                 </p>
               </div>
