@@ -19,7 +19,8 @@ import {
   ShieldCheck,
   CheckCircle2,
   CalendarCheck,
-  KeyRound
+  KeyRound,
+  Megaphone,
 } from 'lucide-react';
 
 const allServices = [
@@ -126,6 +127,8 @@ const ServicePageLayout = ({
   onLogout,
   onOpenCommandPalette,
   onOpenChangePassword,
+  announcements = [],
+  onOpenAnnouncementModal,
   children,
 }) => {
   const [isSwitcherOpen, setIsSwitcherOpen] = useState(false);
@@ -245,7 +248,7 @@ const ServicePageLayout = ({
                   {authUser?.name || 'Alif Fikri'}
                 </p>
                 <p className="text-[10px] text-slate-500 truncate">
-                  {authUser?.role || 'Demisioner Ketua Umum'}
+                  {authUser?.role || 'Developer'}
                 </p>
               </div>
             </div>
@@ -347,6 +350,25 @@ const ServicePageLayout = ({
                 Ctrl K
               </kbd>
             </button>
+
+            {/* BPH Announcement Trigger */}
+            {announcements && announcements.filter((a) => a.isActive).length > 0 && onOpenAnnouncementModal && (
+              <button
+                type="button"
+                onClick={() => {
+                  const activeList = announcements.filter((a) => a.isActive);
+                  onOpenAnnouncementModal(activeList[0], 0);
+                }}
+                title="Buka Maklumat Resmi BPH"
+                className="flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold border border-blue-200 transition-colors cursor-pointer"
+              >
+                <Megaphone size={13} className="text-blue-600 animate-pulse" />
+                <span className="hidden md:inline">Maklumat BPH</span>
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-blue-600 text-white font-mono">
+                  {announcements.filter((a) => a.isActive).length}
+                </span>
+              </button>
+            )}
 
             {/* Quick Switcher Dropdown (Accessible on all screens) */}
             <div className="relative">

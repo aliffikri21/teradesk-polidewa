@@ -12,9 +12,11 @@ import ServiceDispatcher from './components/services/ServiceDispatcher';
 import CommandPalette from './components/common/CommandPalette';
 import ChangePasswordModal from './components/common/ChangePasswordModal';
 import PublicAttendanceModal from './components/services/PublicAttendanceModal';
+import BphAnnouncementModal from './components/common/BphAnnouncementModal';
 import { initialDefaultAccounts } from './data/defaultAccounts';
 import { initialDefaultLeadership } from './data/defaultLeadership';
 import { initialDefaultProker } from './data/defaultProker';
+import { initialDefaultAnnouncements } from './data/defaultAnnouncements';
 import { isDummyConsultation } from './data/defaultConsultations';
 import { initialDefaultActivityLogs } from './data/defaultActivityLogs';
 import { initialDefaultTickets, sortTicketsNewestFirst } from './data/defaultTickets';
@@ -240,6 +242,79 @@ function App() {
       event: 'Pembaruan Kartu Profil Pimpinan',
       details: `Mengubah data profil Pembina (${updatedProfiles?.pembina?.name}) dan Ketua Umum (${updatedProfiles?.ketuaUmum?.name}) pada landing page.`,
     });
+  };
+
+  // Pusat Maklumat & Pengumuman Resmi BPH (Default Kosong Tanpa Dummy Data)
+  const [bphAnnouncements, setBphAnnouncements] = useState(() => {
+    try {
+      localStorage.removeItem('teradesk_bph_announcements_v1');
+      const saved = localStorage.getItem('teradesk_bph_announcements_v2');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return initialDefaultAnnouncements;
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('teradesk_bph_announcements_v2', JSON.stringify(bphAnnouncements));
+    } catch {
+      // ignore
+    }
+  }, [bphAnnouncements]);
+
+  // State untuk Pop-up Window Pengumuman Anggota
+  const [activeAnnouncementModal, setActiveAnnouncementModal] = useState(null);
+  const [announcementModalIndex, setAnnouncementModalIndex] = useState(0);
+
+  const handleAddAnnouncement = (newAnn) => {
+    const annItem = {
+      ...newAnn,
+      id: `ann-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      author: newAnn.author || 'BPH TERAMEDIA',
+      authorName: newAnn.authorName || authUser?.name || 'Alif Fikri Haykal',
+      authorRole: newAnn.authorRole || authUser?.role || 'Developer',
+    };
+    setBphAnnouncements((prev) => [annItem, ...prev]);
+
+    handleAddActivityLog({
+      category: 'announcement',
+      type: 'success',
+      userName: authUser?.name || 'BPH TERAMEDIA',
+      userNim: authUser?.nim || '23404053',
+      userRole: authUser?.role || 'BPH',
+      userDivision: 'BPH',
+      moduleName: 'Pengumuman BPH',
+      event: `Terbitkan Maklumat BPH: ${annItem.title}`,
+      details: `BPH menerbitkan maklumat resmi baru dengan prioritas ${annItem.priority}.`,
+    });
+  };
+
+  const handleUpdateAnnouncement = (id, updatedFields) => {
+    setBphAnnouncements((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, ...updatedFields } : a))
+    );
+  };
+
+  const handleDeleteAnnouncement = (id) => {
+    setBphAnnouncements((prev) => prev.filter((a) => a.id !== id));
+  };
+
+  const handleToggleAnnouncementStatus = (id) => {
+    setBphAnnouncements((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, isActive: !a.isActive } : a))
+    );
+  };
+
+  const handleResetAnnouncements = () => {
+    setBphAnnouncements(initialDefaultAnnouncements);
   };
 
   // Design Tickets state (Permohonan tiket request desain Pubdok & Helpdesk)
@@ -1042,11 +1117,37 @@ function App() {
     const unsubAccounts = subscribeAccounts(
       (cloudAccounts) => {
         if (Array.isArray(cloudAccounts) && cloudAccounts.length > 0) {
-          setRegisteredAccounts(cloudAccounts);
+          const normalized = cloudAccounts.map((acc) => {
+            const isAlif = acc.nim === '23404053' || (acc.name && acc.name.toLowerCase().includes('alif fikri'));
+            const divRaw = acc.division || 'Divisi Kesekretariatan';
+            const normalizedDiv = (divRaw.toLowerCase().includes('bph') || divRaw.toLowerCase().includes('presidium') || divRaw.toLowerCase().includes('demisioner'))
+              ? 'BPH (Badan Pengurus Harian)'
+              : divRaw;
+            return {
+              ...acc,
+              division: normalizedDiv,
+              role: isAlif ? 'Developer' : acc.role,
+              canAccessAdmin: acc.canAccessAdmin ?? (isAlif || acc.role?.toLowerCase().includes('koordinator') || acc.isDefault === true),
+            };
+          });
+          setRegisteredAccounts(normalized);
           try {
-            localStorage.setItem('teradesk_dev_accounts_v4', JSON.stringify(cloudAccounts));
+            localStorage.setItem('teradesk_dev_accounts_v4', JSON.stringify(normalized));
           } catch {
             // ignore
+          }
+
+          // Sinkronisasi otomatis ke cloud jika profil Alif di Firestore belum berstatus Developer
+          const alifCloud = cloudAccounts.find((a) => a.nim === '23404053' || (a.name && a.name.toLowerCase().includes('alif fikri')));
+          if (alifCloud && (alifCloud.role !== 'Developer' || alifCloud.division !== 'BPH (Badan Pengurus Harian)')) {
+            updateAccountInDb('23404053', {
+              ...alifCloud,
+              nim: '23404053',
+              name: 'Alif Fikri Haykal',
+              role: 'Developer',
+              division: 'BPH (Badan Pengurus Harian)',
+              canAccessAdmin: true,
+            });
           }
         }
       },
@@ -1532,7 +1633,19 @@ function App() {
   };
 
   const handleLoginSuccess = (userProfile) => {
-    setAuthUser(userProfile);
+    const isAlif = userProfile.nim === '23404053' || (userProfile.name && userProfile.name.toLowerCase().includes('alif fikri'));
+    const divRaw = userProfile.division || 'Divisi Kesekretariatan';
+    const normalizedDiv = (divRaw.toLowerCase().includes('bph') || divRaw.toLowerCase().includes('presidium') || divRaw.toLowerCase().includes('demisioner'))
+      ? 'BPH (Badan Pengurus Harian)'
+      : divRaw;
+    const normalizedProfile = {
+      ...userProfile,
+      name: isAlif ? 'Alif Fikri Haykal' : userProfile.name,
+      role: isAlif ? 'Developer' : userProfile.role,
+      division: normalizedDiv,
+      canAccessAdmin: isAlif ? true : userProfile.canAccessAdmin,
+    };
+    setAuthUser(normalizedProfile);
     try {
       const saved = localStorage.getItem('teradesk_consultations_v1');
       if (saved) {
@@ -1579,6 +1692,15 @@ function App() {
       window.history.pushState(null, '', targetPath);
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Munculkan Pop-up Window Maklumat Pengumuman BPH aktif saat anggota masuk ke Portal atau Modul Layanan
+    if (target.page === 'portal' || target.page === 'service') {
+      const activeList = (bphAnnouncements || []).filter((a) => a.isActive);
+      if (activeList.length > 0) {
+        setActiveAnnouncementModal(activeList);
+        setAnnouncementModalIndex(0);
+      }
+    }
   };
 
   const handleLogout = () => {
@@ -1897,6 +2019,17 @@ function App() {
           onToggleModuleStatus={handleToggleModuleStatus}
           leadershipProfiles={leadershipProfiles}
           onUpdateLeadershipProfiles={handleUpdateLeadershipProfiles}
+          announcements={bphAnnouncements}
+          onAddAnnouncement={handleAddAnnouncement}
+          onUpdateAnnouncement={handleUpdateAnnouncement}
+          onDeleteAnnouncement={handleDeleteAnnouncement}
+          onToggleAnnouncementStatus={handleToggleAnnouncementStatus}
+          onResetAnnouncements={handleResetAnnouncements}
+          onPreviewAnnouncementPopup={(ann, index) => {
+            const activeList = (bphAnnouncements || []).filter((a) => a.isActive);
+            setActiveAnnouncementModal(activeList.length > 0 ? activeList : [ann]);
+            setAnnouncementModalIndex(index || 0);
+          }}
         />
       ) : currentView.page === 'service' ? (
         /* Halaman Layanan Spesifik (PAR, Arsip, Aset, Kas, dsb.) */
@@ -1956,6 +2089,12 @@ function App() {
           onToggleModuleStatus={handleToggleModuleStatus}
           leadershipProfiles={leadershipProfiles}
           onUpdateLeadershipProfiles={handleUpdateLeadershipProfiles}
+          announcements={bphAnnouncements}
+          onOpenAnnouncementModal={(ann, index) => {
+            const activeList = (bphAnnouncements || []).filter((a) => a.isActive);
+            setActiveAnnouncementModal(activeList.length > 0 ? activeList : [ann]);
+            setAnnouncementModalIndex(index || 0);
+          }}
         />
       ) : (
         /* Halaman Khusus Portal Fitur & Katalog Aplikasi Organisasi */
@@ -1968,6 +2107,12 @@ function App() {
           onLogout={handleLogout}
           onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
           onOpenChangePassword={() => setIsChangePasswordOpen(true)}
+          announcements={bphAnnouncements}
+          onOpenAnnouncementModal={(ann, index) => {
+            const activeList = (bphAnnouncements || []).filter((a) => a.isActive);
+            setActiveAnnouncementModal(activeList.length > 0 ? activeList : [ann]);
+            setAnnouncementModalIndex(index || 0);
+          }}
         />
       )}
 
@@ -2075,6 +2220,15 @@ function App() {
         accounts={registeredAccounts}
         onUpdatePassword={handleUpdatePassword}
         onAddActivityLog={handleAddActivityLog}
+      />
+
+      {/* Official BPH Announcement Pop-up Window for Members */}
+      <BphAnnouncementModal
+        isOpen={!!activeAnnouncementModal}
+        onClose={() => setActiveAnnouncementModal(null)}
+        announcements={activeAnnouncementModal || []}
+        initialIndex={announcementModalIndex}
+        onNavigateToService={(serviceId) => handleNavigate('service', serviceId)}
       />
     </div>
   );

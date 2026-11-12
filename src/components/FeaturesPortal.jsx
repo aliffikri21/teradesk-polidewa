@@ -19,7 +19,10 @@ import {
   LogOut,
   CalendarCheck,
   ShieldCheck,
-  KeyRound
+  KeyRound,
+  Megaphone,
+  ChevronDown,
+  HelpCircle,
 } from 'lucide-react';
 
 const featuresData = [
@@ -254,9 +257,14 @@ const FeaturesPortal = ({
   onLogout,
   onOpenCommandPalette,
   onOpenChangePassword,
+  announcements = [],
+  onOpenAnnouncementModal,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Semua');
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+
+  const activeAnnouncements = (announcements || []).filter((a) => a.isActive);
 
   const categories = [
     { label: 'Semua', count: featuresData.length },
@@ -292,110 +300,242 @@ const FeaturesPortal = ({
   return (
     <div className="w-full min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col font-sans antialiased selection:bg-blue-600 selection:text-white">
       
-      {/* Top Navigation Bar (Clean White SaaS Theme) */}
-      <header className="sticky top-0 z-40 bg-white border-b border-slate-200/80 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
+      {/* Top Navigation Bar (Clean Minimal SaaS Theme) */}
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-2xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
           
           {/* Left: Brand & Back to Landing */}
-          <div className="flex items-center gap-4 sm:gap-6">
+          <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
             <button
               onClick={onBackToLanding}
-              className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3.5 py-2 rounded-xl transition-all duration-150 cursor-pointer"
+              className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200/80 px-2.5 sm:px-3 py-1.5 rounded-xl transition-all cursor-pointer"
+              title="Kembali ke Beranda TeraDesk"
             >
-              <ArrowLeft size={16} />
-              <span>Kembali ke Beranda</span>
+              <ArrowLeft size={15} />
+              <span className="hidden sm:inline">Beranda</span>
             </button>
 
-            <div className="hidden sm:flex items-center gap-2.5">
+            <div className="h-4 w-px bg-slate-200 hidden sm:block" />
+
+            <div className="flex items-center gap-2">
               <img
                 src="/logo-teramedia.png"
                 alt="Logo TERAMEDIA"
                 className="w-7 h-7 object-contain drop-shadow-xs shrink-0"
               />
-              <span className="text-base font-extrabold tracking-tight text-slate-900">TeraDesk</span>
-              <span className="text-[10px] bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-0.5 rounded-full font-bold">
-                Workspace Hub
+              <span className="text-base font-extrabold tracking-tight text-slate-900">
+                TeraDesk
+              </span>
+              <span className="hidden md:inline-flex text-[10px] bg-blue-50 text-blue-700 border border-blue-200/80 px-2 py-0.5 rounded-full font-bold">
+                Portal
               </span>
             </div>
           </div>
 
-          {/* Right: Quick CTA & User Status / Logout */}
-          <div className="flex items-center gap-3">
-            {authUser && (
-              <div className="hidden sm:flex items-center gap-2 bg-slate-50 border border-slate-200/80 px-3 py-1.5 rounded-xl text-xs">
-                <div className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-[10px]">
-                  {authUser.name ? authUser.name.charAt(0) : 'A'}
-                </div>
-                <div className="text-left">
-                  <p className="font-bold text-slate-900 text-[11px] leading-tight truncate max-w-[120px]">
-                    {authUser.name || authUser.nim}
-                  </p>
-                  <p className="text-[9px] text-slate-400 font-mono leading-none">
-                    NIM: {authUser.nim}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {authUser && onOpenChangePassword && (
-              <button
-                type="button"
-                onClick={onOpenChangePassword}
-                title="Ganti Kata Sandi Akun Mandiri"
-                className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-blue-600 bg-slate-100 hover:bg-blue-50 px-3 py-2 rounded-xl border border-slate-200 hover:border-blue-200 transition-all cursor-pointer"
-              >
-                <KeyRound size={13} className="text-blue-600" />
-                <span>Ganti Sandi</span>
-              </button>
-            )}
-
-            {authUser?.canAccessAdmin && onOpenDevDashboard && (
-              <button
-                onClick={onOpenDevDashboard}
-                className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold px-3.5 py-2 rounded-xl text-xs sm:text-sm transition-all duration-150 shadow-xs cursor-pointer"
-              >
-                <ShieldCheck size={14} className="text-blue-400" />
-                <span>Panel Admin</span>
-              </button>
-            )}
-
-            {/* Spotlight Command Palette trigger */}
+          {/* Center: Sleek Spotlight Search Bar */}
+          <div className="flex-1 max-w-xs sm:max-w-sm mx-2 hidden sm:block">
             <button
               type="button"
               onClick={() => {
                 if (onOpenCommandPalette) onOpenCommandPalette();
               }}
               title="Buka Spotlight Command Palette (Ctrl+K)"
-              className="hidden sm:flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border border-slate-200"
+              className="w-full flex items-center justify-between px-3 py-1.5 bg-slate-50 hover:bg-slate-100/80 text-slate-400 hover:text-slate-700 rounded-xl text-xs font-medium border border-slate-200/80 transition-all cursor-pointer group"
             >
-              <Search size={14} className="text-amber-500" />
-              <span>Spotlight</span>
-              <kbd className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-200/80 text-slate-500">
+              <div className="flex items-center gap-2 min-w-0">
+                <Search size={14} className="text-slate-400 group-hover:text-blue-600 transition-colors shrink-0" />
+                <span className="truncate">Cari modul, layanan, aksi...</span>
+              </div>
+              <kbd className="hidden lg:inline-flex text-[10px] font-mono font-semibold px-1.5 py-0.2 rounded bg-white text-slate-500 border border-slate-200 shadow-2xs shrink-0">
                 Ctrl K
               </kbd>
             </button>
+          </div>
 
+          {/* Right: Actions & User Profile */}
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Mobile Search Icon Button */}
             <button
-              onClick={onOpenContact}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl text-xs sm:text-sm transition-all duration-150 shadow-xs cursor-pointer"
+              type="button"
+              onClick={() => {
+                if (onOpenCommandPalette) onOpenCommandPalette();
+              }}
+              title="Pencarian Spotlight (Ctrl+K)"
+              className="sm:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
             >
-              Bantuan Admin
+              <Search size={17} />
             </button>
 
-            {onLogout && (
+            {/* BPH Official Announcement Button / Notification */}
+            {activeAnnouncements.length > 0 && onOpenAnnouncementModal && (
               <button
-                onClick={onLogout}
-                className="flex items-center gap-1.5 text-xs font-semibold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-2 rounded-xl border border-rose-200 transition-colors cursor-pointer"
-                title="Keluar / Reset Sesi Organisasi"
+                type="button"
+                onClick={() => onOpenAnnouncementModal(activeAnnouncements[0], 0)}
+                title={`Maklumat Resmi BPH (${activeAnnouncements.length} Maklumat Aktif)`}
+                className="flex items-center gap-1.5 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100/80 px-2.5 sm:px-3 py-1.5 rounded-xl border border-blue-200/80 transition-all cursor-pointer shadow-2xs"
               >
-                <LogOut size={14} />
-                <span className="hidden sm:inline">Keluar</span>
+                <Megaphone size={14} className="text-blue-600 shrink-0 animate-bounce" />
+                <span className="hidden md:inline">Maklumat</span>
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-blue-600 text-white font-mono font-bold leading-none">
+                  {activeAnnouncements.length}
+                </span>
+              </button>
+            )}
+
+            {/* Panel Admin Button (Khusus Pengurus Berizin Admin) */}
+            {authUser?.canAccessAdmin && onOpenDevDashboard && (
+              <button
+                onClick={onOpenDevDashboard}
+                className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition-all duration-150 shadow-2xs cursor-pointer"
+                title="Buka Panel Admin Eksekutif"
+              >
+                <ShieldCheck size={14} className="text-blue-400 shrink-0" />
+                <span className="hidden sm:inline">Panel Admin</span>
+              </button>
+            )}
+
+            {/* User Profile Dropdown Menu */}
+            {authUser ? (
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                  className="flex items-center gap-2 p-1 sm:pl-1 sm:pr-2.5 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all cursor-pointer"
+                  title="Menu Pengguna & Pengaturan Akun"
+                >
+                  <div className="w-7 h-7 rounded-lg bg-slate-900 text-white font-black text-xs flex items-center justify-center shrink-0">
+                    {authUser.name ? authUser.name.charAt(0).toUpperCase() : 'A'}
+                  </div>
+                  <div className="hidden sm:block text-left max-w-[100px] lg:max-w-[130px]">
+                    <p className="text-xs font-bold text-slate-800 truncate leading-tight">
+                      {authUser.name ? authUser.name.split(' ')[0] : 'Akun'}
+                    </p>
+                    <p className="text-[10px] text-slate-400 font-medium truncate leading-none mt-0.5">
+                      {authUser.role || 'Pengurus'}
+                    </p>
+                  </div>
+                  <ChevronDown size={13} className={`text-slate-400 transition-transform duration-150 ${isProfileMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isProfileMenuOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setIsProfileMenuOpen(false)}
+                      aria-hidden="true"
+                    />
+                    <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-200/90 p-2 z-50 animate-in fade-in zoom-in-95 duration-100">
+                      {/* Header Info Akun */}
+                      <div className="px-3 py-2.5 bg-slate-50 rounded-xl border border-slate-100 mb-1.5">
+                        <p className="text-xs font-bold text-slate-900 truncate">
+                          {authUser.name || 'Pengurus'}
+                        </p>
+                        <p className="text-[11px] font-mono text-slate-500 mt-0.5">
+                          NIM: {authUser.nim}
+                        </p>
+                        <div className="flex items-center gap-1.5 mt-2">
+                          <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                            {authUser.role || 'Pengurus'}
+                          </span>
+                          <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-100 text-slate-600 truncate max-w-[120px]">
+                            {authUser.division || 'BPH'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Menu Actions */}
+                      <div className="space-y-0.5">
+                        {onOpenChangePassword && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsProfileMenuOpen(false);
+                              onOpenChangePassword();
+                            }}
+                            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer text-left"
+                          >
+                            <KeyRound size={14} className="text-blue-600 shrink-0" />
+                            <span>Ganti Kata Sandi</span>
+                          </button>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsProfileMenuOpen(false);
+                            if (onOpenContact) onOpenContact();
+                          }}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer text-left"
+                        >
+                          <HelpCircle size={14} className="text-slate-500 shrink-0" />
+                          <span>Pusat Bantuan & Kontak</span>
+                        </button>
+
+                        <div className="my-1 border-t border-slate-100" />
+
+                        {onLogout && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsProfileMenuOpen(false);
+                              onLogout();
+                            }}
+                            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer text-left"
+                          >
+                            <LogOut size={14} className="text-rose-600 shrink-0" />
+                            <span>Keluar Sesi</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            ) : (
+              <button
+                onClick={onOpenContact}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3.5 py-1.5 rounded-xl text-xs transition-colors cursor-pointer shadow-2xs"
+              >
+                Bantuan
               </button>
             )}
           </div>
 
         </div>
       </header>
+
+      {/* Active BPH Official Announcement Banner */}
+      {activeAnnouncements.length > 0 && (
+        <div className="w-full bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 text-white border-b border-indigo-900/40 shadow-xs">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3 flex items-center justify-between gap-3 text-xs">
+            <div
+              onClick={() => onOpenAnnouncementModal && onOpenAnnouncementModal(activeAnnouncements[0], 0)}
+              className="flex items-center gap-2.5 sm:gap-3 min-w-0 cursor-pointer group flex-1"
+            >
+              <div className="w-7 h-7 rounded-lg bg-white/20 text-white flex items-center justify-center shrink-0">
+                <Megaphone size={14} className="animate-pulse" />
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 min-w-0">
+                <span className="text-[10px] font-black uppercase tracking-wider bg-white/25 px-2 py-0.5 rounded-full shrink-0">
+                  Maklumat BPH
+                </span>
+                <span className="font-bold text-xs sm:text-sm text-white group-hover:underline truncate max-w-xs sm:max-w-md lg:max-w-xl">
+                  {activeAnnouncements[0].title}
+                </span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => onOpenAnnouncementModal && onOpenAnnouncementModal(activeAnnouncements[0], 0)}
+              className="hidden sm:inline-flex items-center gap-1 text-[11px] font-bold bg-white text-blue-900 px-3 py-1.5 rounded-xl hover:bg-blue-50 transition-colors shrink-0 cursor-pointer shadow-2xs"
+            >
+              <span>Baca Maklumat</span>
+              <ArrowRight size={12} />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Hero Portal Header */}
       <section className="relative w-full pt-10 pb-12 px-4 sm:px-6 lg:px-8 bg-white border-b border-slate-200/80">

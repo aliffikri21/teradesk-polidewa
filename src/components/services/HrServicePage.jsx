@@ -335,7 +335,7 @@ const HrServicePage = (props) => {
                   <span>Dewan Kehormatan & Pengembang Sistem</span>
                 </div>
                 <h4 className="font-bold text-white text-sm">Alif Fikri Haykal</h4>
-                <p className="text-xs text-gray-400">Demisioner Ketua Umum • Lead Architect TeraDesk (NIM: 23404053)</p>
+                <p className="text-xs text-gray-400">Developer • Lead Architect TeraDesk (NIM: 23404053)</p>
               </div>
 
               <div className="w-0.5 h-6 bg-white/20 mx-auto"></div>

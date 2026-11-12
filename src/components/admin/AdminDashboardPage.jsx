@@ -69,6 +69,12 @@ import {
   Code2,
   Sun,
   Moon,
+  Megaphone,
+  Pin,
+  AlertTriangle,
+  Building2,
+  MapPin,
+  User,
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { playNotificationChime, getSoundMuted, setSoundMuted } from '../../utils/notificationSound';
@@ -406,6 +412,13 @@ const AdminDashboardPage = ({
   onOpenChangePassword,
   leadershipProfiles: propLeadershipProfiles,
   onUpdateLeadershipProfiles: propOnUpdateLeadershipProfiles,
+  announcements = [],
+  onAddAnnouncement,
+  onUpdateAnnouncement,
+  onDeleteAnnouncement,
+  onToggleAnnouncementStatus,
+  onResetAnnouncements,
+  onPreviewAnnouncementPopup,
 }) => {
   // Mobile Sidebar Drawer State
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -436,6 +449,137 @@ const AdminDashboardPage = ({
   // Real-time Sound & Toast State for Kotak Masuk Konsultasi
   const [isSoundMutedState, setIsSoundMutedState] = useState(() => getSoundMuted());
   const [inboxToast, setInboxToast] = useState(null);
+
+  // State for Pengumuman BPH (Maklumat Pop-up Anggota)
+  const [announcementSearch, setAnnouncementSearch] = useState('');
+  const [announcementCategoryFilter, setAnnouncementCategoryFilter] = useState('Semua Kategori');
+  const [announcementStatusFilter, setAnnouncementStatusFilter] = useState('Semua Status'); // 'Semua Status' | 'Aktif' | 'Nonaktif'
+  const [isAnnModalOpen, setIsAnnModalOpen] = useState(false);
+  const [editingAnnId, setEditingAnnId] = useState(null);
+
+  // Form states for Announcement modal
+  const [annFormTitle, setAnnFormTitle] = useState('');
+  const [annFormCategory, setAnnFormCategory] = useState('Rapat Pleno');
+  const [annFormPriority, setAnnFormPriority] = useState('urgent');
+  const [annFormTarget, setAnnFormTarget] = useState('Semua Anggota');
+  const [annFormDate, setAnnFormDate] = useState('12 Nov 2026');
+  const [annFormTime, setAnnFormTime] = useState('19:30 WITA');
+  const [annFormLocation, setAnnFormLocation] = useState('Studio Multimedia Kampus II & Google Meet');
+  const [annFormContent, setAnnFormContent] = useState('');
+  const [annFormActionText, setAnnFormActionText] = useState('Buka Jadwal Presensi');
+  const [annFormActionServiceId, setAnnFormActionServiceId] = useState('attendance');
+  const [annFormIsActive, setAnnFormIsActive] = useState(true);
+  const [annFormIsPinned, setAnnFormIsPinned] = useState(false);
+
+  const activeAnnouncementsCount = (announcements || []).filter((a) => a.isActive).length;
+
+  const filteredAnnouncements = useMemo(() => {
+    return (announcements || []).filter((ann) => {
+      const matchSearch =
+        !announcementSearch.trim() ||
+        (ann.title && ann.title.toLowerCase().includes(announcementSearch.toLowerCase())) ||
+        (ann.content && ann.content.toLowerCase().includes(announcementSearch.toLowerCase())) ||
+        (ann.category && ann.category.toLowerCase().includes(announcementSearch.toLowerCase()));
+
+      const matchCat =
+        announcementCategoryFilter === 'Semua Kategori' || ann.category === announcementCategoryFilter;
+
+      const matchStatus =
+        announcementStatusFilter === 'Semua Status' ||
+        (announcementStatusFilter === 'Aktif' && ann.isActive) ||
+        (announcementStatusFilter === 'Nonaktif' && !ann.isActive);
+
+      return matchSearch && matchCat && matchStatus;
+    });
+  }, [announcements, announcementSearch, announcementCategoryFilter, announcementStatusFilter]);
+
+  const handleOpenAddAnn = () => {
+    setEditingAnnId(null);
+    setAnnFormTitle('');
+    setAnnFormCategory('Rapat Pleno');
+    setAnnFormPriority('urgent');
+    setAnnFormTarget('Semua Anggota');
+    setAnnFormDate(new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }));
+    setAnnFormTime('19:30 WITA');
+    setAnnFormLocation('Studio Multimedia Kampus II & Google Meet');
+    setAnnFormContent('');
+    setAnnFormActionText('Buka Jadwal Presensi');
+    setAnnFormActionServiceId('attendance');
+    setAnnFormIsActive(true);
+    setAnnFormIsPinned(false);
+    setIsAnnModalOpen(true);
+  };
+
+  const handleOpenEditAnn = (ann) => {
+    setEditingAnnId(ann.id);
+    setAnnFormTitle(ann.title || '');
+    setAnnFormCategory(ann.category || 'Rapat Pleno');
+    setAnnFormPriority(ann.priority || 'urgent');
+    setAnnFormTarget(ann.targetAudience || 'Semua Anggota');
+    setAnnFormDate(ann.date || '');
+    setAnnFormTime(ann.time || '');
+    setAnnFormLocation(ann.location || '');
+    setAnnFormContent(ann.content || '');
+    setAnnFormActionText(ann.actionText || '');
+    setAnnFormActionServiceId(ann.actionServiceId || '');
+    setAnnFormIsActive(ann.isActive ?? true);
+    setAnnFormIsPinned(ann.isPinned ?? false);
+    setIsAnnModalOpen(true);
+  };
+
+  const handleSaveAnn = (e) => {
+    e.preventDefault();
+    if (!annFormTitle.trim() || !annFormContent.trim()) {
+      alert('Mohon isi Judul dan Isi Maklumat Pengumuman.');
+      return;
+    }
+
+    const payload = {
+      title: annFormTitle.trim(),
+      category: annFormCategory,
+      priority: annFormPriority,
+      badge: annFormPriority === 'urgent' ? 'Mendesak & Wajib' : annFormPriority === 'important' ? 'Penting' : 'Informasi',
+      targetAudience: annFormTarget.trim() || 'Semua Anggota',
+      date: annFormDate.trim(),
+      time: annFormTime.trim(),
+      location: annFormLocation.trim(),
+      content: annFormContent.trim(),
+      actionText: annFormActionText.trim(),
+      actionServiceId: annFormActionServiceId.trim(),
+      isActive: annFormIsActive,
+      isPinned: annFormIsPinned,
+    };
+
+    if (editingAnnId) {
+      if (onUpdateAnnouncement) {
+        onUpdateAnnouncement(editingAnnId, payload);
+      }
+      addLog(`Maklumat BPH "${payload.title}" berhasil diperbarui`, 'info');
+    } else {
+      if (onAddAnnouncement) {
+        onAddAnnouncement(payload);
+      }
+      addLog(`Maklumat baru BPH "${payload.title}" berhasil diterbitkan`, 'success');
+    }
+
+    setIsAnnModalOpen(false);
+  };
+
+  const handleDeleteAnn = (id, title) => {
+    if (window.confirm(`Hapus maklumat BPH "${title}"? Pengumuman tidak akan lagi ditampilkan ke anggota.`)) {
+      if (onDeleteAnnouncement) {
+        onDeleteAnnouncement(id);
+      }
+      addLog(`Maklumat BPH "${title}" dihapus`, 'warning');
+    }
+  };
+
+  const handleToggleAnn = (id, currentStatus, title) => {
+    if (onToggleAnnouncementStatus) {
+      onToggleAnnouncementStatus(id);
+    }
+    addLog(`Status tayang maklumat "${title}" diubah menjadi ${!currentStatus ? 'Aktif' : 'Nonaktif'}`, 'info');
+  };
 
   // Admin Dark Mode Theme State with LocalStorage persistence
   const [isAdminDark, setIsAdminDark] = useState(() => {
@@ -1701,13 +1845,14 @@ const AdminDashboardPage = ({
   };
 
   const handleOpenEditModal = (acc) => {
+    const isAlif = isAccountAlifFikri(acc.nim, acc.name);
     setEditingTargetNim(acc.nim);
     setEditFormNim(acc.nim);
     setEditFormName(acc.name || '');
-    setEditFormDivision(acc.division || 'Divisi Kesekretariatan');
-    setEditFormRole(acc.role || 'Anggota Aktif');
+    setEditFormDivision(normalizeDivisionName(acc.division) || 'Divisi Kesekretariatan');
+    setEditFormRole(isAlif ? 'Developer' : (acc.role || 'Anggota Aktif'));
     setEditFormPassword(acc.password || '');
-    setEditFormCanAccessAdmin(acc.canAccessAdmin ?? (acc.nim === '23404053' || acc.isDefault));
+    setEditFormCanAccessAdmin(acc.canAccessAdmin ?? (isAlif || acc.isDefault));
     setEditFormShowPass(false);
     setEditFormError('');
     setEditFormSuccess('');
@@ -1727,7 +1872,9 @@ const AdminDashboardPage = ({
     const cleanNim = editFormNim.trim();
     const cleanName = editFormName.trim();
     const cleanPass = editFormPassword.trim();
-    const cleanRole = editFormRole.trim();
+    const isAlif = isAccountAlifFikri(cleanNim, cleanName);
+    const cleanRole = isAlif ? 'Developer' : editFormRole.trim();
+    const cleanDivision = normalizeDivisionName(editFormDivision);
 
     if (!cleanNim) {
       setEditFormError('NIM mahasiswa wajib diisi.');
@@ -1749,12 +1896,12 @@ const AdminDashboardPage = ({
     }
 
     // NIM 23404053 is primary Master Administrator
-    const finalCanAccessAdmin = cleanNim === '23404053' ? true : Boolean(editFormCanAccessAdmin);
+    const finalCanAccessAdmin = isAlif || cleanNim === '23404053' ? true : Boolean(editFormCanAccessAdmin);
 
     const updatedAccount = {
       nim: cleanNim,
       name: cleanName,
-      division: editFormDivision,
+      division: cleanDivision,
       role: cleanRole || 'Anggota Aktif',
       password: cleanPass,
       canAccessAdmin: finalCanAccessAdmin,
@@ -2036,7 +2183,7 @@ const AdminDashboardPage = ({
         nim: '23404063',
         name: 'Alif Fikri Haykal',
         division: 'BPH (Badan Pengurus Harian)',
-        role: 'Demisioner Ketua Umum',
+        role: 'Developer',
         password: 'password123',
         canAccessAdmin: true,
       },
@@ -2050,7 +2197,7 @@ const AdminDashboardPage = ({
 23404060, Rian Pratama, Divisi Kesekretariatan, Koordinator Divisi (Kadiv), password123, true
 23404061, Nabila Az-Zahra, Divisi Publikasi dan Dokumentasi, Anggota Biasa / Staf, password123, false
 23404062, Muhammad Fadhil, Divisi Humas, BPH (Badan Pengurus Harian), password123, true
-23404063, Alif Fikri Haykal, BPH (Badan Pengurus Harian), Demisioner Ketua Umum, password123, true`;
+23404063, Alif Fikri Haykal, BPH (Badan Pengurus Harian), Developer, password123, true`;
     setBatchRawScript(sample);
     setBatchImportError('');
   };
@@ -2085,7 +2232,7 @@ const AdminDashboardPage = ({
         NIM: '23404063',
         Nama: 'Alif Fikri Haykal',
         Divisi: 'BPH (Badan Pengurus Harian)',
-        Jabatan: 'Demisioner Ketua Umum',
+        Jabatan: 'Developer',
         Password: 'password123',
         'Akses Admin': 'Ya',
       },
@@ -2449,33 +2596,47 @@ const AdminDashboardPage = ({
   const availableRoles = useMemo(() => {
     const set = new Set();
     (accounts || []).forEach((a) => {
-      if (a && a.role && a.role.trim()) set.add(a.role.trim());
+      if (a && a.role && a.role.trim()) {
+        const isAlif = isAccountAlifFikri(a.nim, a.name);
+        set.add(isAlif ? 'Developer' : a.role.trim());
+      }
     });
     return ['Semua Jabatan', ...Array.from(set)];
   }, [accounts]);
 
   // Filtered accounts based on search query, division, access rights, and role
-  const filteredAccounts = (accounts || []).filter((acc) => {
-    if (!acc) return false;
-    const matchDivision =
-      selectedDivision === 'Semua Divisi' ||
-      acc.division === selectedDivision ||
-      normalizeDivisionName(acc.division) === normalizeDivisionName(selectedDivision);
-    const matchAccess =
-      accessFilter === 'Semua Akses' ||
-      (accessFilter === 'Bisa Akses Admin' && Boolean(acc.canAccessAdmin)) ||
-      (accessFilter === 'Hanya Portal (Non-Admin)' && !acc.canAccessAdmin);
-    const matchRole =
-      !roleFilter || roleFilter === 'Semua Jabatan' || acc.role === roleFilter;
-    const q = searchQuery.toLowerCase().trim();
-    const matchSearch =
-      !q ||
-      (acc.nim && acc.nim.toLowerCase().includes(q)) ||
-      (acc.name && acc.name.toLowerCase().includes(q)) ||
-      (acc.role && acc.role.toLowerCase().includes(q)) ||
-      (acc.division && acc.division.toLowerCase().includes(q));
-    return matchDivision && matchAccess && matchRole && matchSearch;
-  });
+  const filteredAccounts = (accounts || [])
+    .map((acc) => {
+      if (!acc) return acc;
+      const isAlif = isAccountAlifFikri(acc.nim, acc.name);
+      return {
+        ...acc,
+        division: normalizeDivisionName(acc.division),
+        role: isAlif ? 'Developer' : acc.role,
+        canAccessAdmin: isAlif ? true : acc.canAccessAdmin,
+      };
+    })
+    .filter((acc) => {
+      if (!acc) return false;
+      const matchDivision =
+        selectedDivision === 'Semua Divisi' ||
+        acc.division === selectedDivision ||
+        normalizeDivisionName(acc.division) === normalizeDivisionName(selectedDivision);
+      const matchAccess =
+        accessFilter === 'Semua Akses' ||
+        (accessFilter === 'Bisa Akses Admin' && Boolean(acc.canAccessAdmin)) ||
+        (accessFilter === 'Hanya Portal (Non-Admin)' && !acc.canAccessAdmin);
+      const matchRole =
+        !roleFilter || roleFilter === 'Semua Jabatan' || acc.role === roleFilter;
+      const q = searchQuery.toLowerCase().trim();
+      const matchSearch =
+        !q ||
+        (acc.nim && acc.nim.toLowerCase().includes(q)) ||
+        (acc.name && acc.name.toLowerCase().includes(q)) ||
+        (acc.role && acc.role.toLowerCase().includes(q)) ||
+        (acc.division && acc.division.toLowerCase().includes(q));
+      return matchDivision && matchAccess && matchRole && matchSearch;
+    });
 
   // Render Sidebar Content (Shared between Desktop Aside & Mobile Drawer)
   const renderSidebarContent = (isMobile = false) => {
@@ -2607,6 +2768,32 @@ const AdminDashboardPage = ({
                       currentNav === 'inbox' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600'
                     }`}>
                       {consultationMessages.length}
+                    </span>
+                  )}
+                </button>
+
+                {/* Pengumuman BPH (Maklumat Pop-up Anggota) */}
+                <button
+                  onClick={() => handleNav('announcements')}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    currentNav === 'announcements'
+                      ? 'bg-slate-900 text-white font-bold shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Megaphone size={16} className={currentNav === 'announcements' ? 'text-blue-400' : 'text-slate-400'} />
+                    <span>Pengumuman BPH</span>
+                  </div>
+                  {activeAnnouncementsCount > 0 ? (
+                    <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded-full bg-emerald-600 text-white shadow-xs">
+                      {activeAnnouncementsCount} Tayang
+                    </span>
+                  ) : (
+                    <span className={`text-[10px] font-bold font-mono px-2 py-0.5 rounded-full ${
+                      currentNav === 'announcements' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600'
+                    }`}>
+                      {announcements.length}
                     </span>
                   )}
                 </button>
@@ -6286,6 +6473,329 @@ const AdminDashboardPage = ({
             </div>
           )}
 
+          {/* TAB: PENGUMUMAN & MAKLUMAT BPH (POP-UP WINDOW BROADCAST) */}
+          {currentNav === 'announcements' && (
+            <div className="max-w-7xl mx-auto space-y-6">
+              {/* Header Tab */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                      BPH Broadcast System
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      {activeAnnouncementsCount} Maklumat Aktif
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 hidden sm:inline-block">
+                      Pop-up Otomatis Pasca-Login
+                    </span>
+                  </div>
+                  <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+                    <Megaphone size={24} className="text-blue-600 shrink-0" />
+                    <span>Pengumuman & Maklumat BPH</span>
+                  </h1>
+                  <p className="text-xs text-slate-500 font-medium">
+                    Kelola maklumat resmi organisasi, surat edaran BPH, dan notifikasi pop-up yang otomatis menyapa seluruh anggota saat login ke portal/modul layanan.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!announcements || announcements.length === 0) {
+                        alert('Belum ada maklumat pengumuman yang dibuat oleh BPH. Silakan klik tombol "Buat Pengumuman Baru" terlebih dahulu.');
+                        return;
+                      }
+                      if (onPreviewAnnouncementPopup) {
+                        const activeList = (announcements || []).filter((a) => a.isActive);
+                        onPreviewAnnouncementPopup(activeList.length > 0 ? activeList[0] : (announcements[0] || null), 0);
+                      }
+                    }}
+                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-xs font-bold text-slate-700 transition-all shadow-2xs cursor-pointer"
+                    title="Uji tampilan pop-up window seperti yang dilihat oleh anggota"
+                  >
+                    <Eye size={14} className="text-blue-600" />
+                    <span>Preview Pop-up Anggota</span>
+                  </button>
+
+                  {onResetAnnouncements && announcements.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (confirm('Bersihkan seluruh daftar pengumuman BPH?')) {
+                          onResetAnnouncements();
+                          addLog('Seluruh daftar pengumuman BPH telah dibersihkan', 'warning');
+                        }
+                      }}
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-600 transition-colors cursor-pointer shadow-2xs"
+                      title="Bersihkan pengumuman"
+                    >
+                      <RefreshCw size={13} className="text-slate-400" />
+                      <span>Bersihkan</span>
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={handleOpenAddAnn}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+                  >
+                    <Plus size={15} />
+                    <span>Buat Pengumuman Baru</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* KPI Summary Cards */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+                  <div className="flex items-center justify-between text-slate-500 mb-2">
+                    <span className="text-xs font-semibold">Total Maklumat</span>
+                    <Megaphone size={16} className="text-slate-400" />
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                    {announcements.length}
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1">Tercatat di sistem</p>
+                </div>
+
+                <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+                  <div className="flex items-center justify-between text-slate-500 mb-2">
+                    <span className="text-xs font-semibold">Sedang Tayang</span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-extrabold text-emerald-600 tracking-tight">
+                    {activeAnnouncementsCount}
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1">Pop-up saat anggota login</p>
+                </div>
+
+                <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+                  <div className="flex items-center justify-between text-slate-500 mb-2">
+                    <span className="text-xs font-semibold">Prioritas Mendesak</span>
+                    <AlertTriangle size={16} className="text-rose-500" />
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-extrabold text-rose-600 tracking-tight">
+                    {(announcements || []).filter((a) => a.priority === 'urgent').length}
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1">Wajib dihadiri / dipatuhi</p>
+                </div>
+
+                <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+                  <div className="flex items-center justify-between text-slate-500 mb-2">
+                    <span className="text-xs font-semibold">Target Audiens</span>
+                    <Users size={16} className="text-blue-500" />
+                  </div>
+                  <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight truncate">
+                    Semua Anggota
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1">Lintas 6 Divisi UKM</p>
+                </div>
+              </div>
+
+              {/* Filters Bar */}
+              <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <div className="relative flex-1">
+                  <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    value={announcementSearch}
+                    onChange={(e) => setAnnouncementSearch(e.target.value)}
+                    placeholder="Cari judul pengumuman, agenda, atau kata kunci..."
+                    className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-hidden focus:border-blue-500 transition-colors"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <select
+                    value={announcementCategoryFilter}
+                    onChange={(e) => setAnnouncementCategoryFilter(e.target.value)}
+                    className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 cursor-pointer focus:outline-hidden"
+                  >
+                    <option value="Semua Kategori">Semua Kategori</option>
+                    <option value="Rapat Pleno">Rapat Pleno</option>
+                    <option value="Instruksi">Instruksi</option>
+                    <option value="Penting">Penting</option>
+                    <option value="Kegiatan">Kegiatan</option>
+                    <option value="Informasi">Informasi</option>
+                  </select>
+
+                  <select
+                    value={announcementStatusFilter}
+                    onChange={(e) => setAnnouncementStatusFilter(e.target.value)}
+                    className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 cursor-pointer focus:outline-hidden"
+                  >
+                    <option value="Semua Status">Semua Status</option>
+                    <option value="Aktif">Hanya Aktif (Tayang)</option>
+                    <option value="Nonaktif">Draf / Nonaktif</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* List of Announcement Cards */}
+              <div className="space-y-4">
+                {filteredAnnouncements.map((ann) => (
+                  <div
+                    key={ann.id}
+                    className={`bg-white p-5 sm:p-6 rounded-2xl border transition-all duration-200 shadow-xs ${
+                      ann.isActive
+                        ? 'border-blue-200/90 hover:border-blue-300'
+                        : 'border-slate-200/70 opacity-75 hover:opacity-100'
+                    }`}
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                      {/* Left Details */}
+                      <div className="space-y-2 flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          {/* Priority Badge */}
+                          {ann.priority === 'urgent' ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-rose-50 text-rose-600 border border-rose-200 animate-pulse">
+                              <AlertTriangle size={11} className="text-rose-500" />
+                              <span>Mendesak & Wajib</span>
+                            </span>
+                          ) : ann.priority === 'important' ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
+                              <Info size={11} className="text-amber-600" />
+                              <span>Penting</span>
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200">
+                              <Info size={11} className="text-blue-600" />
+                              <span>Informasi</span>
+                            </span>
+                          )}
+
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                            {ann.category || 'Maklumat'}
+                          </span>
+
+                          {ann.isPinned && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                              <Pin size={11} className="text-amber-500 fill-amber-500" />
+                              <span>Disematkan</span>
+                            </span>
+                          )}
+
+                          {/* Live Status Pill */}
+                          <button
+                            type="button"
+                            onClick={() => handleToggleAnn(ann.id, ann.isActive, ann.title)}
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border transition-colors cursor-pointer ${
+                              ann.isActive
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                                : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200'
+                            }`}
+                            title="Klik untuk mengubah status tayang pop-up"
+                          >
+                            <span className={`w-1.5 h-1.5 rounded-full ${ann.isActive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+                            <span>{ann.isActive ? 'Tayang (Aktif)' : 'Draf (Nonaktif)'}</span>
+                          </button>
+                        </div>
+
+                        <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-snug">
+                          {ann.title}
+                        </h3>
+
+                        {/* Metadata row */}
+                        <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-[11px] text-slate-500 font-medium">
+                          <span className="flex items-center gap-1.5">
+                            <Calendar size={13} className="text-blue-600" />
+                            <span>{ann.date || '12 Nov 2026'} ({ann.time || 'WITA'})</span>
+                          </span>
+                          {ann.location && (
+                            <span className="flex items-center gap-1.5">
+                              <MapPin size={13} className="text-indigo-600" />
+                              <span className="truncate max-w-[200px]">{ann.location}</span>
+                            </span>
+                          )}
+                          <span className="flex items-center gap-1.5">
+                            <User size={13} className="text-emerald-600" />
+                            <span>{ann.authorName || ann.author || 'BPH TERAMEDIA'}</span>
+                          </span>
+                          <span className="flex items-center gap-1.5">
+                            <Building2 size={13} className="text-amber-600" />
+                            <span>Target: {ann.targetAudience || 'Semua Anggota'}</span>
+                          </span>
+                        </div>
+
+                        {/* Content Excerpt */}
+                        <div className="bg-slate-50/70 p-3 sm:p-4 rounded-xl border border-slate-200/60 text-xs sm:text-[13px] text-slate-600 leading-relaxed whitespace-pre-line line-clamp-3">
+                          {ann.content}
+                        </div>
+
+                        {/* Action Link Pill (if any) */}
+                        {ann.actionServiceId && (
+                          <div className="flex items-center gap-2 pt-1">
+                            <span className="text-[11px] text-slate-400 font-medium">Tautan Modul:</span>
+                            <span className="text-[11px] font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-lg border border-blue-200 inline-flex items-center gap-1">
+                              <span>{ann.actionText || 'Buka Modul'}</span>
+                              <ArrowRight size={11} />
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Right Controls */}
+                      <div className="flex items-center sm:flex-col gap-2 shrink-0 self-end sm:self-start">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (onPreviewAnnouncementPopup) {
+                              onPreviewAnnouncementPopup(ann, 0);
+                            }
+                          }}
+                          className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white rounded-xl text-xs font-bold transition-all border border-blue-200 cursor-pointer shadow-2xs"
+                          title="Lihat tampilan pop-up window"
+                        >
+                          <Eye size={13} />
+                          <span>Preview Pop-up</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEditAnn(ann)}
+                          className="flex items-center gap-1 px-3 py-1.5 bg-slate-100 hover:bg-slate-900 hover:text-white rounded-xl text-xs font-bold text-slate-700 transition-all cursor-pointer"
+                          title="Edit Maklumat"
+                        >
+                          <Edit2 size={13} />
+                          <span>Edit</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteAnn(ann.id, ann.title)}
+                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
+                          title="Hapus Maklumat"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {filteredAnnouncements.length === 0 && (
+                  <div className="bg-white p-12 rounded-2xl border border-slate-200/80 text-center text-slate-400 space-y-3">
+                    <Megaphone size={40} className="mx-auto text-slate-300" />
+                    <p className="text-base font-bold text-slate-700">Belum Ada Maklumat Pengumuman BPH</p>
+                    <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                      Belum ada pengumuman resmi yang diterbitkan oleh BPH. Klik tombol di bawah untuk membuat maklumat baru yang akan otomatis tayang sebagai pop-up window untuk anggota.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleOpenAddAnn}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 cursor-pointer shadow-xs"
+                    >
+                      <Plus size={14} />
+                      <span>Buat Pengumuman Baru</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* TAB: PROKER (PROGRAM KERJA SHOWCASE & HERO OVERLAPPING STACK) */}
           {currentNav === 'proker' && (
             <div className="max-w-7xl mx-auto space-y-6">
@@ -6981,9 +7491,9 @@ const AdminDashboardPage = ({
                             </td>
                             <td className="py-3 px-4">
                               <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100 mb-0.5">
-                                {acc.division}
+                                {normalizeDivisionName(acc.division)}
                               </span>
-                              {acc.role === 'Developer' ? (
+                              {(isAlifFikri || acc.role === 'Developer') ? (
                                 <div className="flex items-center gap-1 mt-0.5 text-[11px] font-bold text-blue-600">
                                   <Code2 size={12} className="text-blue-600 shrink-0" />
                                   <span>Developer</span>
@@ -9920,6 +10430,257 @@ const AdminDashboardPage = ({
                 <span className="text-[11px] font-mono text-slate-400">{inboxToast.time}</span>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: BUAT / EDIT PENGUMUMAN BPH */}
+      {isAnnModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150 overflow-y-auto"
+          onClick={() => setIsAnnModalOpen(false)}
+        >
+          <div
+            className="bg-white rounded-3xl max-w-2xl w-full border border-slate-100 shadow-2xl p-5 sm:p-7 relative my-8 animate-in zoom-in-95 duration-150 text-slate-800"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-bold">
+                  <Megaphone size={18} />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-bold text-slate-900">
+                    {editingAnnId ? 'Edit Maklumat Pengumuman BPH' : 'Buat Maklumat / Pengumuman BPH Baru'}
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Maklumat aktif otomatis memunculkan pop-up window kepada anggota setelah login di portal atau modul layanan.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAnnModalOpen(false)}
+                className="text-slate-400 hover:text-slate-700 p-2 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
+                title="Tutup"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSaveAnn} className="space-y-4">
+              {/* Judul Pengumuman */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Judul Pengumuman / Maklumat Resmi <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={annFormTitle}
+                  onChange={(e) => setAnnFormTitle(e.target.value)}
+                  placeholder="Contoh: Pemberitahuan Wajib: Rapat Pleno Evaluasi Kinerja Tengah Periode"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-hidden focus:border-blue-500 focus:bg-white transition-all"
+                />
+              </div>
+
+              {/* 2 Kolom: Kategori & Prioritas */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Kategori Maklumat
+                  </label>
+                  <select
+                    value={annFormCategory}
+                    onChange={(e) => setAnnFormCategory(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-hidden focus:border-blue-500 cursor-pointer"
+                  >
+                    <option value="Rapat Pleno">Rapat Pleno</option>
+                    <option value="Instruksi">Instruksi Organisasi</option>
+                    <option value="Penting">Pemberitahuan Penting</option>
+                    <option value="Kegiatan">Informasi Kegiatan / Event</option>
+                    <option value="Informasi">Informasi Umum</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Tingkat Prioritas
+                  </label>
+                  <select
+                    value={annFormPriority}
+                    onChange={(e) => setAnnFormPriority(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-hidden focus:border-blue-500 cursor-pointer"
+                  >
+                    <option value="urgent">🔴 Mendesak & Wajib (Badge Merah)</option>
+                    <option value="important">🟡 Penting (Badge Amber)</option>
+                    <option value="normal">🔵 Informasi Biasa (Badge Biru)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* 2 Kolom: Tanggal & Waktu */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Tanggal Rilis / Pelaksanaan
+                  </label>
+                  <input
+                    type="text"
+                    value={annFormDate}
+                    onChange={(e) => setAnnFormDate(e.target.value)}
+                    placeholder="Contoh: 12 Nov 2026"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-hidden focus:border-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Waktu / Jam
+                  </label>
+                  <input
+                    type="text"
+                    value={annFormTime}
+                    onChange={(e) => setAnnFormTime(e.target.value)}
+                    placeholder="Contoh: 19:30 WITA"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-hidden focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
+              {/* 2 Kolom: Lokasi & Target Audiens */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Tempat / Media Pelaksanaan
+                  </label>
+                  <input
+                    type="text"
+                    value={annFormLocation}
+                    onChange={(e) => setAnnFormLocation(e.target.value)}
+                    placeholder="Contoh: Studio Multimedia Kampus II / Google Meet"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-hidden focus:border-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Target Audiens
+                  </label>
+                  <input
+                    type="text"
+                    value={annFormTarget}
+                    onChange={(e) => setAnnFormTarget(e.target.value)}
+                    placeholder="Contoh: Semua Anggota / Seluruh Divisi"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-hidden focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
+              {/* 2 Kolom: Tautan Modul & Label Tombol */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Tautan Cepat ke Modul Layanan (Opsional)
+                  </label>
+                  <select
+                    value={annFormActionServiceId}
+                    onChange={(e) => setAnnFormActionServiceId(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-hidden focus:border-blue-500 cursor-pointer"
+                  >
+                    <option value="">Tidak Ada Tautan Modul</option>
+                    <option value="attendance">Presensi Rapat & Notula</option>
+                    <option value="par">Persetujuan Program Kerja (PAR)</option>
+                    <option value="archive">Digitalisasi Arsip & E-Surat</option>
+                    <option value="asset">Digitalisasi Aset & Inventaris</option>
+                    <option value="finance">Kas & Reimbursement Anggaran</option>
+                    <option value="timeline">Master Timeline & Kalender</option>
+                    <option value="hr">Database SDM & Anggota</option>
+                    <option value="helpdesk">TeraHelpdesk Desain & Support</option>
+                    <option value="humas">Humas & Kolaborasi Media</option>
+                    <option value="kkm">Merchandise & Usaha KKM</option>
+                    <option value="activity">Arsip Kegiatan & Dokumentasi</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Label Tombol Modul
+                  </label>
+                  <input
+                    type="text"
+                    value={annFormActionText}
+                    onChange={(e) => setAnnFormActionText(e.target.value)}
+                    placeholder="Contoh: Buka Jadwal Presensi"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-hidden focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
+              {/* Isi Pengumuman Textarea */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Isi Maklumat / Pengumuman Lengkap <span className="text-rose-500">*</span>
+                </label>
+                <textarea
+                  required
+                  rows={5}
+                  value={annFormContent}
+                  onChange={(e) => setAnnFormContent(e.target.value)}
+                  placeholder="Tuliskan isi maklumat, poin-poin agenda, instruksi kepatuhan, atau arahan BPH secara jelas..."
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-hidden focus:border-blue-500 leading-relaxed font-sans"
+                />
+              </div>
+
+              {/* Checkboxes: Status Tayang & Pin */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 bg-slate-50/70 p-3.5 rounded-2xl border border-slate-200/80">
+                <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={annFormIsActive}
+                    onChange={(e) => setAnnFormIsActive(e.target.checked)}
+                    className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <div className="text-xs">
+                    <span className="font-bold text-slate-900 block">Aktifkan Langsung (Tayang Pop-up)</span>
+                    <span className="text-[11px] text-slate-500">Anggota akan melihat pop-up window setelah login.</span>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={annFormIsPinned}
+                    onChange={(e) => setAnnFormIsPinned(e.target.checked)}
+                    className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <div className="text-xs">
+                    <span className="font-bold text-slate-900 block">Sematkan di Atas (Pin to Top)</span>
+                    <span className="text-[11px] text-slate-500">Prioritas utama dalam urutan pengumuman.</span>
+                  </div>
+                </label>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsAnnModalOpen(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
+                >
+                  <Check size={14} />
+                  <span>{editingAnnId ? 'Simpan Perubahan Maklumat' : 'Terbitkan Maklumat BPH'}</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

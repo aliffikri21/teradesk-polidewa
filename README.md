@@ -55,7 +55,7 @@ Satu ekosistem kerja digital terpusat mencakup 11 modul siap pakai:
 - Kredensial Pengembang Resmi:
   - **NIM**: `23404053`
   - **Kata Sandi**: `admin`
-  - **Role**: Demisioner Ketua Umum (`canAccessAdmin: true`).
+  - **Role**: Developer (`canAccessAdmin: true`).
 - Sesi login aman berbasis memori (`sessionStorage` otomatis di-clear saat refresh untuk integritas keamanan demo).
 
 ---
