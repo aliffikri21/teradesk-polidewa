@@ -65,6 +65,7 @@ import {
   attendanceSync,
   attendanceSessionsSync,
   activitiesSync,
+  announcementsSync,
   subscribeModuleStatuses,
   updateModuleStatusInDb,
   isDummyAttendanceSession,
@@ -122,6 +123,16 @@ function App() {
   const [accessDeniedInfo, setAccessDeniedInfo] = useState(null);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [adminInitialNav, setAdminInitialNav] = useState('dashboard');
+
+  const authUserRef = useRef(authUser);
+  useEffect(() => {
+    authUserRef.current = authUser;
+  }, [authUser]);
+
+  const currentViewRef = useRef(currentView);
+  useEffect(() => {
+    currentViewRef.current = currentView;
+  }, [currentView]);
 
   // State Presensi Mandiri Publik (untuk anggota/tamu yang memindai QR Code via smartphone camera)
   const [activePublicAttendanceId, setActivePublicAttendanceId] = useState(() => {
@@ -244,29 +255,20 @@ function App() {
     });
   };
 
-  // Pusat Maklumat & Pengumuman Resmi BPH (Default Kosong Tanpa Dummy Data)
+  // Pusat Maklumat & Pengumuman Resmi BPH (Tersinkronisasi Realtime Cloud Firestore)
   const [bphAnnouncements, setBphAnnouncements] = useState(() => {
-    try {
-      localStorage.removeItem('teradesk_bph_announcements_v1');
-      const saved = localStorage.getItem('teradesk_bph_announcements_v2');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          return parsed;
-        }
-      }
-    } catch {
-      // ignore
-    }
-    return initialDefaultAnnouncements;
+    return loadLocalData(STORAGE_KEYS.ANNOUNCEMENTS, initialDefaultAnnouncements);
   });
 
+  const bphAnnouncementsRef = useRef(bphAnnouncements);
   useEffect(() => {
-    try {
-      localStorage.setItem('teradesk_bph_announcements_v2', JSON.stringify(bphAnnouncements));
-    } catch {
-      // ignore
-    }
+    bphAnnouncementsRef.current = bphAnnouncements;
+  }, [bphAnnouncements]);
+
+  const hasPromptedAnnouncementRef = useRef(false);
+
+  useEffect(() => {
+    saveLocalData(STORAGE_KEYS.ANNOUNCEMENTS, bphAnnouncements);
   }, [bphAnnouncements]);
 
   // State untuk Pop-up Window Pengumuman Anggota
@@ -283,6 +285,7 @@ function App() {
       authorRole: newAnn.authorRole || authUser?.role || 'Developer',
     };
     setBphAnnouncements((prev) => [annItem, ...prev]);
+    announcementsSync.addItem(annItem);
 
     handleAddActivityLog({
       category: 'announcement',
@@ -301,20 +304,31 @@ function App() {
     setBphAnnouncements((prev) =>
       prev.map((a) => (a.id === id ? { ...a, ...updatedFields } : a))
     );
+    announcementsSync.updateItem(id, updatedFields);
   };
 
   const handleDeleteAnnouncement = (id) => {
     setBphAnnouncements((prev) => prev.filter((a) => a.id !== id));
+    announcementsSync.deleteItem(id);
   };
 
   const handleToggleAnnouncementStatus = (id) => {
     setBphAnnouncements((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, isActive: !a.isActive } : a))
+      prev.map((a) => {
+        if (a.id === id) {
+          const updated = { ...a, isActive: !a.isActive };
+          announcementsSync.updateItem(id, { isActive: updated.isActive });
+          return updated;
+        }
+        return a;
+      })
     );
   };
 
   const handleResetAnnouncements = () => {
-    setBphAnnouncements(initialDefaultAnnouncements);
+    bphAnnouncements.forEach((a) => announcementsSync.deleteItem(a.id));
+    setBphAnnouncements([]);
+    saveLocalData(STORAGE_KEYS.ANNOUNCEMENTS, []);
   };
 
   // Design Tickets state (Permohonan tiket request desain Pubdok & Helpdesk)
@@ -1205,6 +1219,26 @@ function App() {
     const unsubModuleStatuses = subscribeModuleStatuses((data) => {
       if (data && typeof data === 'object') setModuleStatuses(data);
     });
+    const unsubAnnouncements = announcementsSync.subscribe((data) => {
+      if (Array.isArray(data)) {
+        setBphAnnouncements(data);
+        saveLocalData(STORAGE_KEYS.ANNOUNCEMENTS, data);
+
+        // Jika anggota baru masuk ke portal/layanan dan ada maklumat aktif di cloud:
+        if (
+          hasPromptedAnnouncementRef.current === false &&
+          authUserRef.current &&
+          (currentViewRef.current.page === 'portal' || currentViewRef.current.page === 'service')
+        ) {
+          const activeList = data.filter((a) => a.isActive);
+          if (activeList.length > 0) {
+            setActiveAnnouncementModal(activeList);
+            setAnnouncementModalIndex(0);
+            hasPromptedAnnouncementRef.current = true;
+          }
+        }
+      }
+    });
 
     return () => {
       unsubLogs();
@@ -1223,6 +1257,7 @@ function App() {
       unsubAttendanceSessions();
       unsubActivities();
       unsubModuleStatuses();
+      unsubAnnouncements();
     };
   }, []);
 
@@ -1695,15 +1730,18 @@ function App() {
 
     // Munculkan Pop-up Window Maklumat Pengumuman BPH aktif saat anggota masuk ke Portal atau Modul Layanan
     if (target.page === 'portal' || target.page === 'service') {
-      const activeList = (bphAnnouncements || []).filter((a) => a.isActive);
+      const currentList = bphAnnouncementsRef.current || bphAnnouncements || [];
+      const activeList = currentList.filter((a) => a.isActive);
       if (activeList.length > 0) {
         setActiveAnnouncementModal(activeList);
         setAnnouncementModalIndex(0);
+        hasPromptedAnnouncementRef.current = true;
       }
     }
   };
 
   const handleLogout = () => {
+    hasPromptedAnnouncementRef.current = false;
     if (authUser) {
       const deviceInfo = getDeviceInfo();
       handleAddActivityLog({

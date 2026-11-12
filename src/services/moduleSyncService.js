@@ -35,6 +35,7 @@ export const STORAGE_KEYS = {
   ATTENDANCE_SESSIONS: 'teradesk_attendance_sessions_v5',
   ACTIVITIES: 'teradesk_activities_archive_v1',
   MODULE_STATUSES: 'teradesk_module_statuses_v1',
+  ANNOUNCEMENTS: 'teradesk_bph_announcements_v2',
 };
 
 // Filter data dummy presensi lama agar tidak bangkit kembali
@@ -184,19 +185,23 @@ const createCollectionSync = ({ collectionName, storageKey, seedData }) => {
 
           if (isFirst) {
             isFirst = false;
-            // Jika koleksi cloud masih kosong, lakukan inisialisasi dari seed data
-            if (cloudItems.length === 0 && Array.isArray(seedData) && seedData.length > 0) {
-              for (const item of seedData) {
-                try {
-                  const cleanItem = sanitizeForFirestore(item);
-                  await setDoc(doc(db, collectionName, String(item.id)), cleanItem, { merge: true });
-                } catch (e) {
-                  console.warn(`[Firestore Seed Error: ${collectionName}]:`, e);
+            // Jika koleksi cloud masih kosong, lakukan inisialisasi dari local data atau seed data
+            if (cloudItems.length === 0) {
+              const localSaved = loadLocalData(storageKey, seedData);
+              const initialToSync = Array.isArray(localSaved) && localSaved.length > 0 ? localSaved : seedData;
+              if (Array.isArray(initialToSync) && initialToSync.length > 0) {
+                for (const item of initialToSync) {
+                  try {
+                    const cleanItem = sanitizeForFirestore(item);
+                    await setDoc(doc(db, collectionName, String(item.id)), cleanItem, { merge: true });
+                  } catch (e) {
+                    console.warn(`[Firestore Seed Error: ${collectionName}]:`, e);
+                  }
                 }
+                onUpdate(initialToSync);
+                saveLocalData(storageKey, initialToSync);
+                return;
               }
-              onUpdate(seedData);
-              saveLocalData(storageKey, seedData);
-              return;
             }
           }
 
@@ -365,4 +370,11 @@ export const updateModuleStatusInDb = async (newStatuses) => {
     }
   }
 };
+
+// 12. BPH OFFICIAL ANNOUNCEMENTS / MAKLUMAT ORGANISASI (REALTIME CLOUD SYNC)
+export const announcementsSync = createCollectionSync({
+  collectionName: 'bph_announcements',
+  storageKey: STORAGE_KEYS.ANNOUNCEMENTS,
+  seedData: [],
+});
 

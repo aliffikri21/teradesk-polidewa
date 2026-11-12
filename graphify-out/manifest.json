@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "src/App.jsx": {
-    "mtime": 1794485770.2585845,
-    "seen": 1794485873.2096872,
-    "ast_hash": "192c5ac7cf1b7f19ff31edeceaf61aed",
+    "mtime": 1794486648.5042388,
+    "seen": 1794486714.7466645,
+    "ast_hash": "8b7d5e1a5b61389f54c7f20e71c7da57",
     "semantic_hash": ""
   },
   "src/components/AboutUs.jsx": {
@@ -864,8 +864,8 @@
     "semantic_hash": ""
   },
   "src/components/admin/AdminDashboardPage.jsx": {
-    "mtime": 1794485813.1477442,
-    "seen": 1794485873.2096872,
+    "mtime": 1794485913.5014381,
+    "seen": 1794486714.7466645,
     "ast_hash": "c54decd23fe7c47c90a920501a975f79",
     "semantic_hash": ""
   },
@@ -1050,9 +1050,9 @@
     "semantic_hash": ""
   },
   "src/services/moduleSyncService.js": {
-    "mtime": 1794120720.8615801,
-    "seen": 1794121316.8490973,
-    "ast_hash": "002893d51776bb183b1e6665dc60d3b1",
+    "mtime": 1794486483.0368333,
+    "seen": 1794486714.7476618,
+    "ast_hash": "bd6f40c5a750d01f6c6f1f8d78a7a533",
     "semantic_hash": ""
   },
   "src/components/common/CommandPalette.jsx": {
@@ -1098,8 +1098,8 @@
     "semantic_hash": ""
   },
   "src/data/defaultAnnouncements.js": {
-    "mtime": 1794485758.140397,
-    "seen": 1794485873.2096872,
+    "mtime": 1794485913.7540903,
+    "seen": 1794486714.7466645,
     "ast_hash": "d7ceb4b4be53c49124babfd6efafb64d",
     "semantic_hash": ""
   }
