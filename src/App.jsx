@@ -283,6 +283,7 @@ function App() {
       author: newAnn.author || 'BPH TERAMEDIA',
       authorName: newAnn.authorName || authUser?.name || 'Alif Fikri Haykal',
       authorRole: newAnn.authorRole || authUser?.role || 'Developer',
+      readBy: newAnn.readBy || [],
     };
     setBphAnnouncements((prev) => [annItem, ...prev]);
     announcementsSync.addItem(annItem);
@@ -329,6 +330,43 @@ function App() {
     bphAnnouncements.forEach((a) => announcementsSync.deleteItem(a.id));
     setBphAnnouncements([]);
     saveLocalData(STORAGE_KEYS.ANNOUNCEMENTS, []);
+  };
+
+  const handleAcknowledgeAnnouncement = (annId) => {
+    if (!authUser || !authUser.nim) return;
+    const currentNim = String(authUser.nim).trim();
+    const readerRecord = {
+      nim: currentNim,
+      name: authUser.name || 'Pengurus',
+      role: authUser.role || 'Anggota',
+      division: authUser.division || 'BPH',
+      readAt: new Date().toISOString(),
+    };
+
+    setBphAnnouncements((prev) =>
+      prev.map((ann) => {
+        if (ann.id !== annId) return ann;
+        const existing = Array.isArray(ann.readBy) ? ann.readBy : [];
+        if (existing.some((r) => String(r.nim).trim() === currentNim)) {
+          return ann;
+        }
+        const updatedReadBy = [...existing, readerRecord];
+        announcementsSync.updateItem(annId, { readBy: updatedReadBy });
+        return { ...ann, readBy: updatedReadBy };
+      })
+    );
+
+    handleAddActivityLog({
+      category: 'announcement',
+      type: 'success',
+      userName: authUser.name || 'Pengurus',
+      userNim: authUser.nim,
+      userRole: authUser.role || 'Anggota',
+      userDivision: authUser.division || 'BPH',
+      moduleName: 'Pengumuman BPH',
+      event: `Konfirmasi Maklumat: ${authUser.name}`,
+      details: `Pengurus NIM ${authUser.nim} telah membaca & mengonfirmasi maklumat resmi BPH.`,
+    });
   };
 
   // Design Tickets state (Permohonan tiket request desain Pubdok & Helpdesk)
@@ -2267,6 +2305,8 @@ function App() {
         announcements={activeAnnouncementModal || []}
         initialIndex={announcementModalIndex}
         onNavigateToService={(serviceId) => handleNavigate('service', serviceId)}
+        authUser={authUser}
+        onAcknowledge={handleAcknowledgeAnnouncement}
       />
     </div>
   );

@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "src/App.jsx": {
-    "mtime": 1794486648.5042388,
-    "seen": 1794486714.7466645,
-    "ast_hash": "8b7d5e1a5b61389f54c7f20e71c7da57",
+    "mtime": 1794493448.9891655,
+    "seen": 1794493760.4510024,
+    "ast_hash": "fd0961b7019ec27d4b88e36df027aefe",
     "semantic_hash": ""
   },
   "src/components/AboutUs.jsx": {
@@ -864,9 +864,9 @@
     "semantic_hash": ""
   },
   "src/components/admin/AdminDashboardPage.jsx": {
-    "mtime": 1794485913.5014381,
-    "seen": 1794486714.7466645,
-    "ast_hash": "c54decd23fe7c47c90a920501a975f79",
+    "mtime": 1794493703.3606231,
+    "seen": 1794493760.4510024,
+    "ast_hash": "6339897eee9859851ba2581210d6c09e",
     "semantic_hash": ""
   },
   "public/logo-teramedia.png": {
@@ -1050,8 +1050,8 @@
     "semantic_hash": ""
   },
   "src/services/moduleSyncService.js": {
-    "mtime": 1794486483.0368333,
-    "seen": 1794486714.7476618,
+    "mtime": 1794487057.6254106,
+    "seen": 1794493760.4510024,
     "ast_hash": "bd6f40c5a750d01f6c6f1f8d78a7a533",
     "semantic_hash": ""
   },
@@ -1092,9 +1092,9 @@
     "semantic_hash": ""
   },
   "src/components/common/BphAnnouncementModal.jsx": {
-    "mtime": 1794486983.7401223,
-    "seen": 1794487040.5366838,
-    "ast_hash": "0d31085b85e19a78357fd601085b374a",
+    "mtime": 1794493404.1447124,
+    "seen": 1794493760.4510024,
+    "ast_hash": "090b869ff7b47c76ee28bdbd50e0aad9",
     "semantic_hash": ""
   },
   "src/data/defaultAnnouncements.js": {

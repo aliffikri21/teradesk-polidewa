@@ -23,6 +23,8 @@ const BphAnnouncementModal = ({
   announcements = [],
   initialIndex = 0,
   onNavigateToService,
+  authUser,
+  onAcknowledge,
 }) => {
   const [internalIndex, setInternalIndex] = useState(initialIndex);
   const [prevInitial, setPrevInitial] = useState(initialIndex);
@@ -40,6 +42,46 @@ const BphAnnouncementModal = ({
     internalIndex >= 0 && internalIndex < announcements.length ? internalIndex : 0;
   const currentAnn = announcements[safeIndex] || announcements[0];
   const hasMultiple = announcements.length > 1;
+
+  const currentNim = authUser?.nim ? String(authUser.nim).trim() : '';
+  const readerRecord = (currentAnn.readBy || []).find(
+    (r) => String(r.nim).trim() === currentNim
+  );
+  const isAlreadyAcknowledged = !!readerRecord;
+
+  const handleAcknowledgeAndClose = () => {
+    if (onAcknowledge && currentAnn) {
+      onAcknowledge(currentAnn.id);
+    }
+    onClose();
+  };
+
+  const handleActionNavigate = () => {
+    if (onAcknowledge && currentAnn) {
+      onAcknowledge(currentAnn.id);
+    }
+    onClose();
+    if (onNavigateToService) {
+      onNavigateToService(currentAnn.actionServiceId);
+    }
+  };
+
+  const formatReadTime = (isoString) => {
+    if (!isoString) return '';
+    try {
+      const d = new Date(isoString);
+      return (
+        d.toLocaleDateString('id-ID', {
+          day: 'numeric',
+          month: 'short',
+          hour: '2-digit',
+          minute: '2-digit',
+        }) + ' WITA'
+      );
+    } catch {
+      return '';
+    }
+  };
 
   const handlePrev = () => {
     setInternalIndex((prev) => (prev > 0 ? prev - 1 : announcements.length - 1));
@@ -225,15 +267,19 @@ const BphAnnouncementModal = ({
             )}
           </div>
 
-          {/* Action Buttons */}
+          {/* Action Buttons & Confirmation Status */}
           <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+            {isAlreadyAcknowledged && (
+              <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] sm:text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200">
+                <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
+                <span>Telah Dikonfirmasi ({formatReadTime(readerRecord.readAt)})</span>
+              </span>
+            )}
+
             {currentAnn.actionServiceId && onNavigateToService && (
               <button
                 type="button"
-                onClick={() => {
-                  onClose();
-                  onNavigateToService(currentAnn.actionServiceId);
-                }}
+                onClick={handleActionNavigate}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 sm:py-2 rounded-xl text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-all cursor-pointer"
               >
                 <span>{currentAnn.actionText || 'Buka Modul Terkait'}</span>
@@ -243,11 +289,15 @@ const BphAnnouncementModal = ({
 
             <button
               type="button"
-              onClick={onClose}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 transition-all shadow-xs cursor-pointer active:scale-98"
+              onClick={handleAcknowledgeAndClose}
+              className={`w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-98 ${
+                isAlreadyAcknowledged
+                  ? 'bg-slate-800 hover:bg-slate-900 text-white'
+                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+              }`}
             >
-              <CheckCircle2 size={14} className="text-emerald-400 shrink-0" />
-              <span>Saya Mengerti & Siap Laksanakan</span>
+              <CheckCircle2 size={14} className={isAlreadyAcknowledged ? 'text-emerald-400 shrink-0' : 'text-white shrink-0'} />
+              <span>{isAlreadyAcknowledged ? 'Tutup Maklumat' : 'Saya Mengerti & Siap Laksanakan'}</span>
             </button>
           </div>
         </div>
