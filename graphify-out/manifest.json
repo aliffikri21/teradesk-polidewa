@@ -24,8 +24,8 @@
     "semantic_hash": ""
   },
   "src/components/ContactModal.jsx": {
-    "mtime": 1794841896.374142,
-    "seen": 1794842157.7615552,
+    "mtime": 1794842213.0779517,
+    "seen": 1794848518.1741421,
     "ast_hash": "1718e8f5e9e8ea0e9e6a19f603797337",
     "semantic_hash": ""
   },
@@ -48,8 +48,8 @@
     "semantic_hash": ""
   },
   "src/components/Hero.jsx": {
-    "mtime": 1794842071.660505,
-    "seen": 1794842157.7615552,
+    "mtime": 1794842213.6595864,
+    "seen": 1794848518.1741421,
     "ast_hash": "7089b9457b443cc350c7b6479236c765",
     "semantic_hash": ""
   },
@@ -864,9 +864,9 @@
     "semantic_hash": ""
   },
   "src/components/admin/AdminDashboardPage.jsx": {
-    "mtime": 1794841989.7393718,
-    "seen": 1794842157.7615552,
-    "ast_hash": "a1cc624714f0a7c4f8b8b92200ddf228",
+    "mtime": 1794848458.587417,
+    "seen": 1794848518.1741421,
+    "ast_hash": "12018f100451f625a21e0261ccefa6a8",
     "semantic_hash": ""
   },
   "public/logo-teramedia.png": {

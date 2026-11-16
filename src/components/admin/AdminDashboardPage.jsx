@@ -9809,13 +9809,13 @@ const AdminDashboardPage = ({
                     value={prokerFormActionText}
                     onChange={(e) => setProkerFormActionText(e.target.value)}
                     placeholder="Contoh: cek asesmen program kerja"
-                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 font-medium focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 font-medium lowercase focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                   />
                 </div>
 
                 <div>
                   <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-                    Tautan Modul Layanan
+                    Target Modul Layanan
                   </label>
                   <select
                     value={prokerFormServiceId}
