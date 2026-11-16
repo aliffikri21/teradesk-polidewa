@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { X, Send, CheckCircle2, Building, Mail, User, MessageSquare } from 'lucide-react';
+import { X, Send, CheckCircle2, Building, Mail, User, MessageSquare, Phone } from 'lucide-react';
 
 const ContactModal = ({ isOpen, onClose, onSubmitMessage }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
     organization: '',
     message: '',
   });
@@ -18,6 +19,7 @@ const ContactModal = ({ isOpen, onClose, onSubmitMessage }) => {
       onSubmitMessage({
         name: formData.name,
         email: formData.email,
+        phone: formData.phone,
         organization: formData.organization,
         message: formData.message,
       });
@@ -27,7 +29,7 @@ const ContactModal = ({ isOpen, onClose, onSubmitMessage }) => {
 
   const handleReset = () => {
     setSubmitted(false);
-    setFormData({ name: '', email: '', organization: '', message: '' });
+    setFormData({ name: '', email: '', phone: '', organization: '', message: '' });
     onClose();
   };
 
@@ -63,13 +65,24 @@ const ContactModal = ({ isOpen, onClose, onSubmitMessage }) => {
             <p className="text-xs sm:text-sm text-slate-500 mb-6 max-w-sm mx-auto leading-relaxed">
               Terima kasih telah menghubungi TERAMEDIA. Pesan dan permohonan konsultasi Anda telah tersimpan dan terkirim langsung ke Kotak Masuk Dashboard Admin.
             </p>
-            <button
-              type="button"
-              onClick={handleReset}
-              className="bg-slate-950 hover:bg-slate-800 text-white font-bold px-6 py-2.5 rounded-xl text-xs sm:text-sm transition-all shadow-md active:scale-95 cursor-pointer"
-            >
-              Tutup Jendela
-            </button>
+            <div className="flex flex-col sm:flex-row gap-2.5 justify-center">
+              <a
+                href="https://wa.me/6285243306388?text=Halo%20Admin%20TERAMEDIA,%20saya%20telah%20mengirimkan%20permohonan%20konsultasi%20melalui%20formulir%20TeraDesk."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold px-5 py-2.5 rounded-xl text-xs sm:text-sm transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Phone size={14} />
+                <span>Konfirmasi via WhatsApp</span>
+              </a>
+              <button
+                type="button"
+                onClick={handleReset}
+                className="bg-slate-950 hover:bg-slate-800 text-white font-bold px-6 py-2.5 rounded-xl text-xs sm:text-sm transition-all shadow-md active:scale-95 cursor-pointer"
+              >
+                Tutup Jendela
+              </button>
+            </div>
           </div>
         ) : (
           <div className="relative z-10">
@@ -122,6 +135,23 @@ const ContactModal = ({ isOpen, onClose, onSubmitMessage }) => {
 
               <div>
                 <label className="text-xs font-semibold text-slate-700 block mb-1.5">
+                  Nomor WhatsApp / HP
+                </label>
+                <div className="relative">
+                  <Phone size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    id="contact-phone"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    placeholder="Contoh: 0852-4330-6388"
+                    className="w-full bg-slate-50/80 hover:bg-slate-50 focus:bg-white border border-slate-200 text-slate-900 placeholder-slate-400 rounded-xl pl-10 pr-4 py-2.5 text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all min-h-[42px]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1.5">
                   Nama Organisasi / Lembaga
                 </label>
                 <div className="relative">
@@ -163,6 +193,27 @@ const ContactModal = ({ isOpen, onClose, onSubmitMessage }) => {
                 <Send size={15} />
                 <span>Kirimkan Permintaan</span>
               </button>
+
+              <div className="relative my-3 pt-1">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-slate-200" />
+                </div>
+                <div className="relative flex justify-center text-xs">
+                  <span className="bg-white px-3 text-slate-400 font-semibold text-[10px] uppercase tracking-wider">
+                    Atau Hubungi Langsung
+                  </span>
+                </div>
+              </div>
+
+              <a
+                href="https://wa.me/6285243306388?text=Halo%20Admin%20TERAMEDIA,%20saya%20ingin%20konsultasi%20mengenai%20layanan%20organisasi%20TeraDesk."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold py-2.5 px-4 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-sm active:scale-[0.99] cursor-pointer"
+              >
+                <Phone size={15} />
+                <span>Chat WhatsApp (+62 852-4330-6388)</span>
+              </a>
             </form>
           </div>
         )}

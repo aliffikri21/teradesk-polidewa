@@ -1422,6 +1422,7 @@ function App() {
       id: `MSG-2026-${String(currentList.length + 1).padStart(3, '0')}`,
       name: newMessage.name?.trim() || 'Tamu Organisasi',
       email: newMessage.email?.trim() || 'tamu@dewantara.ac.id',
+      phone: newMessage.phone?.trim() || '-',
       organization: newMessage.organization?.trim() || 'Umum / Eksternal',
       message: newMessage.message?.trim() || '(Tanpa pesan khusus)',
       date: dateFormatted,

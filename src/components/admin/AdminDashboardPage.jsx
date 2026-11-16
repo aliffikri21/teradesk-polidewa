@@ -59,6 +59,7 @@ import {
   Send,
   Laptop,
   Smartphone,
+  Phone,
   Tablet,
   Volume2,
   VolumeX,
@@ -6596,6 +6597,20 @@ const AdminDashboardPage = ({
                                     <Mail size={14} />
                                   </a>
 
+                                  {msg.phone && msg.phone !== '-' && (
+                                    <a
+                                      href={`https://wa.me/${msg.phone.replace(/[^0-9]/g, '').replace(/^0/, '62')}?text=${encodeURIComponent(
+                                        `Halo ${msg.name}, kami dari Tim TERAMEDIA menanggapi permohonan konsultasi TeraDesk dari ${msg.organization}.`
+                                      )}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer"
+                                      title={`Chat WhatsApp ke ${msg.phone}`}
+                                    >
+                                      <Phone size={14} />
+                                    </a>
+                                  )}
+
                                   <button
                                     onClick={() => {
                                       if (confirm(`Hapus pesan dari ${msg.name}?`)) {
@@ -9989,7 +10004,26 @@ const AdminDashboardPage = ({
                   {selectedMessage.email}
                 </a>
               </div>
-              <div className="sm:col-span-2">
+              <div>
+                <span className="text-[11px] text-slate-400 font-semibold block mb-0.5">Nomor WhatsApp / HP</span>
+                {selectedMessage.phone && selectedMessage.phone !== '-' ? (
+                  <a
+                    href={`https://wa.me/${selectedMessage.phone.replace(/[^0-9]/g, '').replace(/^0/, '62')}?text=${encodeURIComponent(
+                      `Halo ${selectedMessage.name}, kami dari Tim Pengembang TERAMEDIA menanggapi permohonan konsultasi TeraDesk Anda.`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-bold text-emerald-600 hover:underline inline-flex items-center gap-1.5"
+                  >
+                    <Phone size={12} />
+                    <span>{selectedMessage.phone}</span>
+                    <span className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-normal">Chat WA</span>
+                  </a>
+                ) : (
+                  <span className="text-slate-400 font-medium">-</span>
+                )}
+              </div>
+              <div>
                 <span className="text-[11px] text-slate-400 font-semibold block mb-0.5">Organisasi / Lembaga</span>
                 <span className="font-bold text-slate-800">{selectedMessage.organization}</span>
               </div>
@@ -10056,7 +10090,20 @@ const AdminDashboardPage = ({
                 <span>Hapus Pesan</span>
               </button>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                {selectedMessage.phone && selectedMessage.phone !== '-' && (
+                  <a
+                    href={`https://wa.me/${selectedMessage.phone.replace(/[^0-9]/g, '').replace(/^0/, '62')}?text=${encodeURIComponent(
+                      `Halo ${selectedMessage.name}, kami dari Tim Pengembang TERAMEDIA menanggapi permohonan konsultasi TeraDesk dari ${selectedMessage.organization}.`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-2 cursor-pointer active:scale-95"
+                  >
+                    <Phone size={14} />
+                    <span>Chat WhatsApp</span>
+                  </a>
+                )}
                 <a
                   href={`mailto:${selectedMessage.email}?subject=${encodeURIComponent(
                     'Tanggapan Konsultasi TeraDesk - ' + selectedMessage.organization

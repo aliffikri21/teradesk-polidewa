@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { ArrowRight, Bookmark, ChevronLeft, ChevronRight, Menu, User, X } from 'lucide-react';
 import { initialDefaultProker } from '../data/defaultProker';
 import { initialDefaultAccounts } from '../data/defaultAccounts';
@@ -81,6 +81,44 @@ const Hero = ({
     period: 'Periode 2025-2026',
     avatarUrl: '',
   };
+
+  // Sinkronisasi metrik kartu tengah (CardSwap) secara dinamis
+  const centerCards = useMemo(() => {
+    let prokerPercent = '89%';
+    let prokerPeriod = 'Periode 2026';
+    if (Array.isArray(prokerList) && prokerList.length > 0) {
+      const selesai = prokerList.filter((p) => {
+        const s = (p.status || '').toLowerCase();
+        return s.includes('selesai') || s.includes('terlaksana');
+      }).length;
+      if (selesai > 0) {
+        prokerPercent = `${Math.round((selesai / prokerList.length) * 100)}%`;
+      } else {
+        const aktif = prokerList.filter((p) => {
+          const s = (p.status || '').toLowerCase();
+          return s.includes('aktif') || s.includes('sedang berjalan') || s.includes('berjalan');
+        }).length;
+        prokerPercent = aktif > 0 ? `${Math.round((aktif / prokerList.length) * 100)}%` : '89%';
+      }
+      const firstWithPeriod = prokerList.find((p) => p.period);
+      if (firstWithPeriod?.period) {
+        prokerPeriod = firstWithPeriod.period.includes('202')
+          ? firstWithPeriod.period
+          : `Periode ${firstWithPeriod.period}`;
+      }
+    }
+
+    return defaultCenterCards.map((card) => {
+      if (card.id === 'arsip') {
+        return {
+          ...card,
+          metricValue: prokerPercent,
+          period: prokerPeriod,
+        };
+      }
+      return card;
+    });
+  }, [prokerList]);
 
   // Filter proker yang diizinkan tampil di hero
   const effectiveProkers = prokerList && prokerList.length > 0 ? prokerList : initialDefaultProker;
@@ -591,7 +629,7 @@ const Hero = ({
               onChange={(idx) => setActiveCenterIndex(idx)}
               className="w-full"
             >
-              {defaultCenterCards.map((card, idx) => (
+              {centerCards.map((card, idx) => (
                 <Card
                   key={card.id}
                   className="p-4 sm:p-5 xl:p-6 bg-white text-slate-900 flex flex-col justify-between h-full select-none cursor-grab active:cursor-grabbing border border-slate-100 rounded-[2rem] sm:rounded-[2.25rem]"
@@ -619,7 +657,7 @@ const Hero = ({
                         <ChevronLeft size={12} />
                       </button>
                       <span className="font-bold text-slate-800 px-0.5">
-                        {idx + 1}/{defaultCenterCards.length}
+                        {idx + 1}/{centerCards.length}
                       </span>
                       <button
                         type="button"
@@ -723,7 +761,7 @@ const Hero = ({
               </button>
 
               <div className="flex items-center gap-1.5">
-                {defaultCenterCards.map((_, dotIdx) => (
+                {centerCards.map((_, dotIdx) => (
                   <button
                     key={dotIdx}
                     type="button"
