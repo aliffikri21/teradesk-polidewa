@@ -1,7 +1,7 @@
 # Graph Report - teradesk-ui-slicing  (2026-11-17)
 
 ## Corpus Check
-- 172 files · ~325,757 words
+- 172 files · ~325,772 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 60 file(s) not represented in the graph (top: .csv 53, (none) 4, .css 2)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `b7c27444`
+- Built from commit: `7243d255`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 

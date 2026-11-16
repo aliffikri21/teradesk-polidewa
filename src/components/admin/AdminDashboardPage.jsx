@@ -1273,6 +1273,13 @@ const AdminDashboardPage = ({
     return currentLogs.filter((log) => getLogDateInfo(log).monthKey === selectedLogMonth);
   }, [currentLogs, selectedLogMonth]);
 
+  // Label teks bulan log terpilih untuk tampilan UI
+  const selectedMonthLabel = useMemo(() => {
+    if (selectedLogMonth === 'all') return 'Semua Riwayat';
+    const found = availableLogMonths.find((m) => m.key === selectedLogMonth);
+    return found ? found.label : 'Bulan Berjalan (November 2026)';
+  }, [availableLogMonths, selectedLogMonth]);
+
   // --- REAL-TIME ANALYTICS CALCULATIONS FOR EXECUTIVE DASHBOARD CHARTS ---
   const realParCount = useMemo(() => {
     const base = (parSubmissions || []).length;
@@ -8125,7 +8132,7 @@ const AdminDashboardPage = ({
                             <div className="truncate">
                               <span className="block font-bold">Ekspor Bulanan</span>
                               <span className="text-[10px] text-slate-400 block truncate">
-                                {selectedLogMonth !== 'all' ? availableLogMonths.find(m => m.key === selectedLogMonth)?.label : 'Bulan Berjalan (November 2026)'}
+                                {selectedMonthLabel}
                               </span>
                             </div>
                           </div>
@@ -8209,13 +8216,13 @@ const AdminDashboardPage = ({
                 <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs flex items-center justify-between">
                   <div>
                     <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
-                      Total Jejak Audit ({selectedLogMonth === 'all' ? 'Semua' : availableLogMonths.find(m => m.key === selectedLogMonth)?.label})
+                      Total Jejak Audit ({selectedMonthLabel})
                     </span>
                     <span className="text-2xl font-black text-slate-900 mt-1 block">
                       {monthLogs.length}
                     </span>
                     <span className="text-[11px] text-slate-500 mt-0.5 block">
-                      {selectedLogMonth === 'all' ? 'Seluruh riwayat sistem' : `Aktivitas periode ${availableLogMonths.find(m => m.key === selectedLogMonth)?.label}`}
+                      {selectedLogMonth === 'all' ? 'Seluruh riwayat sistem' : `Aktivitas periode ${selectedMonthLabel}`}
                     </span>
                   </div>
                   <div className="w-11 h-11 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700">
