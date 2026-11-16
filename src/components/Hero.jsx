@@ -329,10 +329,10 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [], leadershipPr
           - Logo terpisah di kiri: Navigasi Portal mandiri (seperti logo React di React Bits)
           - Pill items di kanan: Home, Fitur, Tentang Kami
           ========================================================================= */}
-      <div className="md:hidden fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-auto w-max max-w-[calc(100vw-1.5rem)] px-1 bg-transparent border-0 shadow-none outline-none">
+      <div className="md:hidden fixed bottom-5 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-auto w-max max-w-[calc(100vw-1.5rem)] px-1 bg-transparent border-0 shadow-none outline-none">
         <PillNav
           className="bg-transparent border-0 shadow-none outline-none"
-          logo={<User size={19} className="text-white" strokeWidth={2.2} />}
+          logo={<User size={22} className="text-white" strokeWidth={2.3} />}
           logoAlt="Portal & Akun Pengurus"
           onLogoClick={() => {
             if (onNavigateToPortal) onNavigateToPortal();
@@ -356,7 +356,7 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [], leadershipPr
           }}
           theme="dark"
           layout="split"
-          size="md"
+          size="lg"
           surface="glass"
           itemStyle="pill"
           hoverEffect="fill"
