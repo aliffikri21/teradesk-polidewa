@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ArrowRight, Bookmark, ChevronLeft, ChevronRight, Menu, User, X } from 'lucide-react';
 import { initialDefaultProker } from '../data/defaultProker';
+import { initialDefaultAccounts } from '../data/defaultAccounts';
 import CardSwap, { Card } from './CardSwap';
 import PillNav from './PillNav';
 
@@ -52,7 +53,14 @@ const defaultCenterCards = [
   },
 ];
 
-const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [], leadershipProfiles }) => {
+const Hero = ({
+  onOpenContact,
+  onNavigateToPortal,
+  prokerList = [],
+  leadershipProfiles,
+  accounts = initialDefaultAccounts,
+}) => {
+  const totalMembers = Array.isArray(accounts) ? accounts.length : 0;
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState('beranda');
   const [activeProkerIndex, setActiveProkerIndex] = useState(0);
@@ -834,7 +842,7 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [], leadershipPr
               {/* Metric Value */}
               <div className="my-1.5 sm:my-2 xl:my-2.5">
                 <span className="text-2xl sm:text-3xl xl:text-4xl 2xl:text-5xl font-extrabold text-[#1d4ed8] tracking-tight">
-                  352 ++
+                  {totalMembers.toLocaleString('id-ID')}
                 </span>
                 <p className="text-[10px] sm:text-[11px] xl:text-xs 2xl:text-sm text-gray-400 font-normal mt-0.5">
                   mahasiswa/mahasiswi

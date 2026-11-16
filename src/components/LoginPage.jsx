@@ -165,7 +165,9 @@ const LoginPage = ({
 
             {/* Social Proof */}
             <div className="pt-2 flex items-center gap-3 text-xs text-slate-500">
-              <span className="font-semibold text-slate-800">352++ Mahasiswa</span>
+              <span className="font-semibold text-slate-800">
+                {(accounts?.length || 0).toLocaleString('id-ID')} Mahasiswa
+              </span>
               <span>•</span>
               <span>TERAMEDIA Politeknik Dewantara</span>
             </div>

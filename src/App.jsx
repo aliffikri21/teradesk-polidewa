@@ -2014,6 +2014,7 @@ function App() {
             }
             prokerList={prokerList}
             leadershipProfiles={leadershipProfiles}
+            accounts={registeredAccounts}
           />
 
           {/* Fitur Unggulan Section (11 Cards Grid on Light Background) */}
