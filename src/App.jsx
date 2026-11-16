@@ -317,8 +317,13 @@ function App() {
     setBphAnnouncements((prev) =>
       prev.map((a) => {
         if (a.id === id) {
-          const updated = { ...a, isActive: !a.isActive };
-          announcementsSync.updateItem(id, { isActive: updated.isActive });
+          const nextActive = !a.isActive;
+          const updated = {
+            ...a,
+            isActive: nextActive,
+            isCompleted: nextActive ? false : (a.isCompleted ?? false),
+          };
+          announcementsSync.updateItem(id, { isActive: updated.isActive, isCompleted: updated.isCompleted });
           return updated;
         }
         return a;
@@ -1262,13 +1267,20 @@ function App() {
         setBphAnnouncements(data);
         saveLocalData(STORAGE_KEYS.ANNOUNCEMENTS, data);
 
+        // Jika modal sedang terbuka di layar anggota, perbarui agar hanya menampilkan pengumuman aktif & belum selesai
+        setActiveAnnouncementModal((currentOpen) => {
+          if (!currentOpen || currentOpen.length === 0) return null;
+          const stillActive = data.filter((a) => a.isActive && !a.isCompleted && currentOpen.some((o) => o.id === a.id));
+          return stillActive.length > 0 ? stillActive : null;
+        });
+
         // Jika anggota baru masuk ke portal/layanan dan ada maklumat aktif di cloud:
         if (
           hasPromptedAnnouncementRef.current === false &&
           authUserRef.current &&
           (currentViewRef.current.page === 'portal' || currentViewRef.current.page === 'service')
         ) {
-          const activeList = data.filter((a) => a.isActive);
+          const activeList = data.filter((a) => a.isActive && !a.isCompleted);
           if (activeList.length > 0) {
             setActiveAnnouncementModal(activeList);
             setAnnouncementModalIndex(0);
@@ -1769,7 +1781,7 @@ function App() {
     // Munculkan Pop-up Window Maklumat Pengumuman BPH aktif saat anggota masuk ke Portal atau Modul Layanan
     if (target.page === 'portal' || target.page === 'service') {
       const currentList = bphAnnouncementsRef.current || bphAnnouncements || [];
-      const activeList = currentList.filter((a) => a.isActive);
+      const activeList = currentList.filter((a) => a.isActive && !a.isCompleted);
       if (activeList.length > 0) {
         setActiveAnnouncementModal(activeList);
         setAnnouncementModalIndex(0);

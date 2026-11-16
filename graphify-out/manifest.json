@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "src/App.jsx": {
-    "mtime": 1794493448.9891655,
-    "seen": 1794493760.4510024,
-    "ast_hash": "fd0961b7019ec27d4b88e36df027aefe",
+    "mtime": 1794804848.9849348,
+    "seen": 1794804859.6251645,
+    "ast_hash": "f478909c2453b2191257fe07f4abfd12",
     "semantic_hash": ""
   },
   "src/components/AboutUs.jsx": {
@@ -36,9 +36,9 @@
     "semantic_hash": ""
   },
   "src/components/FeaturesPortal.jsx": {
-    "mtime": 1794485598.457412,
-    "seen": 1794485873.2096872,
-    "ast_hash": "fa2c9fca9917f50c3b8862ed63a9ce78",
+    "mtime": 1794804849.4671578,
+    "seen": 1794804859.6251645,
+    "ast_hash": "12d9b5bd24285252c4605c70b18a9232",
     "semantic_hash": ""
   },
   "src/components/Footer.jsx": {
@@ -48,9 +48,9 @@
     "semantic_hash": ""
   },
   "src/components/Hero.jsx": {
-    "mtime": 1794803452.6943808,
-    "seen": 1794803991.5253222,
-    "ast_hash": "489d1c731bf599a221d17fdf2c4fdca6",
+    "mtime": 1794805784.103608,
+    "seen": 1794805828.9469616,
+    "ast_hash": "b91d0b8890fa5cd5ca05474180963405",
     "semantic_hash": ""
   },
   "src/main.jsx": {
@@ -846,9 +846,9 @@
     "semantic_hash": ""
   },
   "src/components/services/ServicePageLayout.jsx": {
-    "mtime": 1794803863.219145,
-    "seen": 1794803991.5253222,
-    "ast_hash": "d2672b91c399a487ba9e46736711ec25",
+    "mtime": 1794804850.507186,
+    "seen": 1794804859.6251645,
+    "ast_hash": "9090c269ce4f5030476ccd3add1d9094",
     "semantic_hash": ""
   },
   "src/components/services/TimelineServicePage.jsx": {
@@ -864,9 +864,9 @@
     "semantic_hash": ""
   },
   "src/components/admin/AdminDashboardPage.jsx": {
-    "mtime": 1794493765.4134011,
-    "seen": 1794577960.0797756,
-    "ast_hash": "6339897eee9859851ba2581210d6c09e",
+    "mtime": 1794804850.1873832,
+    "seen": 1794804859.6251645,
+    "ast_hash": "6d7539de4be1991d4ce1e49495b77bad",
     "semantic_hash": ""
   },
   "public/logo-teramedia.png": {
@@ -888,8 +888,8 @@
     "semantic_hash": ""
   },
   "src/components/services/KkmServicePage.jsx": {
-    "mtime": 1794803896.6124716,
-    "seen": 1794803991.5253222,
+    "mtime": 1794804053.1239583,
+    "seen": 1794804859.6251645,
     "ast_hash": "a5bb82a74d2e5239a0a03bac9e60e681",
     "semantic_hash": ""
   },
@@ -1104,9 +1104,9 @@
     "semantic_hash": ""
   },
   "src/components/PillNav.jsx": {
-    "mtime": 1794802953.1664042,
-    "seen": 1794803425.2691553,
-    "ast_hash": "68cf193cb99d90993bf338e16ffb917b",
+    "mtime": 1794805759.6125145,
+    "seen": 1794805828.9469616,
+    "ast_hash": "190c881c836c6cb76446f5845db49546",
     "semantic_hash": ""
   }
 }

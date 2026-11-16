@@ -360,11 +360,11 @@ const ServicePageLayout = ({
               </button>
 
               {/* BPH Announcement Trigger */}
-              {announcements && announcements.filter((a) => a.isActive).length > 0 && onOpenAnnouncementModal && (
+              {announcements && announcements.filter((a) => a.isActive && !a.isCompleted).length > 0 && onOpenAnnouncementModal && (
                 <button
                   type="button"
                   onClick={() => {
-                    const activeList = announcements.filter((a) => a.isActive);
+                    const activeList = announcements.filter((a) => a.isActive && !a.isCompleted);
                     onOpenAnnouncementModal(activeList[0], 0);
                   }}
                   title="Buka Maklumat Resmi BPH"
@@ -373,7 +373,7 @@ const ServicePageLayout = ({
                   <Megaphone size={13} className="text-blue-600 animate-pulse shrink-0" />
                   <span className="hidden md:inline">Maklumat</span>
                   <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-blue-600 text-white font-mono">
-                    {announcements.filter((a) => a.isActive).length}
+                    {announcements.filter((a) => a.isActive && !a.isCompleted).length}
                   </span>
                 </button>
               )}

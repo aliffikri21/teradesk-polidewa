@@ -264,7 +264,7 @@ const FeaturesPortal = ({
   const [selectedCategory, setSelectedCategory] = useState('Semua');
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
-  const activeAnnouncements = (announcements || []).filter((a) => a.isActive);
+  const activeAnnouncements = (announcements || []).filter((a) => a.isActive && !a.isCompleted);
 
   const categories = [
     { label: 'Semua', count: featuresData.length },

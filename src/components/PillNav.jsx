@@ -72,7 +72,7 @@ const SIZES = {
 };
 
 const ROOT =
-  'group/nav relative inline-flex max-w-full items-center gap-[var(--pn-gap)] text-[length:var(--pn-font)] leading-none [-webkit-tap-highlight-color:transparent] [--pn-roll:calc(var(--pn-inner)/2_+_0.7em)] data-[collapsed]:flex data-[collapsed]:w-full data-[collapsed]:justify-between data-[layout=joined]:gap-[2px] data-[layout=joined]:rounded-full data-[layout=joined]:p-[var(--pn-pad)] data-[items=pill]:[--pn-item-gap:3px] data-[panel]:[background:transparent] data-[panel]:[box-shadow:none] data-[panel]:[-webkit-backdrop-filter:none] data-[panel]:[backdrop-filter:none]';
+  'group/nav relative inline-flex max-w-full items-center gap-[var(--pn-gap)] text-[length:var(--pn-font)] leading-none bg-transparent border-0 shadow-none outline-none [-webkit-tap-highlight-color:transparent] [--pn-roll:calc(var(--pn-inner)/2_+_0.7em)] data-[collapsed]:flex data-[collapsed]:w-full data-[collapsed]:justify-between data-[layout=joined]:gap-[2px] data-[layout=joined]:rounded-full data-[layout=joined]:p-[var(--pn-pad)] data-[items=pill]:[--pn-item-gap:3px] data-[panel]:[background:transparent] data-[panel]:[box-shadow:none] data-[panel]:[-webkit-backdrop-filter:none] data-[panel]:[backdrop-filter:none]';
 const SURFACE =
   '[background:var(--pn-surface)] [box-shadow:var(--pn-shadow)] [-webkit-backdrop-filter:var(--pn-blur)] [backdrop-filter:var(--pn-blur)]';
 const RIM =
@@ -747,7 +747,7 @@ const PillNav = ({
   return (
     <nav
       ref={rootRef}
-      className={[ROOT, joined ? SURFACE : '', className].filter(Boolean).join(' ')}
+      className={[ROOT, joined ? SURFACE : 'bg-transparent border-0 shadow-none outline-none', className].filter(Boolean).join(' ')}
       data-layout={layout}
       data-items={itemStyle}
       data-collapsed={collapsed ? '' : undefined}

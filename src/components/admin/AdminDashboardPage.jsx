@@ -76,6 +76,7 @@ import {
   Building2,
   MapPin,
   User,
+  RotateCcw,
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { playNotificationChime, getSoundMuted, setSoundMuted } from '../../utils/notificationSound';
@@ -478,8 +479,9 @@ const AdminDashboardPage = ({
   const [annFormActionServiceId, setAnnFormActionServiceId] = useState('attendance');
   const [annFormIsActive, setAnnFormIsActive] = useState(true);
   const [annFormIsPinned, setAnnFormIsPinned] = useState(false);
+  const [annFormIsCompleted, setAnnFormIsCompleted] = useState(false);
 
-  const activeAnnouncementsCount = (announcements || []).filter((a) => a.isActive).length;
+  const activeAnnouncementsCount = (announcements || []).filter((a) => a.isActive && !a.isCompleted).length;
 
   const filteredAnnouncements = useMemo(() => {
     return (announcements || []).filter((ann) => {
@@ -494,8 +496,9 @@ const AdminDashboardPage = ({
 
       const matchStatus =
         announcementStatusFilter === 'Semua Status' ||
-        (announcementStatusFilter === 'Aktif' && ann.isActive) ||
-        (announcementStatusFilter === 'Nonaktif' && !ann.isActive);
+        (announcementStatusFilter === 'Aktif' && ann.isActive && !ann.isCompleted) ||
+        (announcementStatusFilter === 'Selesai' && ann.isCompleted) ||
+        (announcementStatusFilter === 'Nonaktif' && !ann.isActive && !ann.isCompleted);
 
       return matchSearch && matchCat && matchStatus;
     });
@@ -637,6 +640,7 @@ const AdminDashboardPage = ({
     setAnnFormActionServiceId('attendance');
     setAnnFormIsActive(true);
     setAnnFormIsPinned(false);
+    setAnnFormIsCompleted(false);
     setIsAnnModalOpen(true);
   };
 
@@ -654,6 +658,7 @@ const AdminDashboardPage = ({
     setAnnFormActionServiceId(ann.actionServiceId || '');
     setAnnFormIsActive(ann.isActive ?? true);
     setAnnFormIsPinned(ann.isPinned ?? false);
+    setAnnFormIsCompleted(ann.isCompleted ?? false);
     setIsAnnModalOpen(true);
   };
 
@@ -676,8 +681,9 @@ const AdminDashboardPage = ({
       content: annFormContent.trim(),
       actionText: annFormActionText.trim(),
       actionServiceId: annFormActionServiceId.trim(),
-      isActive: annFormIsActive,
+      isActive: annFormIsCompleted ? false : annFormIsActive,
       isPinned: annFormIsPinned,
+      isCompleted: annFormIsCompleted,
     };
 
     if (editingAnnId) {
@@ -709,6 +715,39 @@ const AdminDashboardPage = ({
       onToggleAnnouncementStatus(id);
     }
     addLog(`Status tayang maklumat "${title}" diubah menjadi ${!currentStatus ? 'Aktif' : 'Nonaktif'}`, 'info');
+  };
+
+  const handleCompleteAnn = (id, title) => {
+    if (
+      window.confirm(
+        `Selesaikan acara/pengumuman "${title}"?\n\nSetelah diselesaikan, pengumuman ini akan ditandai Selesai dan pop-up window TIDAK AKAN muncul lagi untuk semua anggota yang login.`
+      )
+    ) {
+      if (onUpdateAnnouncement) {
+        onUpdateAnnouncement(id, {
+          isActive: false,
+          isCompleted: true,
+          completedAt: new Date().toISOString(),
+        });
+      }
+      addLog(`Acara/Pengumuman "${title}" telah diselesaikan BPH (Pop-up dinonaktifkan untuk semua anggota)`, 'success');
+    }
+  };
+
+  const handleReopenAnn = (id, title) => {
+    if (
+      window.confirm(
+        `Aktifkan kembali pengumuman "${title}"?\n\nPengumuman akan kembali tayang sebagai pop-up window untuk anggota yang login.`
+      )
+    ) {
+      if (onUpdateAnnouncement) {
+        onUpdateAnnouncement(id, {
+          isActive: true,
+          isCompleted: false,
+        });
+      }
+      addLog(`Pengumuman "${title}" diaktifkan kembali oleh BPH (Pop-up kembali tayang)`, 'info');
+    }
   };
 
   // Admin Dark Mode Theme State with LocalStorage persistence
@@ -6758,6 +6797,7 @@ const AdminDashboardPage = ({
                   >
                     <option value="Semua Status">Semua Status</option>
                     <option value="Aktif">Hanya Aktif (Tayang)</option>
+                    <option value="Selesai">Acara / Pengumuman Selesai</option>
                     <option value="Nonaktif">Draf / Nonaktif</option>
                   </select>
                 </div>
@@ -6769,7 +6809,9 @@ const AdminDashboardPage = ({
                   <div
                     key={ann.id}
                     className={`bg-white p-5 sm:p-6 rounded-2xl border transition-all duration-200 shadow-xs ${
-                      ann.isActive
+                      ann.isCompleted
+                        ? 'border-slate-200/90 bg-slate-50/30'
+                        : ann.isActive
                         ? 'border-blue-200/90 hover:border-blue-300'
                         : 'border-slate-200/70 opacity-75 hover:opacity-100'
                     }`}
@@ -6808,19 +6850,26 @@ const AdminDashboardPage = ({
                           )}
 
                           {/* Live Status Pill */}
-                          <button
-                            type="button"
-                            onClick={() => handleToggleAnn(ann.id, ann.isActive, ann.title)}
-                            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border transition-colors cursor-pointer ${
-                              ann.isActive
-                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
-                                : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200'
-                            }`}
-                            title="Klik untuk mengubah status tayang pop-up"
-                          >
-                            <span className={`w-1.5 h-1.5 rounded-full ${ann.isActive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
-                            <span>{ann.isActive ? 'Tayang (Aktif)' : 'Draf (Nonaktif)'}</span>
-                          </button>
+                          {ann.isCompleted ? (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-300">
+                              <CheckCircle2 size={11} className="text-emerald-600" />
+                              <span>Selesai (Pop-up Nonaktif)</span>
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleToggleAnn(ann.id, ann.isActive, ann.title)}
+                              className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border transition-colors cursor-pointer ${
+                                ann.isActive
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                                  : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200'
+                              }`}
+                              title="Klik untuk mengubah status tayang pop-up"
+                            >
+                              <span className={`w-1.5 h-1.5 rounded-full ${ann.isActive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+                              <span>{ann.isActive ? 'Tayang (Aktif)' : 'Draf (Nonaktif)'}</span>
+                            </button>
+                          )}
                         </div>
 
                         <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-snug">
@@ -6867,7 +6916,30 @@ const AdminDashboardPage = ({
                       </div>
 
                       {/* Right Controls */}
-                      <div className="flex items-center sm:flex-col gap-2 shrink-0 self-end sm:self-start">
+                      <div className="flex items-center sm:flex-col gap-2 shrink-0 self-end sm:self-start w-full sm:w-auto">
+                        {/* Button Selesaikan Pengumuman / Buka Kembali */}
+                        {ann.isCompleted ? (
+                          <button
+                            type="button"
+                            onClick={() => handleReopenAnn(ann.id, ann.title)}
+                            className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all border border-slate-200 cursor-pointer w-full shadow-2xs"
+                            title="Buka kembali pengumuman ini agar pop-up tayang kembali"
+                          >
+                            <RotateCcw size={13} className="text-slate-600" />
+                            <span>Buka Kembali</span>
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleCompleteAnn(ann.id, ann.title)}
+                            className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all border border-emerald-600 cursor-pointer shadow-xs w-full"
+                            title="Selesaikan acara/pengumuman ini agar pop-up tidak muncul lagi di semua anggota yang login"
+                          >
+                            <CheckCircle2 size={13} />
+                            <span>Selesaikan Pengumuman</span>
+                          </button>
+                        )}
+
                         <button
                           type="button"
                           onClick={() => {
@@ -6875,7 +6947,7 @@ const AdminDashboardPage = ({
                               onPreviewAnnouncementPopup(ann, 0);
                             }
                           }}
-                          className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white rounded-xl text-xs font-bold transition-all border border-blue-200 cursor-pointer shadow-2xs"
+                          className="flex items-center justify-center gap-1 px-3 py-1.5 bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white rounded-xl text-xs font-bold transition-all border border-blue-200 cursor-pointer shadow-2xs w-full"
                           title="Lihat tampilan pop-up window"
                         >
                           <Eye size={13} />
@@ -6885,7 +6957,7 @@ const AdminDashboardPage = ({
                         <button
                           type="button"
                           onClick={() => handleOpenEditAnn(ann)}
-                          className="flex items-center gap-1 px-3 py-1.5 bg-slate-100 hover:bg-slate-900 hover:text-white rounded-xl text-xs font-bold text-slate-700 transition-all cursor-pointer"
+                          className="flex items-center justify-center gap-1 px-3 py-1.5 bg-slate-100 hover:bg-slate-900 hover:text-white rounded-xl text-xs font-bold text-slate-700 transition-all cursor-pointer w-full"
                           title="Edit Maklumat"
                         >
                           <Edit2 size={13} />
@@ -6895,7 +6967,7 @@ const AdminDashboardPage = ({
                         <button
                           type="button"
                           onClick={() => handleDeleteAnn(ann.id, ann.title)}
-                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
+                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer self-center sm:self-auto"
                           title="Hapus Maklumat"
                         >
                           <Trash2 size={14} />
@@ -10833,18 +10905,19 @@ const AdminDashboardPage = ({
                 />
               </div>
 
-              {/* Checkboxes: Status Tayang & Pin */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 bg-slate-50/70 p-3.5 rounded-2xl border border-slate-200/80">
+              {/* Checkboxes: Status Tayang, Pin & Selesai */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 bg-slate-50/70 p-3.5 rounded-2xl border border-slate-200/80">
                 <label className="flex items-center gap-2.5 cursor-pointer select-none">
                   <input
                     type="checkbox"
-                    checked={annFormIsActive}
+                    checked={annFormIsActive && !annFormIsCompleted}
+                    disabled={annFormIsCompleted}
                     onChange={(e) => setAnnFormIsActive(e.target.checked)}
-                    className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                    className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
                   />
                   <div className="text-xs">
-                    <span className="font-bold text-slate-900 block">Aktifkan Langsung (Tayang Pop-up)</span>
-                    <span className="text-[11px] text-slate-500">Anggota akan melihat pop-up window setelah login.</span>
+                    <span className="font-bold text-slate-900 block">Aktifkan (Tayang)</span>
+                    <span className="text-[11px] text-slate-500">Muncul sebagai pop-up window setelah login.</span>
                   </div>
                 </label>
 
@@ -10856,8 +10929,25 @@ const AdminDashboardPage = ({
                     className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                   />
                   <div className="text-xs">
-                    <span className="font-bold text-slate-900 block">Sematkan di Atas (Pin to Top)</span>
-                    <span className="text-[11px] text-slate-500">Prioritas utama dalam urutan pengumuman.</span>
+                    <span className="font-bold text-slate-900 block">Sematkan di Atas</span>
+                    <span className="text-[11px] text-slate-500">Prioritas utama dalam urutan pop-up.</span>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={annFormIsCompleted}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      setAnnFormIsCompleted(checked);
+                      if (checked) setAnnFormIsActive(false);
+                    }}
+                    className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                  />
+                  <div className="text-xs">
+                    <span className="font-bold text-emerald-700 block">Tandai Acara Selesai</span>
+                    <span className="text-[11px] text-slate-500">Pop-up tidak akan tayang lagi ke anggota.</span>
                   </div>
                 </label>
               </div>
@@ -11174,13 +11264,43 @@ const AdminDashboardPage = ({
                 <span>Audit ini diverifikasi secara otomatis saat anggota menekan persetujuan di pop-up modal.</span>
               </div>
 
-              <button
-                type="button"
-                onClick={() => setAuditAnnouncement(null)}
-                className="w-full sm:w-auto px-5 py-2 rounded-xl text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 transition-colors cursor-pointer"
-              >
-                Tutup Audit
-              </button>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                {auditAnnouncement.isCompleted ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleReopenAnn(auditAnnouncement.id, auditAnnouncement.title);
+                      setAuditAnnouncement((prev) => (prev ? { ...prev, isCompleted: false, isActive: true } : null));
+                    }}
+                    className="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer flex items-center justify-center gap-1.5 border border-slate-200"
+                    title="Aktifkan kembali maklumat ini"
+                  >
+                    <RotateCcw size={13} />
+                    <span>Buka Kembali</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleCompleteAnn(auditAnnouncement.id, auditAnnouncement.title);
+                      setAuditAnnouncement((prev) => (prev ? { ...prev, isCompleted: true, isActive: false } : null));
+                    }}
+                    className="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-xs"
+                    title="Selesaikan pengumuman ini agar pop-up tidak muncul lagi di semua anggota"
+                  >
+                    <CheckCircle2 size={13} />
+                    <span>Selesaikan Pengumuman</span>
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => setAuditAnnouncement(null)}
+                  className="w-full sm:w-auto px-5 py-2 rounded-xl text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 transition-colors cursor-pointer"
+                >
+                  Tutup Audit
+                </button>
+              </div>
             </div>
           </div>
         </div>
