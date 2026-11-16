@@ -1056,9 +1056,9 @@
     "semantic_hash": ""
   },
   "src/components/common/CommandPalette.jsx": {
-    "mtime": 1794160320.0521631,
-    "seen": 1794160791.8321464,
-    "ast_hash": "5dda8d5672b910eb896432d64e5dabbb",
+    "mtime": 1794806341.7380433,
+    "seen": 1794806389.352057,
+    "ast_hash": "ab0a6c4b619a3a9f66635b532683a3e5",
     "semantic_hash": ""
   },
   "src/components/services/PublicAttendanceModal.jsx": {

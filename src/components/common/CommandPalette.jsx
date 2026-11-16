@@ -759,7 +759,7 @@ export default function CommandPalette({
         </div>
 
         {/* 2. Category Filter Pills */}
-        <div className="px-4 sm:px-5 py-3 sm:py-3.5 border-b border-slate-100 bg-slate-50/80 flex items-center gap-2 overflow-x-auto no-scrollbar">
+        <div className="px-4 sm:px-5 py-3 sm:py-3.5 border-b border-slate-100 bg-slate-50/80 flex items-center gap-2.5 sm:gap-2 overflow-x-auto no-scrollbar">
           {CATEGORY_TABS.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
@@ -770,15 +770,15 @@ export default function CommandPalette({
                   setActiveTab(tab.id);
                   setSelectedIndex(0);
                 }}
-                className={`px-3.5 py-1.5 sm:py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-150 cursor-pointer flex items-center gap-1.5 ${
+                className={`px-4 py-2 sm:px-3.5 sm:py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-150 cursor-pointer flex items-center gap-2 shrink-0 ${
                   isActive
                     ? 'bg-slate-900 text-white font-bold shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/70'
+                    : 'text-slate-600 hover:text-slate-900 bg-white sm:bg-transparent border border-slate-200/80 sm:border-transparent hover:bg-slate-100'
                 }`}
               >
                 <span>{tab.label}</span>
                 {tab.id === 'modul' && (
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${isActive ? 'bg-slate-800 text-blue-300' : 'bg-slate-200/80 text-slate-600'}`}>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ${isActive ? 'bg-slate-800 text-blue-300' : 'bg-slate-100 sm:bg-slate-200/80 text-slate-600'}`}>
                     11
                   </span>
                 )}
@@ -823,7 +823,7 @@ export default function CommandPalette({
                   data-index={idx}
                   onMouseEnter={() => setSelectedIndex(idx)}
                   onClick={() => item.action()}
-                  className={`group relative p-2.5 sm:p-3 rounded-xl transition-all duration-150 cursor-pointer flex items-center justify-between gap-3 ${
+                  className={`group relative p-3 sm:p-3 rounded-xl transition-all duration-150 cursor-pointer flex items-center justify-between gap-3 ${
                     isSelected
                       ? 'bg-blue-50/70 border border-blue-200/90 shadow-xs'
                       : 'hover:bg-slate-50 border border-transparent'
