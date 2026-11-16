@@ -3067,26 +3067,28 @@ const AdminDashboardPage = ({
                   </div>
                 </button>
 
-                {/* Dark Mode Quick Switcher */}
-                <button
-                  type="button"
-                  onClick={toggleAdminTheme}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                    isAdminDark
-                      ? 'bg-slate-800 text-amber-400 hover:bg-slate-700/80 border border-slate-700/60'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    {isAdminDark ? <Sun size={16} className="text-amber-400" /> : <Moon size={16} className="text-slate-400" />}
-                    <span>{isAdminDark ? 'Mode Gelap (Aktif)' : 'Mode Terang (Aktif)'}</span>
-                  </div>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                    isAdminDark ? 'bg-amber-400/20 text-amber-300' : 'bg-slate-100 text-slate-500'
-                  }`}>
-                    {isAdminDark ? 'Dark' : 'Light'}
-                  </span>
-                </button>
+                {/* Dark Mode Quick Switcher (Hanya Tampil di Mode HP / Mobile Drawer) */}
+                {isMobile && (
+                  <button
+                    type="button"
+                    onClick={toggleAdminTheme}
+                    className={`lg:hidden w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                      isAdminDark
+                        ? 'bg-slate-800 text-amber-400 hover:bg-slate-700/80 border border-slate-700/60'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      {isAdminDark ? <Sun size={16} className="text-amber-400" /> : <Moon size={16} className="text-slate-400" />}
+                      <span>{isAdminDark ? 'Mode Gelap (Aktif)' : 'Mode Terang (Aktif)'}</span>
+                    </div>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      isAdminDark ? 'bg-amber-400/20 text-amber-300' : 'bg-slate-100 text-slate-500'
+                    }`}>
+                      {isAdminDark ? 'Dark' : 'Light'}
+                    </span>
+                  </button>
+                )}
               </div>
             </div>
           </div>
