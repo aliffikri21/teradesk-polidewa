@@ -695,7 +695,7 @@ export default function CommandPalette({
       <div className="relative w-full max-w-2xl bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl shadow-2xl text-slate-800 overflow-hidden flex flex-col max-h-[85vh] sm:max-h-[80vh] animate-in zoom-in-95 duration-150">
         
         {/* Subtle decorative top accent bar (Admin Corporate Blue) */}
-        <div className="h-1 w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500" />
+        <div className="h-1 w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 shrink-0" />
 
         {/* Toast alert indicator */}
         {toastMessage && (
@@ -706,7 +706,7 @@ export default function CommandPalette({
         )}
 
         {/* 1. Header & Search Input */}
-        <div className="p-3.5 sm:p-4 border-b border-slate-100 flex items-center gap-3 bg-white">
+        <div className="p-3.5 sm:p-4 border-b border-slate-100 flex items-center gap-3 bg-white shrink-0">
           <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-200/80 text-blue-600 flex items-center justify-center shrink-0 shadow-xs">
             <Search size={18} className="stroke-[2.5]" />
           </div>
@@ -759,7 +759,7 @@ export default function CommandPalette({
         </div>
 
         {/* 2. Category Filter Pills */}
-        <div className="px-4 sm:px-5 py-3 sm:py-3.5 border-b border-slate-100 bg-slate-50/80 flex items-center gap-2.5 sm:gap-2 overflow-x-auto no-scrollbar">
+        <div className="shrink-0 px-3.5 sm:px-5 py-2.5 sm:py-3 border-b border-slate-100 bg-slate-50/80 flex items-center gap-2 sm:gap-2.5 overflow-x-auto overflow-y-hidden touch-pan-x overscroll-x-contain no-scrollbar select-none">
           {CATEGORY_TABS.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
@@ -770,15 +770,15 @@ export default function CommandPalette({
                   setActiveTab(tab.id);
                   setSelectedIndex(0);
                 }}
-                className={`px-4 py-2 sm:px-3.5 sm:py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-150 cursor-pointer flex items-center gap-2 shrink-0 ${
+                className={`h-8.5 sm:h-9 px-3.5 sm:px-4 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-150 cursor-pointer flex items-center justify-center gap-2 shrink-0 leading-none select-none ${
                   isActive
                     ? 'bg-slate-900 text-white font-bold shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900 bg-white sm:bg-transparent border border-slate-200/80 sm:border-transparent hover:bg-slate-100'
+                    : 'text-slate-600 hover:text-slate-900 bg-white sm:bg-transparent border border-slate-200/80 sm:border-transparent hover:bg-slate-100 active:bg-slate-200'
                 }`}
               >
-                <span>{tab.label}</span>
+                <span className="leading-none">{tab.label}</span>
                 {tab.id === 'modul' && (
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ${isActive ? 'bg-slate-800 text-blue-300' : 'bg-slate-100 sm:bg-slate-200/80 text-slate-600'}`}>
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold shrink-0 leading-none ${isActive ? 'bg-slate-800 text-blue-300' : 'bg-slate-100 sm:bg-slate-200/80 text-slate-600'}`}>
                     11
                   </span>
                 )}
@@ -873,7 +873,7 @@ export default function CommandPalette({
         </div>
 
         {/* 4. Footer Bar with Shortcuts & Context info */}
-        <div className="px-4 py-2.5 bg-slate-50/90 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+        <div className="px-4 py-2.5 bg-slate-50/90 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 shrink-0">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1">
               <kbd className="px-1.5 py-0.5 font-mono text-[9px] bg-white border border-slate-200 rounded text-slate-600 shadow-2xs font-bold">
