@@ -285,184 +285,194 @@ const ServicePageLayout = ({
       <div className="flex-1 flex flex-col min-w-0">
         
         {/* TOP HEADER BAR */}
-        <header className="h-16 bg-white border-b border-slate-200/80 px-6 lg:px-8 flex items-center justify-between sticky top-0 z-30">
-          {/* Left: Breadcrumbs & Search */}
-          <div className="flex items-center gap-4">
-            <div className="hidden md:flex items-center gap-2 text-xs text-slate-400 font-medium">
-              <button
-                onClick={onBackToLanding}
-                className="hover:text-slate-900 transition-colors cursor-pointer"
-              >
-                Beranda
-              </button>
-              <ChevronRight size={13} className="text-slate-300" />
+        <header className="h-16 bg-white border-b border-slate-200/80 sticky top-0 z-30 w-full shrink-0">
+          <div className="max-w-7xl mx-auto w-full h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-2 sm:gap-4 min-w-0">
+            {/* Left: Breadcrumbs (Desktop/Tablet) & Mobile Navigation */}
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              {/* Mobile Back to Portal Button */}
               <button
                 onClick={onBackToPortal}
-                className="hover:text-slate-900 transition-colors cursor-pointer"
+                className="md:hidden flex items-center gap-1 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 px-2.5 py-1.5 rounded-xl transition-colors cursor-pointer shrink-0"
+                title="Kembali ke Workspace Hub"
               >
-                Workspace Hub
+                <ArrowLeft size={14} className="text-slate-600" />
+                <span className="text-[11px]">Katalog</span>
               </button>
-              <ChevronRight size={13} className="text-slate-300" />
-              <span className="text-slate-600">{category}</span>
-              <ChevronRight size={13} className="text-slate-300" />
-              <span className="text-blue-600 font-bold truncate max-w-[180px]">{title}</span>
+
+              {/* Mobile Active Service Indicator */}
+              <div className="flex items-center gap-1.5 min-w-0 md:hidden">
+                <span className="text-xs font-bold text-slate-900 truncate max-w-[120px] sm:max-w-[180px]">
+                  {title.split('(')[0].trim()}
+                </span>
+              </div>
+
+              {/* Desktop & Tablet Breadcrumbs */}
+              <div className="hidden md:flex items-center gap-1.5 lg:gap-2 text-xs text-slate-400 font-medium min-w-0">
+                <button
+                  onClick={onBackToLanding}
+                  className="hover:text-slate-900 transition-colors cursor-pointer shrink-0"
+                >
+                  Beranda
+                </button>
+                <ChevronRight size={13} className="text-slate-300 shrink-0" />
+                <button
+                  onClick={onBackToPortal}
+                  className="hover:text-slate-900 transition-colors cursor-pointer shrink-0"
+                >
+                  Workspace Hub
+                </button>
+                <ChevronRight size={13} className="text-slate-300 shrink-0 hidden lg:inline" />
+                <span className="text-slate-600 truncate max-w-[130px] hidden lg:inline">{category}</span>
+                <ChevronRight size={13} className="text-slate-300 shrink-0" />
+                <span className="text-blue-600 font-bold truncate max-w-[160px] lg:max-w-[220px] xl:max-w-none">{title}</span>
+              </div>
             </div>
 
-            <div
-              onClick={() => {
-                if (onOpenCommandPalette) onOpenCommandPalette();
-              }}
-              className="relative w-64 md:hidden cursor-pointer"
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  if (onOpenCommandPalette) onOpenCommandPalette();
-                }
-              }}
-            >
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                readOnly
-                placeholder="Cari (Spotlight)..."
-                className="w-full pl-8 pr-3 py-1.5 bg-slate-50 rounded-xl border border-slate-200 text-xs font-medium focus:outline-hidden cursor-pointer select-none"
-              />
-            </div>
-          </div>
-
-          {/* Right: Spotlight Trigger, Quick Switcher Dropdown & Profile */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            
-            {/* Spotlight Command Palette trigger */}
-            <button
-              type="button"
-              onClick={() => {
-                if (onOpenCommandPalette) onOpenCommandPalette();
-              }}
-              title="Buka Spotlight Command Palette (Ctrl+K)"
-              className="flex items-center gap-1.5 sm:gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
-            >
-              <Search size={14} className="text-amber-500" />
-              <span className="hidden sm:inline">Spotlight</span>
-              <kbd className="hidden md:inline-block text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-200/80 text-slate-500 border border-slate-300/60">
-                Ctrl K
-              </kbd>
-            </button>
-
-            {/* BPH Announcement Trigger */}
-            {announcements && announcements.filter((a) => a.isActive).length > 0 && onOpenAnnouncementModal && (
+            {/* Right: Spotlight Trigger, Quick Switcher Dropdown & Profile */}
+            <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+              
+              {/* Mobile Search Icon Button */}
               <button
                 type="button"
                 onClick={() => {
-                  const activeList = announcements.filter((a) => a.isActive);
-                  onOpenAnnouncementModal(activeList[0], 0);
+                  if (onOpenCommandPalette) onOpenCommandPalette();
                 }}
-                title="Buka Maklumat Resmi BPH"
-                className="flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold border border-blue-200 transition-colors cursor-pointer"
+                title="Pencarian Spotlight (Ctrl+K)"
+                className="sm:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer shrink-0"
               >
-                <Megaphone size={13} className="text-blue-600 animate-pulse" />
-                <span className="hidden md:inline">Maklumat BPH</span>
-                <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-blue-600 text-white font-mono">
-                  {announcements.filter((a) => a.isActive).length}
-                </span>
+                <Search size={16} />
               </button>
-            )}
 
-            {/* Quick Switcher Dropdown (Accessible on all screens) */}
-            <div className="relative">
+              {/* Desktop Spotlight Command Palette trigger */}
               <button
-                onClick={() => setIsSwitcherOpen(!isSwitcherOpen)}
-                className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-800 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                type="button"
+                onClick={() => {
+                  if (onOpenCommandPalette) onOpenCommandPalette();
+                }}
+                title="Buka Spotlight Command Palette (Ctrl+K)"
+                className="hidden sm:flex items-center gap-1.5 sm:gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer shrink-0"
               >
-                <LayoutGrid size={14} className="text-blue-600" />
-                <span className="hidden sm:inline">Pindah Layanan</span>
-                <ChevronDown size={13} className={`transition-transform duration-200 ${isSwitcherOpen ? 'rotate-180' : ''}`} />
+                <Search size={14} className="text-amber-500" />
+                <span className="hidden md:inline">Spotlight</span>
+                <kbd className="hidden lg:inline-block text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-200/80 text-slate-500 border border-slate-300/60">
+                  Ctrl K
+                </kbd>
               </button>
 
-              {isSwitcherOpen && (
-                <>
-                  <div
-                    className="fixed inset-0 z-40"
-                    onClick={() => setIsSwitcherOpen(false)}
-                  />
-                  <div className="absolute right-0 mt-2 w-72 bg-white border border-slate-200 rounded-2xl shadow-xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150">
-                    <div className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 mb-1">
-                      Katalog {allServices.length} Layanan Organisasi
-                    </div>
-                    <div className="max-h-80 overflow-y-auto space-y-1 py-1">
-                      {allServices.map((svc) => {
-                        const SvcIcon = svc.icon;
-                        const isActive = svc.id === serviceId;
-
-                        return (
-                          <button
-                            key={svc.id}
-                            onClick={() => {
-                              setIsSwitcherOpen(false);
-                              if (onSelectService) onSelectService(svc.id);
-                            }}
-                            className={`w-full text-left px-3 py-2 rounded-xl flex items-center gap-3 transition-colors cursor-pointer ${
-                              isActive
-                                ? 'bg-slate-900 text-white font-bold'
-                                : 'text-slate-700 hover:bg-slate-50'
-                            }`}
-                          >
-                            <div className={`w-7 h-7 rounded-lg flex items-center justify-center border shrink-0 ${svc.color}`}>
-                              <SvcIcon size={14} />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="text-xs font-bold truncate">{svc.title.split('(')[0].trim()}</p>
-                              <p className={`text-[10px] truncate ${isActive ? 'text-slate-300' : 'text-slate-400'}`}>
-                                {svc.category}
-                              </p>
-                            </div>
-                            {isActive && (
-                              <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* User Profile Pill */}
-            <div className="flex items-center gap-2.5 pl-2 border-l border-slate-200">
-              <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center">
-                {authUser?.name ? authUser.name.charAt(0).toUpperCase() : 'A'}
-              </div>
-              <div className="hidden sm:block text-left">
-                <p className="text-xs font-bold text-slate-900 leading-tight">
-                  {authUser?.name || 'Alif Fikri'}
-                </p>
-                <p className="text-[10px] text-slate-400 font-medium leading-none">
-                  {authUser?.role || 'Demisioner'}
-                </p>
-              </div>
-
-              {onOpenChangePassword && (
+              {/* BPH Announcement Trigger */}
+              {announcements && announcements.filter((a) => a.isActive).length > 0 && onOpenAnnouncementModal && (
                 <button
                   type="button"
-                  onClick={onOpenChangePassword}
-                  title="Ganti Kata Sandi Akun Mandiri"
-                  className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-blue-600 bg-slate-50 hover:bg-blue-50 px-2.5 py-1.5 rounded-xl border border-slate-200 hover:border-blue-200 transition-all cursor-pointer ml-1"
+                  onClick={() => {
+                    const activeList = announcements.filter((a) => a.isActive);
+                    onOpenAnnouncementModal(activeList[0], 0);
+                  }}
+                  title="Buka Maklumat Resmi BPH"
+                  className="flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 px-2 sm:px-2.5 py-1.5 rounded-xl text-xs font-bold border border-blue-200 transition-colors cursor-pointer shrink-0"
                 >
-                  <KeyRound size={13} className="text-blue-600" />
-                  <span className="hidden md:inline">Ganti Sandi</span>
+                  <Megaphone size={13} className="text-blue-600 animate-pulse shrink-0" />
+                  <span className="hidden md:inline">Maklumat</span>
+                  <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-blue-600 text-white font-mono">
+                    {announcements.filter((a) => a.isActive).length}
+                  </span>
                 </button>
               )}
-            </div>
 
+              {/* Quick Switcher Dropdown (Accessible on all screens) */}
+              <div className="relative shrink-0">
+                <button
+                  onClick={() => setIsSwitcherOpen(!isSwitcherOpen)}
+                  className="flex items-center gap-1.5 sm:gap-2 bg-slate-100 hover:bg-slate-200 text-slate-800 px-2 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                  title="Pindah Layanan"
+                >
+                  <LayoutGrid size={14} className="text-blue-600 shrink-0" />
+                  <span className="hidden sm:inline">Pindah Layanan</span>
+                  <ChevronDown size={13} className={`transition-transform duration-200 shrink-0 ${isSwitcherOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isSwitcherOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setIsSwitcherOpen(false)}
+                    />
+                    <div className="absolute right-0 mt-2 w-72 bg-white border border-slate-200 rounded-2xl shadow-xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                      <div className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 mb-1">
+                        Katalog {allServices.length} Layanan Organisasi
+                      </div>
+                      <div className="max-h-80 overflow-y-auto space-y-1 py-1">
+                        {allServices.map((svc) => {
+                          const SvcIcon = svc.icon;
+                          const isActive = svc.id === serviceId;
+
+                          return (
+                            <button
+                              key={svc.id}
+                              onClick={() => {
+                                setIsSwitcherOpen(false);
+                                if (onSelectService) onSelectService(svc.id);
+                              }}
+                              className={`w-full text-left px-3 py-2 rounded-xl flex items-center gap-3 transition-colors cursor-pointer ${
+                                isActive
+                                  ? 'bg-slate-900 text-white font-bold'
+                                  : 'text-slate-700 hover:bg-slate-50'
+                              }`}
+                            >
+                              <div className={`w-7 h-7 rounded-lg flex items-center justify-center border shrink-0 ${svc.color}`}>
+                                <SvcIcon size={14} />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-xs font-bold truncate">{svc.title.split('(')[0].trim()}</p>
+                                <p className={`text-[10px] truncate ${isActive ? 'text-slate-300' : 'text-slate-400'}`}>
+                                  {svc.category}
+                                </p>
+                              </div>
+                              {isActive && (
+                                <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* User Profile Pill */}
+              <div className="flex items-center gap-2 pl-1.5 sm:pl-2.5 border-l border-slate-200 shrink-0">
+                <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
+                  {authUser?.name ? authUser.name.charAt(0).toUpperCase() : 'A'}
+                </div>
+                <div className="hidden lg:block text-left max-w-[120px]">
+                  <p className="text-xs font-bold text-slate-900 leading-tight truncate">
+                    {authUser?.name || 'Alif Fikri'}
+                  </p>
+                  <p className="text-[10px] text-slate-400 font-medium leading-none truncate mt-0.5">
+                    {authUser?.role || 'Demisioner'}
+                  </p>
+                </div>
+
+                {onOpenChangePassword && (
+                  <button
+                    type="button"
+                    onClick={onOpenChangePassword}
+                    title="Ganti Kata Sandi Akun Mandiri"
+                    className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-blue-600 bg-slate-50 hover:bg-blue-50 px-2 sm:px-2.5 py-1.5 rounded-xl border border-slate-200 hover:border-blue-200 transition-all cursor-pointer ml-1 shrink-0"
+                  >
+                    <KeyRound size={13} className="text-blue-600 shrink-0" />
+                    <span className="hidden xl:inline">Ganti Sandi</span>
+                  </button>
+                )}
+              </div>
+
+            </div>
           </div>
         </header>
 
         {/* 3. HERO BANNER FOR ACTIVE SERVICE (CLEAN WHITE SAAS CARD) */}
-        <div className="p-6 lg:p-8 pb-0">
-          <div className="max-w-7xl mx-auto bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8 pb-0">
+          <div className="max-w-7xl mx-auto bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="flex items-start sm:items-center gap-4">
               <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 border border-blue-200 flex items-center justify-center shadow-xs shrink-0">
                 <Icon size={28} />
@@ -499,7 +509,7 @@ const ServicePageLayout = ({
         </div>
 
         {/* 4. MAIN SERVICE CONTENT CONTAINER (SCOPED SAAS LIGHT THEME) */}
-        <main className="flex-1 max-w-7xl mx-auto w-full p-6 lg:p-8">
+        <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
           <div className="saas-service-content space-y-6">
             {children}
           </div>

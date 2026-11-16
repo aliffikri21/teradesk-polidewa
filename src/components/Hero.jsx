@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { ArrowRight, Bookmark, ChevronLeft, ChevronRight, Menu, X } from 'lucide-react';
+import { ArrowRight, Bookmark, ChevronLeft, ChevronRight, Menu, User, X } from 'lucide-react';
 import { initialDefaultProker } from '../data/defaultProker';
 import CardSwap, { Card } from './CardSwap';
+import PillNav from './PillNav';
 
 const defaultCenterCards = [
   {
@@ -141,7 +142,7 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [], leadershipPr
   return (
     <section
       id="beranda"
-      className="w-full relative min-h-screen h-auto bg-[#04081f] text-white flex flex-col items-center justify-between pt-24 sm:pt-28 lg:pt-20 xl:pt-24 pb-8 sm:pb-10 lg:pb-8 overflow-hidden select-none"
+      className="w-full relative min-h-screen h-auto bg-[#04081f] text-white flex flex-col items-center justify-between pt-12 sm:pt-28 lg:pt-20 xl:pt-24 pb-16 sm:pb-10 lg:pb-8 overflow-hidden select-none"
     >
       {/* =========================================================================
           BACKGROUND: 3D Architectural Ribbed Slats (Fluted Wall) + Radial Ambient
@@ -178,10 +179,10 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [], leadershipPr
       </div>
 
       {/* =========================================================================
-          NAVBAR: Floating Glassmorphism Sticky Navbar + Responsive Mobile Drawer
-          - Tampil konsisten dengan frosted glass putih beropasitas rendah
+          NAVBAR: Floating Glassmorphism Sticky Navbar (Desktop View)
+          - Tampilan HP dihilangkan dan digantikan dengan Mobile Bottom Dock PillNav
           ========================================================================= */}
-      <div className="fixed top-0 left-0 right-0 z-50 pointer-events-auto">
+      <div className="hidden md:block fixed top-0 left-0 right-0 z-50 pointer-events-auto">
         <nav
           className={`mx-auto w-[calc(100%-2rem)] max-w-6xl mt-3 sm:mt-4 transition-all duration-300 rounded-2xl sm:rounded-full px-4 sm:px-6 py-2.5 sm:py-3 flex justify-between items-center opacity-100 translate-y-0 ${
             activeSection === 'beranda'
@@ -320,6 +321,48 @@ const Hero = ({ onOpenContact, onNavigateToPortal, prokerList = [], leadershipPr
             </div>
           </>
         )}
+      </div>
+
+      {/* =========================================================================
+          MOBILE BOTTOM DOCK: React Bits PillNav
+          - Posisi di bawah layar seperti dock (fixed bottom)
+          - Logo terpisah di kiri: Navigasi Portal mandiri (seperti logo React di React Bits)
+          - Pill items di kanan: Home, Fitur, Tentang Kami
+          ========================================================================= */}
+      <div className="md:hidden fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-auto w-max max-w-[calc(100vw-1.5rem)] px-1">
+        <PillNav
+          logo={<User className="text-white" strokeWidth={2.2} />}
+          logoAlt="Portal & Akun Pengurus"
+          onLogoClick={() => {
+            if (onNavigateToPortal) onNavigateToPortal();
+          }}
+          items={[
+            { label: 'Home', href: '#beranda' },
+            { label: 'Fitur', href: '#fitur' },
+            { label: 'Tentang Kami', href: '#tentang-kami' },
+          ]}
+          activeHref={`#${activeSection === 'beranda' ? 'beranda' : activeSection}`}
+          onItemClick={(item, index, event) => {
+            if (item.href && item.href.startsWith('#')) {
+              event.preventDefault();
+              const targetId = item.href.substring(1);
+              const targetEl = document.getElementById(targetId);
+              if (targetEl) {
+                targetEl.scrollIntoView({ behavior: 'smooth' });
+                setActiveSection(targetId);
+              }
+            }
+          }}
+          theme="dark"
+          layout="split"
+          size="md"
+          surface="glass"
+          itemStyle="pill"
+          hoverEffect="fill"
+          indicator="dot"
+          collapse="never"
+          className="border-0 shadow-none bg-transparent"
+        />
       </div>
 
       {/* =========================================================================

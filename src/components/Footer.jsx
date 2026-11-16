@@ -16,7 +16,7 @@ const Footer = ({ onOpenDevDashboard }) => {
   };
 
   return (
-    <footer className="w-full bg-[#121318] text-white pt-14 sm:pt-16 pb-8 border-t border-white/5 select-none relative">
+    <footer className="w-full bg-[#121318] text-white pt-14 sm:pt-16 pb-24 sm:pb-8 border-t border-white/5 select-none relative">
       <div className="max-w-6xl mx-auto px-5 sm:px-8 lg:px-12">
         {/* Main Footer Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-10 pb-12 sm:pb-14">
